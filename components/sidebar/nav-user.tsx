@@ -29,7 +29,7 @@ const NavUser = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="group flex w-full items-center gap-3 rounded-md  text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50 focus-visible:outline-none">
+        <button className="group flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50 focus-visible:outline-none">
           <Avatar className="h-9 w-9 border border-sidebar-border/30 shadow-sm">
             <AvatarImage src="https://github.com/shadcn.png" alt="John Doe" />
             <AvatarFallback className="bg-primary/10 text-primary">

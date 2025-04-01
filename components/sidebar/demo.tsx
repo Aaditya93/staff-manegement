@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { Mail } from "lucide-react";
 import { GrAnalytics } from "react-icons/gr";
 import { LogOut } from "lucide-react";
-import { SidebarProvider } from "../ui/sidebar";
+
 import NavUser from "./nav-user";
 export function SidebarDemo({ children }: { children: ReactNode }) {
   const links = [
