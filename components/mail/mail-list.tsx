@@ -8,10 +8,21 @@ import { Mail } from "./data";
 import { useMail } from "./use-mails";
 interface MailListProps {
   items: Mail[];
+  emptyState?: React.ReactNode;
 }
 
-export function MailList({ items }: MailListProps) {
+export function MailList({ items, emptyState }: MailListProps) {
   const [mail, setMail] = useMail();
+
+  if (items.length === 0) {
+    return (
+      emptyState || (
+        <div className="flex h-[450px] items-center justify-center">
+          <p className="text-sm text-muted-foreground">No emails found</p>
+        </div>
+      )
+    );
+  }
 
   return (
     <ScrollArea className="h-screen">

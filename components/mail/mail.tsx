@@ -1,18 +1,19 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import {
-  AlertCircle,
   Archive,
   ArchiveX,
   File,
+  Ghost,
   Inbox,
-  MessagesSquare,
   Search,
+  SearchCheck,
+  SearchCheckIcon,
   Send,
-  ShoppingCart,
   Trash2,
-  Users2,
+  X,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -32,6 +33,8 @@ import { Nav } from "./nav";
 
 import { type Mail } from "./data";
 import { useMail } from "./use-mails";
+import { useRouter } from "next/navigation";
+import { Button } from "../ui/button";
 
 interface MailProps {
   accounts: {
@@ -39,6 +42,8 @@ interface MailProps {
     email: string;
     icon: React.ReactNode;
   }[];
+  currentFolder: string;
+  currentStatus: string;
   mails: Mail[];
   defaultLayout: number[] | undefined;
   defaultCollapsed?: boolean;
@@ -51,9 +56,62 @@ export function Mail({
   defaultLayout = [20, 32, 48],
   defaultCollapsed = false,
   navCollapsedSize,
+  currentFolder,
+  currentStatus,
 }: MailProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
   const [mail] = useMail();
+  const router = useRouter();
+  const initialTab = currentStatus === "unread" ? "unread" : "all";
+
+  // Add state for search query
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter mails based on search query
+  const filteredMails = mails.filter((item) => {
+    if (!searchQuery.trim()) return true;
+
+    const query = searchQuery.toLowerCase();
+
+    // Check various email fields for the search query
+    return (
+      // Search in email addresses
+      (item.email && item.email.toLowerCase().includes(query)) ||
+      (item.subject && item.subject.toLowerCase().includes(query)) ||
+      (item.text && item.text.toLowerCase().includes(query))
+    );
+  });
+
+  // Create a filtered list of unread emails
+  const filteredUnreadMails = filteredMails.filter((item) => !item.read);
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    // Extract the current folder from the URL or use the currentFolder prop
+    const folder = currentFolder || "inbox";
+
+    // Navigate to the appropriate URL
+    if (value === "unread") {
+      router.push(`/mail/${folder}/unread`);
+    } else {
+      router.push(`/mail/${folder}/read`);
+    }
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Handle search form submission
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent page reload
+  };
+
+  // Clear search query
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -64,7 +122,7 @@ export function Mail({
             sizes
           )}`;
         }}
-        className="h-screen  items-stretch"
+        className="h-screen items-stretch"
       >
         <ResizablePanel
           defaultSize={defaultLayout[0]}
@@ -89,6 +147,7 @@ export function Mail({
               "min-w-[50px] transition-all duration-300 ease-in-out"
           )}
         >
+          {/* Navigation panel content remains the same */}
           <div
             className={cn(
               "flex h-[52px] items-center justify-center",
@@ -103,84 +162,56 @@ export function Mail({
             links={[
               {
                 title: "Inbox",
-                label: "128",
+                label: "",
                 icon: Inbox,
-                variant: "default",
+                variant: currentFolder === "inbox" ? "default" : "ghost",
+                href: "/mail/inbox/read",
               },
               {
                 title: "Drafts",
-                label: "9",
+                label: "",
                 icon: File,
-                variant: "ghost",
+                variant: currentFolder === "drafts" ? "default" : "ghost",
+                href: "/mail/drafts/read",
               },
               {
                 title: "Sent",
                 label: "",
                 icon: Send,
-                variant: "ghost",
+                variant: currentFolder === "sent" ? "default" : "ghost",
+                href: "/mail/sent/read",
               },
               {
                 title: "Junk",
-                label: "23",
+                label: "",
                 icon: ArchiveX,
-                variant: "ghost",
+                variant: currentFolder === "junk" ? "default" : "ghost",
+                href: "/mail/junk/read",
               },
               {
                 title: "Trash",
                 label: "",
                 icon: Trash2,
-                variant: "ghost",
+                variant: currentFolder === "trash" ? "default" : "ghost",
+                href: "/mail/trash/read",
               },
               {
                 title: "Archive",
                 label: "",
                 icon: Archive,
-                variant: "ghost",
-              },
-            ]}
-          />
-          <Separator />
-          <Nav
-            isCollapsed={isCollapsed}
-            links={[
-              {
-                title: "Social",
-                label: "972",
-                icon: Users2,
-                variant: "ghost",
-              },
-              {
-                title: "Updates",
-                label: "342",
-                icon: AlertCircle,
-                variant: "ghost",
-              },
-              {
-                title: "Forums",
-                label: "128",
-                icon: MessagesSquare,
-                variant: "ghost",
-              },
-              {
-                title: "Shopping",
-                label: "8",
-                icon: ShoppingCart,
-                variant: "ghost",
-              },
-              {
-                title: "Promotions",
-                label: "21",
-                icon: Archive,
-                variant: "ghost",
+                variant: currentFolder === "archive" ? "default" : "ghost",
+                href: "/mail/archive/read",
               },
             ]}
           />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-          <Tabs defaultValue="all">
+          <Tabs defaultValue={initialTab} onValueChange={handleTabChange}>
             <div className="flex items-center px-4 py-2">
-              <h1 className="text-xl font-bold">Inbox</h1>
+              <h1 className="text-xl font-bold">
+                {currentFolder.charAt(0).toUpperCase() + currentFolder.slice(1)}
+              </h1>
               <TabsList className="ml-auto">
                 <TabsTrigger
                   value="all"
@@ -198,25 +229,108 @@ export function Mail({
             </div>
             <Separator />
             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <form>
+              <form onSubmit={handleSearchSubmit}>
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search" className="pl-8" />
+                  <Input
+                    placeholder="Search by email, subject, or content"
+                    className="pl-8 pr-8"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                  />
+                  {searchQuery && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Clear search"
+                      onClick={clearSearch}
+                      className="absolute right-2 top-2.5 h-4 w-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    ></Button>
+                  )}
                 </div>
               </form>
             </div>
             <TabsContent value="all" className="m-0">
-              <MailList items={mails} />
+              <MailList
+                items={filteredMails}
+                emptyState={
+                  searchQuery ? (
+                    <div className="flex h-[450px] items-center justify-center p-8">
+                      <div className="flex flex-col items-center text-center">
+                        <Search className="h-8 w-8  mb-4" />
+                        <h3 className="text-lg font-medium">
+                          No results found
+                        </h3>
+                        <p className="text-sm  mb-4">
+                          No emails match your search for &ldquo;{searchQuery}
+                          &rdquo;
+                        </p>
+                        <Button variant={"ghost"} onClick={clearSearch}>
+                          Clear search
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex h-[450px] items-center justify-center p-8">
+                      <div className="flex flex-col items-center text-center">
+                        <Inbox className="h-8 w-8 text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium">No emails</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Your {currentFolder} folder is empty
+                        </p>
+                      </div>
+                    </div>
+                  )
+                }
+              />
             </TabsContent>
             <TabsContent value="unread" className="m-0">
-              <MailList items={mails.filter((item) => !item.read)} />
+              <MailList
+                items={filteredUnreadMails}
+                emptyState={
+                  searchQuery ? (
+                    <div className="flex h-[450px] items-center justify-center p-8">
+                      <div className="flex flex-col items-center text-center">
+                        <Search className="h-8 w-8 text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium">
+                          No results found
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          No unread emails match your search for &ldquo;
+                          {searchQuery}&rdquo;
+                        </p>
+                        <button
+                          onClick={clearSearch}
+                          className="text-sm text-primary underline-offset-4 hover:underline"
+                        >
+                          Clear search
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex h-[450px] items-center justify-center p-8">
+                      <div className="flex flex-col items-center text-center">
+                        <Inbox className="h-8 w-8 text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium">
+                          No unread emails
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          You&apos;ve read all your emails in this folder
+                        </p>
+                      </div>
+                    </div>
+                  )
+                }
+              />
             </TabsContent>
           </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[2]} minSize={30}>
           <MailDisplay
-            mail={mails.find((item) => item.id === mail.selected) || null}
+            mail={
+              filteredMails.find((item) => item.id === mail.selected) || null
+            }
           />
         </ResizablePanel>
       </ResizablePanelGroup>
