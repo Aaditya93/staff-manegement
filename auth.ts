@@ -5,7 +5,7 @@ import client from "./lib/mongo";
 import User, { emailVerified } from "./db/models/User";
 import dbConnect from "./db/db";
 import { User as NextAuthUser } from "next-auth";
-
+import { refreshAccessToken, updateUserTokens } from "./actions/auth/token";
 // Extend the User type to include role property
 declare module "next-auth" {
   interface User {
@@ -106,18 +106,43 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.image = user.image;
       }
 
-      // Store tokens in JWT when account is available
       if (account && account.provider === "microsoft-entra-id") {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.expiresAt = account.expires_at;
       }
-      if (
-        account &&
-        account.expiresAt &&
-        Date.now() < Number(account.expiresAt) * 1000
-      ) {
-        return token;
+      if (token?.expiresAt && token.refreshToken) {
+        const nowInSeconds = Math.floor(Date.now() / 1000);
+        const tokenExpiryInSeconds = Math.floor(
+          (token.expiresAt as number) / 1000
+        );
+
+        if (tokenExpiryInSeconds < nowInSeconds + 30) {
+          try {
+            const refreshedTokens = await refreshAccessToken(
+              token.refreshToken as string
+            );
+
+            if (refreshedTokens) {
+              token.accessToken = refreshedTokens.accessToken;
+              token.refreshToken = refreshedTokens.refreshToken;
+              token.expiresAt = refreshedTokens.expiresAt * 1000; // Convert to milliseconds if needed
+
+              if (token.email) {
+                await updateUserTokens(token.email as string, {
+                  accessToken: refreshedTokens.accessToken,
+                  refreshToken: refreshedTokens.refreshToken,
+                  expiresAt: refreshedTokens.expiresAt,
+                  provider: "microsoft-entra-id",
+                });
+              }
+            } else {
+              console.error("Failed to refresh token in JWT callback");
+            }
+          } catch (error) {
+            console.error("Error refreshing token in JWT callback:", error);
+          }
+        }
       }
 
       if (token?.email) {
@@ -127,9 +152,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
 
-  // Use the standard adapter but add token fields to the user schema
   adapter: MongoDBAdapter(client),
-
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,

@@ -4,7 +4,6 @@ import { accounts } from "@/components/mail/data";
 import { SidebarDemo } from "@/components/sidebar/demo";
 import { fetchFolderEmails } from "@/actions/mail/mail";
 import { convertGraphEmailsToMailFormat } from "@/actions/mail/transfrom-mail";
-
 interface MailPageProps {
   params: {
     folder: "inbox" | "drafts" | "sent" | "junk" | "trash" | "archive";

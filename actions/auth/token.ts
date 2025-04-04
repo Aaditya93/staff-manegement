@@ -1,9 +1,10 @@
 "use server";
 import User from "@/db/models/User";
 import dbConnect from "@/db/db";
-import { auth } from "@/auth";
+import { auth, signIn, signOut } from "@/auth";
 
 import { ExtenedUser } from "@/next-auth";
+import { SignOut } from "./sign-out";
 
 export interface UserTokens {
   accessToken: string;
@@ -219,8 +220,6 @@ export async function refreshUserToken(
       expiresAt: newTokens.expiresAt,
       provider: userTokens.provider,
     });
-    await signOut({ redirect: false });
-    await signIn("microsoft-entra-id", { redirect: false });
 
     return {
       accessToken: newTokens.accessToken,
