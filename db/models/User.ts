@@ -1,3 +1,4 @@
+"use server";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import dbConnect from "../db";
@@ -15,6 +16,10 @@ const userSchema = new mongoose.Schema(
       default: "User",
       required: true,
     },
+    accessToken: String,
+    refreshToken: String,
+    expiresAt: Number,
+    provider: String,
     password: String,
     image: String,
     emailVerified: Date,

@@ -76,9 +76,7 @@ export function SidebarDemo({ children }: { children: ReactNode }) {
         </SidebarBody>
       </Sidebar>
       <div className="flex flex-1 w-full h-full overflow-hidden">
-        <div className="p-2 md:p-10 rounded-tl-2xl border border-border bg-background flex flex-col gap-2 flex-1 w-full h-full overflow-auto">
-          {children}
-        </div>
+        <div className="p-0 ">{children}</div>
       </div>
     </div>
   );

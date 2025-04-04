@@ -23,13 +23,15 @@ import { useSidebar } from "@/components/sidebar/sidebar";
 import ModeToggle from "./theme-button";
 import { Badge } from "@/components/ui/badge";
 
+import { SignOut } from "@/actions/auth/sign-out";
+
 const NavUser = () => {
   const { open } = useSidebar();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="group flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50 focus-visible:outline-none">
+        <button className="group flex w-full items-center  rounded-md  text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50 focus-visible:outline-none">
           <Avatar className="h-9 w-9 border border-sidebar-border/30 shadow-sm">
             <AvatarImage src="https://github.com/shadcn.png" alt="John Doe" />
             <AvatarFallback className="bg-primary/10 text-primary">
@@ -128,8 +130,8 @@ const NavUser = () => {
 
         <DropdownMenuSeparator className="my-1" />
 
-        <DropdownMenuItem className="flex items-center gap-2 px-2 py-1.5 text-red-600 focus:text-red-600 focus:bg-red-100/50 dark:focus:bg-red-900/20 cursor-pointer">
-          <LogOut className="mr-1 h-4 w-4" />
+        <DropdownMenuItem className="flex items-center gap-2 px-2 py-1.5 text-red-600 focus:text-red-600 focus:bg-red-100/50 dark:focus:bg-red-900/20 cursor-pointer ">
+          <LogOut onClick={() => SignOut} className="mr-1 h-4 w-4" />
           <span>Log out</span>
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
