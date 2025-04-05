@@ -29,6 +29,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.6.2",
+    "frimousse": "^0.2.0",
     "install": "^0.13.0",
     "jotai": "^2.12.2",
     "lucide-react": "^0.486.0",

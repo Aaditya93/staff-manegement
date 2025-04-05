@@ -541,3 +541,203 @@ export async function moveToArchive(
 ): Promise<{ success: boolean; error?: string }> {
   return moveEmailToFolder(emailId, SPECIAL_FOLDERS.ARCHIVE);
 }
+
+/**
+ * Marks an email as unread
+ * @param emailId ID of the email to mark as unread
+ * @returns Object with success status and optional error message
+ */
+export async function markAsUnread(
+  emailId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Get a valid access token
+    const accessToken = await getValidAccessToken();
+    if (!accessToken) {
+      return {
+        success: false,
+        error: "Authentication failed. Please sign in again.",
+      };
+    }
+
+    // Microsoft Graph API endpoint for updating message properties
+    const endpoint = `https://graph.microsoft.com/v1.0/me/messages/${emailId}`;
+
+    // Make request to Microsoft Graph API
+    const response = await fetch(endpoint, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        isRead: false,
+      }),
+    });
+
+    // Handle error responses
+    if (!response.ok) {
+      // Handle 401 unauthorized errors - token might be expired
+      if (response.status === 401) {
+        // Try getting a fresh token
+        const newToken = await getValidAccessToken();
+        if (!newToken) {
+          return {
+            success: false,
+            error: "Authentication failed after token refresh.",
+          };
+        }
+
+        // Retry the request with fresh token
+        const retryResponse = await fetch(endpoint, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${newToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            isRead: false,
+          }),
+        });
+
+        if (retryResponse.ok) {
+          return { success: true };
+        }
+      }
+
+      // Process error response
+      let errorMessage = `Failed to mark email as unread: ${response.status} ${response.statusText}`;
+
+      try {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          if (errorData.error?.message) {
+            errorMessage = `Graph API error: ${errorData.error.message}`;
+          }
+        }
+      } catch (parseError) {
+        console.error("Error parsing error response:", parseError);
+      }
+
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+
+    // Success
+    return { success: true };
+  } catch (error) {
+    console.error("Error marking email as unread:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+
+/**
+ * Toggles the flag (star) status of an email
+ * @param emailId ID of the email to flag/unflag
+ * @param flag Whether to flag (true) or unflag (false) the email
+ * @returns Object with success status and optional error message
+ */
+export async function toggleEmailFlag(
+  emailId: string,
+  flag: boolean = true
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Get a valid access token
+    const accessToken = await getValidAccessToken();
+    if (!accessToken) {
+      return {
+        success: false,
+        error: "Authentication failed. Please sign in again.",
+      };
+    }
+
+    // Microsoft Graph API endpoint for updating message properties
+    const endpoint = `https://graph.microsoft.com/v1.0/me/messages/${emailId}`;
+
+    // Create the appropriate flag status
+    const flagStatus = flag ? "flagged" : "notFlagged";
+
+    // Make request to Microsoft Graph API
+    const response = await fetch(endpoint, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        flag: {
+          flagStatus,
+        },
+      }),
+    });
+
+    // Handle error responses
+    if (!response.ok) {
+      // Handle 401 unauthorized errors - token might be expired
+      if (response.status === 401) {
+        // Try getting a fresh token
+        const newToken = await getValidAccessToken();
+        if (!newToken) {
+          return {
+            success: false,
+            error: "Authentication failed after token refresh.",
+          };
+        }
+
+        // Retry the request with fresh token
+        const retryResponse = await fetch(endpoint, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${newToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            flag: {
+              flagStatus,
+            },
+          }),
+        });
+
+        if (retryResponse.ok) {
+          return { success: true };
+        }
+      }
+
+      // Process error response
+      const action = flag ? "flag" : "unflag";
+      let errorMessage = `Failed to ${action} email: ${response.status} ${response.statusText}`;
+
+      try {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          if (errorData.error?.message) {
+            errorMessage = `Graph API error: ${errorData.error.message}`;
+          }
+        }
+      } catch (parseError) {
+        console.error("Error parsing error response:", parseError);
+      }
+
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+
+    // Success
+    return { success: true };
+  } catch (error) {
+    console.error("Error toggling email flag:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}

@@ -21,6 +21,7 @@ export const MailPage = async ({ params }: MailPageProps) => {
 
   // Convert the fetched emails to the desired format
 
+  console.log("Fetched emails:", mail);
   const transformedMails = await convertGraphEmailsToMailFormat(mail);
 
   return (
