@@ -1,12 +1,9 @@
-import { addDays } from "date-fns/addDays";
-import { addHours } from "date-fns/addHours";
-
+import { toast } from "sonner";
 import { format } from "date-fns/format";
-import { nextSaturday } from "date-fns/nextSaturday";
+
 import {
   Archive,
   ArchiveX,
-  Clock,
   Forward,
   MoreVertical,
   Reply,
@@ -18,22 +15,93 @@ import { DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
 
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { Calendar } from "../ui/calendar";
+
 import { DropdownMenu, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Label } from "../ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+
 import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
 import { Textarea } from "../ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Mail } from "./data";
+import { moveToArchive, moveToJunk, moveToTrash } from "@/actions/mail/mail";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface MailDisplayProps {
   mail: Mail | null;
 }
 
 export function MailDisplay({ mail }: MailDisplayProps) {
-  const today = new Date();
+  const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
+  const router = useRouter();
+  const handleArchive = async (id: string) => {
+    if (!id) return;
+
+    setIsLoading((prev) => ({ ...prev, archive: true }));
+
+    try {
+      const result = await moveToArchive(id);
+
+      if (result.success) {
+        toast.success("Email moved to archive");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to archive email");
+      }
+    } catch (error) {
+      console.error("Error archiving email:", error);
+      toast.error("Something went wrong when archiving");
+    } finally {
+      setIsLoading((prev) => ({ ...prev, archive: false }));
+    }
+  };
+
+  // Handler for junk action
+  const handleMoveToJunk = async (id: string) => {
+    if (!id) return;
+
+    setIsLoading((prev) => ({ ...prev, junk: true }));
+
+    try {
+      const result = await moveToJunk(id);
+
+      if (result.success) {
+        toast.success("Email moved to junk folder");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to move email to junk");
+      }
+    } catch (error) {
+      console.error("Error moving email to junk:", error);
+      toast.error("Something went wrong when moving to junk");
+    } finally {
+      setIsLoading((prev) => ({ ...prev, junk: false }));
+    }
+  };
+
+  // Handler for trash action
+  const handleMoveToTrash = async (id: string) => {
+    if (!id) return;
+
+    setIsLoading((prev) => ({ ...prev, trash: true }));
+
+    try {
+      const result = await moveToTrash(id);
+
+      if (result.success) {
+        toast.success("Email moved to trash");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to move email to trash");
+      }
+    } catch (error) {
+      console.error("Error moving email to trash:", error);
+      toast.error("Something went wrong when moving to trash");
+    } finally {
+      setIsLoading((prev) => ({ ...prev, trash: false }));
+    }
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -41,8 +109,17 @@ export function MailDisplay({ mail }: MailDisplayProps) {
         <div className="flex items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!mail}>
-                <Archive className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={!mail || isLoading.archive}
+                onClick={() => mail?.id && handleArchive(mail.id)}
+              >
+                {isLoading.archive ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                ) : (
+                  <Archive className="h-4 w-4" />
+                )}
                 <span className="sr-only">Archive</span>
               </Button>
             </TooltipTrigger>
@@ -50,8 +127,17 @@ export function MailDisplay({ mail }: MailDisplayProps) {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!mail}>
-                <ArchiveX className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={!mail || isLoading.junk}
+                onClick={() => mail?.id && handleMoveToJunk(mail.id)}
+              >
+                {isLoading.junk ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                ) : (
+                  <ArchiveX className="h-4 w-4" />
+                )}
                 <span className="sr-only">Move to junk</span>
               </Button>
             </TooltipTrigger>
@@ -59,73 +145,23 @@ export function MailDisplay({ mail }: MailDisplayProps) {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!mail}>
-                <Trash2 className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={!mail || isLoading.trash}
+                onClick={() => mail?.id && handleMoveToTrash(mail.id)}
+              >
+                {isLoading.trash ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
                 <span className="sr-only">Move to trash</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>Move to trash</TooltipContent>
           </Tooltip>
           <Separator orientation="vertical" className="mx-1 h-6" />
-          <Tooltip>
-            <Popover>
-              <PopoverTrigger asChild>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" disabled={!mail}>
-                    <Clock className="h-4 w-4" />
-                    <span className="sr-only">Snooze</span>
-                  </Button>
-                </TooltipTrigger>
-              </PopoverTrigger>
-              <PopoverContent className="flex w-[535px] p-0">
-                <div className="flex flex-col gap-2 border-r px-2 py-4">
-                  <div className="px-4 text-sm font-medium">Snooze until</div>
-                  <div className="grid min-w-[250px] gap-1">
-                    <Button
-                      variant="ghost"
-                      className="justify-start font-normal"
-                    >
-                      Later today{" "}
-                      <span className="ml-auto text-muted-foreground">
-                        {format(addHours(today, 4), "E, h:m b")}
-                      </span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start font-normal"
-                    >
-                      Tomorrow
-                      <span className="ml-auto text-muted-foreground">
-                        {format(addDays(today, 1), "E, h:m b")}
-                      </span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start font-normal"
-                    >
-                      This weekend
-                      <span className="ml-auto text-muted-foreground">
-                        {format(nextSaturday(today), "E, h:m b")}
-                      </span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start font-normal"
-                    >
-                      Next week
-                      <span className="ml-auto text-muted-foreground">
-                        {format(addDays(today, 7), "E, h:m b")}
-                      </span>
-                    </Button>
-                  </div>
-                </div>
-                <div className="p-2">
-                  <Calendar />
-                </div>
-              </PopoverContent>
-            </Popover>
-            <TooltipContent>Snooze</TooltipContent>
-          </Tooltip>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <Tooltip>
@@ -167,8 +203,6 @@ export function MailDisplay({ mail }: MailDisplayProps) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Mark as unread</DropdownMenuItem>
             <DropdownMenuItem>Star thread</DropdownMenuItem>
-            <DropdownMenuItem>Add label</DropdownMenuItem>
-            <DropdownMenuItem>Mute thread</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

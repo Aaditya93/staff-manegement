@@ -6,14 +6,10 @@ import {
   Archive,
   ArchiveX,
   File,
-  Ghost,
   Inbox,
   Search,
-  SearchCheck,
-  SearchCheckIcon,
   Send,
   Trash2,
-  X,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
