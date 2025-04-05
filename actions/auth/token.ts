@@ -30,10 +30,9 @@ export async function updateUserTokens(
     const updatedUser = await User.findOneAndUpdate(
       { email },
       {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        expiresAt: tokens.expiresAt,
-        provider: tokens.provider,
+        "accounts.0.accessToken": tokens.accessToken,
+        "accounts.0.refreshToken": tokens.refreshToken,
+        "accounts.0.expiresAt": tokens.expiresAt,
       },
       { new: true }
     );

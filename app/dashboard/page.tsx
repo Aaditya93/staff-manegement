@@ -1,16 +1,14 @@
 "use client";
-import { SignOut } from "@/actions/auth/sign-out";
+import { EditProfile } from "@/components/profile/edit";
 import { Button } from "@/components/ui/button";
+import { signOut } from "next-auth/react";
 
-export const DashboardPage = () => {
+export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <p className="text-muted-foreground">
-        This is the dashboard page. You can add your content here.
-      </p>
-      <Button onClick={() => SignOut()}>Log out</Button>
+    <div className="container mx-auto py-8">
+      <h1 className="mb-6 text-2xl font-bold">Dashboard</h1>
+      <EditProfile />
+      <Button onClick={() => signOut()}>Log out</Button>
     </div>
   );
-};
-export default DashboardPage;
+}

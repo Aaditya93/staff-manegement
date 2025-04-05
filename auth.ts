@@ -6,6 +6,7 @@ import User, { emailVerified } from "./db/models/User";
 import dbConnect from "./db/db";
 import { User as NextAuthUser } from "next-auth";
 import { refreshAccessToken, updateUserTokens } from "./actions/auth/token";
+import { MutipleEmailSignIn } from "./actions/auth/sign-out";
 // Extend the User type to include role property
 declare module "next-auth" {
   interface User {
@@ -62,15 +63,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     // This callback will modify the user before it's created in the database
     async signIn({ user, account }) {
-      console.log("signIn called", user, account);
-
-      // Add tokens to the user object when signing in with Microsoft
       if (account && account.provider === "microsoft-entra-id") {
-        // Add these properties to the user object - they'll be saved during creation
-        user.accessToken = account.access_token;
-        user.refreshToken = account.refresh_token;
-        user.expiresAt = account.expires_at;
-        user.provider = account.provider;
+        user.accounts = [
+          {
+            accessToken: account.access_token,
+            refreshToken: account.refresh_token,
+            expiresAt: account.expires_at,
+            email: user.email,
+            provider: account.provider,
+          },
+        ];
       }
 
       return true;
