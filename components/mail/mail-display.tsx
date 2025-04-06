@@ -31,9 +31,10 @@ import { Label } from "../ui/label";
 
 interface MailDisplayProps {
   mail: Mail | null;
+  inboxNumber: number;
 }
 
-export function MailDisplay({ mail }: MailDisplayProps) {
+export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
   const [replyText, setReplyText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -59,7 +60,7 @@ export function MailDisplay({ mail }: MailDisplayProps) {
     setIsLoading((prev) => ({ ...prev, archive: true }));
 
     try {
-      const result = await moveToArchive(id);
+      const result = await moveToArchive(id, inboxNumber);
 
       if (result.success) {
         toast.success("Email moved to archive");
@@ -82,7 +83,7 @@ export function MailDisplay({ mail }: MailDisplayProps) {
     setIsLoading((prev) => ({ ...prev, junk: true }));
 
     try {
-      const result = await moveToJunk(id);
+      const result = await moveToJunk(id, inboxNumber);
 
       if (result.success) {
         toast.success("Email moved to junk folder");
@@ -105,7 +106,7 @@ export function MailDisplay({ mail }: MailDisplayProps) {
     setIsLoading((prev) => ({ ...prev, trash: true }));
 
     try {
-      const result = await moveToTrash(id);
+      const result = await moveToTrash(id, inboxNumber);
 
       if (result.success) {
         toast.success("Email moved to trash");
@@ -147,7 +148,7 @@ export function MailDisplay({ mail }: MailDisplayProps) {
     setIsLoading((prev) => ({ ...prev, markUnread: true }));
 
     try {
-      const result = await markAsUnread(id);
+      const result = await markAsUnread(id, inboxNumber);
 
       if (result.success) {
         toast.success("Email marked as unread");
@@ -170,7 +171,7 @@ export function MailDisplay({ mail }: MailDisplayProps) {
     setIsLoading((prev) => ({ ...prev, star: true }));
 
     try {
-      const result = await toggleEmailFlag(id, true);
+      const result = await toggleEmailFlag(id, true, inboxNumber);
 
       if (result.success) {
         toast.success("Email starred");
@@ -427,6 +428,7 @@ export function MailDisplay({ mail }: MailDisplayProps) {
                           // Prepare attachments if any
                           // Define interface for email attachments
                           interface EmailAttachment {
+                            "@odata.type": string;
                             name: string;
                             contentType: string;
                             contentBytes: string;
@@ -439,6 +441,8 @@ export function MailDisplay({ mail }: MailDisplayProps) {
                               files.map(async (file) => {
                                 const base64Content = await fileToBase64(file);
                                 return {
+                                  "@odata.type":
+                                    "#microsoft.graph.fileAttachment",
                                   name: file.name,
                                   contentType: file.type,
                                   contentBytes: base64Content,
@@ -450,6 +454,7 @@ export function MailDisplay({ mail }: MailDisplayProps) {
                           // Prepare email data
                           const emailData = {
                             subject: `Re: ${mail?.subject || "No Subject"}`,
+                            inboxNumber: inboxNumber,
                             body: replyText,
                             toRecipients: [mail?.email || ""],
                             attachments: emailAttachments,

@@ -164,8 +164,8 @@ export async function getValidAccessToken(
   );
 
   // If token is not expired, return it
-  if (!tokenExpired && session.user.accounts[inboxNumber].access_token) {
-    return session.user.accounts[inboxNumber].access_token;
+  if (!tokenExpired && session.user.accounts[inboxNumber].accessToken) {
+    return session.user.accounts[inboxNumber].accessToken;
   }
 
   // Otherwise refresh the token

@@ -31,13 +31,10 @@ import { type Mail } from "./data";
 import { useMail } from "./use-mails";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
+import { SessionProvider } from "next-auth/react";
+import { ComposeButton } from "./compose-button";
 
 interface MailProps {
-  accounts: {
-    label: string;
-    email: string;
-    icon: React.ReactNode;
-  }[];
   currentFolder: string;
   currentStatus: string;
   mails: Mail[];
@@ -48,7 +45,6 @@ interface MailProps {
 }
 
 export function Mail({
-  accounts,
   mails,
   inboxNumber,
   defaultLayout = [20, 32, 48],
@@ -152,8 +148,19 @@ export function Mail({
               isCollapsed ? "h-[52px]" : "px-2"
             )}
           >
-            <AccountSwitcher isCollapsed={isCollapsed} accounts={accounts} />
+            <SessionProvider>
+              <AccountSwitcher isCollapsed={isCollapsed} />
+            </SessionProvider>
           </div>
+          <div
+            className={cn(
+              "flex items-center ml-2 py-2",
+              isCollapsed && "hidden"
+            )}
+          >
+            <ComposeButton />
+          </div>
+
           <Separator />
           <Nav
             isCollapsed={isCollapsed}
@@ -326,6 +333,7 @@ export function Mail({
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[2]} minSize={30}>
           <MailDisplay
+            inboxNumber={inboxNumber}
             mail={
               filteredMails.find((item) => item.id === mail.selected) || null
             }

@@ -244,6 +244,7 @@ export async function sendEmail(emailData: {
   body: string;
   toRecipients: string[];
   ccRecipients?: string[];
+  inboxNumber?: number;
   attachments?: Array<{
     name: string;
     contentType: string;
@@ -251,14 +252,16 @@ export async function sendEmail(emailData: {
   }>;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    const session = (await auth()) as ExtenedUser;
+    const accessToken = await getValidAccessToken(emailData.inboxNumber || 0);
 
-    if (!session?.accessToken) {
-      return {
-        success: false,
-        error: "Not authenticated or missing access token",
-      };
-    }
+    // Transform the attachments to the correct format for Microsoft Graph API
+    const formattedAttachments =
+      emailData.attachments?.map((attachment) => ({
+        "@odata.type": "#microsoft.graph.fileAttachment",
+        name: attachment.name,
+        contentType: attachment.contentType,
+        contentBytes: attachment.contentBytes,
+      })) || [];
 
     const message = {
       subject: emailData.subject,
@@ -273,7 +276,7 @@ export async function sendEmail(emailData: {
         emailData.ccRecipients?.map((email) => ({
           emailAddress: { address: email },
         })) || [],
-      attachments: emailData.attachments || [],
+      attachments: formattedAttachments,
     };
 
     const response = await fetch(
@@ -281,7 +284,7 @@ export async function sendEmail(emailData: {
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${session.accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ message }),
@@ -421,11 +424,12 @@ const SPECIAL_FOLDERS = {
  */
 export async function moveEmailToFolder(
   emailId: string,
-  destinationFolderId: string
+  destinationFolderId: string,
+  inboxNumber: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Get a valid access token
-    const accessToken = await getValidAccessToken();
+    const accessToken = await getValidAccessToken(inboxNumber);
     if (!accessToken) {
       return {
         success: false,
@@ -453,7 +457,7 @@ export async function moveEmailToFolder(
       // Handle 401 unauthorized errors - token might be expired
       if (response.status === 401) {
         // Try getting a fresh token
-        const newToken = await getValidAccessToken();
+        const newToken = await getValidAccessToken(inboxNumber);
         if (!newToken) {
           return {
             success: false,
@@ -516,9 +520,10 @@ export async function moveEmailToFolder(
  * @returns Object with success status and optional error message
  */
 export async function moveToTrash(
-  emailId: string
+  emailId: string,
+  inboxNumber: number
 ): Promise<{ success: boolean; error?: string }> {
-  return moveEmailToFolder(emailId, SPECIAL_FOLDERS.TRASH);
+  return moveEmailToFolder(emailId, SPECIAL_FOLDERS.TRASH, inboxNumber);
 }
 
 /**
@@ -527,9 +532,10 @@ export async function moveToTrash(
  * @returns Object with success status and optional error message
  */
 export async function moveToJunk(
-  emailId: string
+  emailId: string,
+  inboxNumber: number
 ): Promise<{ success: boolean; error?: string }> {
-  return moveEmailToFolder(emailId, SPECIAL_FOLDERS.JUNK);
+  return moveEmailToFolder(emailId, SPECIAL_FOLDERS.JUNK, inboxNumber);
 }
 
 /**
@@ -538,9 +544,10 @@ export async function moveToJunk(
  * @returns Object with success status and optional error message
  */
 export async function moveToArchive(
-  emailId: string
+  emailId: string,
+  inboxNumber: number
 ): Promise<{ success: boolean; error?: string }> {
-  return moveEmailToFolder(emailId, SPECIAL_FOLDERS.ARCHIVE);
+  return moveEmailToFolder(emailId, SPECIAL_FOLDERS.ARCHIVE, inboxNumber);
 }
 
 /**
@@ -549,11 +556,12 @@ export async function moveToArchive(
  * @returns Object with success status and optional error message
  */
 export async function markAsUnread(
-  emailId: string
+  emailId: string,
+  inboxNumber: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Get a valid access token
-    const accessToken = await getValidAccessToken();
+    const accessToken = await getValidAccessToken(inboxNumber);
     if (!accessToken) {
       return {
         success: false,
@@ -646,11 +654,12 @@ export async function markAsUnread(
  */
 export async function toggleEmailFlag(
   emailId: string,
-  flag: boolean = true
+  flag: boolean = true,
+  inboxNumber: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Get a valid access token
-    const accessToken = await getValidAccessToken();
+    const accessToken = await getValidAccessToken(inboxNumber);
     if (!accessToken) {
       return {
         success: false,
