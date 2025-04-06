@@ -44,11 +44,13 @@ interface MailProps {
   defaultLayout: number[] | undefined;
   defaultCollapsed?: boolean;
   navCollapsedSize: number;
+  inboxNumber?: number;
 }
 
 export function Mail({
   accounts,
   mails,
+  inboxNumber,
   defaultLayout = [20, 32, 48],
   defaultCollapsed = false,
   navCollapsedSize,
@@ -88,9 +90,9 @@ export function Mail({
 
     // Navigate to the appropriate URL
     if (value === "unread") {
-      router.push(`/mail/${folder}/unread`);
+      router.push(`/mail/${inboxNumber}/${folder}/unread`);
     } else {
-      router.push(`/mail/${folder}/read`);
+      router.push(`/mail/${inboxNumber}/${folder}/read`);
     }
   };
 
@@ -161,42 +163,42 @@ export function Mail({
                 label: "",
                 icon: Inbox,
                 variant: currentFolder === "inbox" ? "default" : "ghost",
-                href: "/mail/inbox/read",
+                href: `/mail/${inboxNumber}/inbox/read`,
               },
               {
                 title: "Drafts",
                 label: "",
                 icon: File,
                 variant: currentFolder === "drafts" ? "default" : "ghost",
-                href: "/mail/drafts/read",
+                href: `/mail/${inboxNumber}/drafts/read`,
               },
               {
                 title: "Sent",
                 label: "",
                 icon: Send,
                 variant: currentFolder === "sent" ? "default" : "ghost",
-                href: "/mail/sent/read",
+                href: `/mail/${inboxNumber}/sent/read`,
               },
               {
                 title: "Junk",
                 label: "",
                 icon: ArchiveX,
                 variant: currentFolder === "junk" ? "default" : "ghost",
-                href: "/mail/junk/read",
+                href: `/mail/${inboxNumber}/junk/read`,
               },
               {
                 title: "Trash",
                 label: "",
                 icon: Trash2,
                 variant: currentFolder === "trash" ? "default" : "ghost",
-                href: "/mail/trash/read",
+                href: `/mail/${inboxNumber}/trash/read`,
               },
               {
                 title: "Archive",
                 label: "",
                 icon: Archive,
                 variant: currentFolder === "archive" ? "default" : "ghost",
-                href: "/mail/archive/read",
+                href: `/mail/${inboxNumber}/archive/read`,
               },
             ]}
           />

@@ -1,25 +1,25 @@
 import Image from "next/image";
 import { Mail } from "@/components/mail/mail";
 import { accounts } from "@/components/mail/data";
-
+import { auth } from "@/auth";
 import { fetchFolderEmails } from "@/actions/mail/mail";
 import { convertGraphEmailsToMailFormat } from "@/actions/mail/transfrom-mail";
 interface MailPageProps {
   params: {
+    inboxNumber: number;
     folder: "inbox" | "drafts" | "sent" | "junk" | "trash" | "archive";
     status: string;
   };
 }
 
 export const MailPage = async ({ params }: MailPageProps) => {
-  const { folder, status } = await params;
+  const { inboxNumber, folder, status } = await params;
 
   const filterUnread = status === "unread";
+  const session = await auth();
+  console.log("Session:", session?.user.accounts);
 
-  // Fetch emails with the filter parameter
-  const mail = await fetchFolderEmails(folder, { filterUnread });
-
-  // Convert the fetched emails to the desired format
+  const mail = await fetchFolderEmails(folder, inboxNumber, { filterUnread });
 
   console.log("Fetched emails:", mail);
   const transformedMails = await convertGraphEmailsToMailFormat(mail);
@@ -44,6 +44,7 @@ export const MailPage = async ({ params }: MailPageProps) => {
       </div>
       <div className="hidden flex-col md:flex h-screen">
         <Mail
+          inboxNumber={inboxNumber}
           accounts={accounts}
           mails={transformedMails}
           defaultLayout={[20, 40, 40]} // Explicitly set default sizes

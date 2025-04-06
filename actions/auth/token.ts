@@ -21,19 +21,23 @@ export interface UserTokens {
 
 export async function updateUserTokens(
   email: string,
+  inboxNumber: number,
   tokens: UserTokens
 ): Promise<void> {
   try {
     await dbConnect();
+    console.log("Updating user tokens for email:", email);
+
+    // Create the update object with proper MongoDB dot notation
+    const updateObj: any = {};
+    updateObj[`accounts.${inboxNumber}.accessToken`] = tokens.accessToken;
+    updateObj[`accounts.${inboxNumber}.refreshToken`] = tokens.refreshToken;
+    updateObj[`accounts.${inboxNumber}.expiresAt`] = tokens.expiresAt;
 
     // Update user using the Mongoose model
     const updatedUser = await User.findOneAndUpdate(
       { email },
-      {
-        "accounts.0.accessToken": tokens.accessToken,
-        "accounts.0.refreshToken": tokens.refreshToken,
-        "accounts.0.expiresAt": tokens.expiresAt,
-      },
+      { $set: updateObj },
       { new: true }
     );
 
@@ -135,7 +139,9 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
  * @returns A valid access token or null if unable to get one
  */
 
-export async function getValidAccessToken(): Promise<string | null> {
+export async function getValidAccessToken(
+  inboxNumber: number
+): Promise<string | null> {
   const session = (await auth()) as ExtenedUser;
 
   if (!session?.user?.email) {
@@ -144,7 +150,9 @@ export async function getValidAccessToken(): Promise<string | null> {
 
   // Check if token is expired
   const now = Math.floor(Date.now() / 1000);
-  const tokenExpired = !session.expiresAt || session.expiresAt < now;
+  const tokenExpired =
+    !session.user.accounts[inboxNumber].expiresAt ||
+    session.user.accounts[inboxNumber].expiresAt < now;
 
   console.log(
     "Token expired?",
@@ -152,24 +160,26 @@ export async function getValidAccessToken(): Promise<string | null> {
     "Current time:",
     now,
     "Expires at:",
-    session.expiresAt
+    session.user.accounts[inboxNumber].expiresAt
   );
 
   // If token is not expired, return it
-  if (!tokenExpired && session.accessToken) {
-    return session.accessToken;
+  if (!tokenExpired && session.user.accounts[inboxNumber].access_token) {
+    return session.user.accounts[inboxNumber].access_token;
   }
 
   // Otherwise refresh the token
-  if (session.refreshToken) {
-    const newTokens = await refreshAccessToken(session.refreshToken);
+  if (session.user.accounts[inboxNumber].refreshToken) {
+    const newTokens = await refreshAccessToken(
+      session.user.accounts[inboxNumber].refreshToken
+    );
 
     if (newTokens) {
       console.log("Token refreshed successfully");
 
       // Update the tokens in the database
       if (session.user.email) {
-        await updateUserTokens(session.user.email, {
+        await updateUserTokens(session.user.email, inboxNumber, {
           ...newTokens,
           provider: "microsoft-entra-id",
         });

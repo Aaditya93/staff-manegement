@@ -6,8 +6,7 @@ import User, { emailVerified } from "./db/models/User";
 import dbConnect from "./db/db";
 import { User as NextAuthUser } from "next-auth";
 import { refreshAccessToken, updateUserTokens } from "./actions/auth/token";
-import { MutipleEmailSignIn } from "./actions/auth/sign-out";
-// Extend the User type to include role property
+
 declare module "next-auth" {
   interface User {
     role?: string;
@@ -88,14 +87,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.image && session.user) {
         session.user.image = token.image as string;
       }
-      if (token.accessToken) {
-        session.accessToken = token.accessToken as string;
-      }
-      if (token.refreshToken) {
-        session.refreshToken = token.refreshToken as string;
-      }
-      if (token.expiresAt) {
-        session.expiresAt = token.expiresAt as number;
+      if (token.accounts) {
+        session.user.accounts = token.accounts as {
+          accessToken?: string;
+          refreshToken?: string;
+          expiresAt?: number;
+          provider?: string;
+          email?: string;
+        }[];
       }
 
       return session;
@@ -109,40 +108,57 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       if (account && account.provider === "microsoft-entra-id") {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-        token.expiresAt = account.expires_at;
+        if (user) {
+          token.accounts = user.accounts;
+          token.email = user.email;
+        }
       }
-      if (token?.expiresAt && token.refreshToken) {
+      if (token?.accounts && token.accounts.length > 0) {
         const nowInSeconds = Math.floor(Date.now() / 1000);
-        const tokenExpiryInSeconds = Math.floor(
-          (token.expiresAt as number) / 1000
-        );
+        console.log(token.email);
 
-        if (tokenExpiryInSeconds < nowInSeconds + 30) {
-          try {
-            const refreshedTokens = await refreshAccessToken(
-              token.refreshToken as string
-            );
+        // Process each account in the token.accounts array
+        for (let i = 0; i < token.accounts.length; i++) {
+          const account = token.accounts[i];
 
-            if (refreshedTokens) {
-              token.accessToken = refreshedTokens.accessToken;
-              token.refreshToken = refreshedTokens.refreshToken;
-              token.expiresAt = refreshedTokens.expiresAt * 1000; // Convert to milliseconds if needed
+          // Skip accounts without necessary properties
+          if (!account.expiresAt || !account.refreshToken) continue;
 
-              if (token.email) {
-                await updateUserTokens(token.email as string, {
+          const tokenExpiryInSeconds = Math.floor(
+            (account.expiresAt as number) / 1000
+          );
+
+          // Only refresh if token is about to expire
+          if (tokenExpiryInSeconds < nowInSeconds + 30) {
+            try {
+              const refreshedTokens = await refreshAccessToken(
+                account.refreshToken as string
+              );
+
+              if (refreshedTokens) {
+                // Update the token in the account array
+                token.accounts[i] = {
+                  ...token.accounts[i],
+                  accessToken: refreshedTokens.accessToken,
+                  refreshToken: refreshedTokens.refreshToken,
+                  expiresAt: refreshedTokens.expiresAt * 1000,
+                };
+
+                // Update the database asynchronously
+                await updateUserTokens(token.email, i, {
                   accessToken: refreshedTokens.accessToken,
                   refreshToken: refreshedTokens.refreshToken,
                   expiresAt: refreshedTokens.expiresAt,
-                  provider: "microsoft-entra-id",
+                  provider: account.provider || "microsoft-entra-id",
                 });
+
+                console.log(`Successfully refreshed token for account ${i}`);
+              } else {
+                console.error(`Failed to refresh token for account ${i}`);
               }
-            } else {
-              console.error("Failed to refresh token in JWT callback");
+            } catch (error) {
+              console.error(`Error refreshing token for account ${i}:`, error);
             }
-          } catch (error) {
-            console.error("Error refreshing token in JWT callback:", error);
           }
         }
       }

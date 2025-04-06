@@ -41,6 +41,7 @@ interface EmailMessage {
  */
 export async function fetchFolderEmails(
   folder: "inbox" | "drafts" | "sent" | "junk" | "trash" | "archive",
+  inboxNumber: number,
   options: {
     limit?: number;
     skip?: number;
@@ -62,7 +63,7 @@ export async function fetchFolderEmails(
     } = options;
 
     // Get a valid access token
-    const accessToken = await getValidAccessToken();
+    const accessToken = await getValidAccessToken(inboxNumber);
     if (!accessToken) {
       return {
         emails: [],
@@ -131,7 +132,7 @@ export async function fetchFolderEmails(
         forceRefreshToken();
 
         // Try one more time with a fresh token
-        const newToken = await getValidAccessToken();
+        const newToken = await getValidAccessToken(inboxNumber);
         if (newToken) {
           const retryResponse = await fetch(graphUrl, {
             headers: {
