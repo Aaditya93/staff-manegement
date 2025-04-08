@@ -6,7 +6,7 @@ import { Badge } from "../ui/badge";
 import { ScrollArea } from "../ui/scroll-area";
 import { useMail } from "./use-mails";
 import { EmailMessage } from "./mail-display";
-import { markAsRead } from "@/actions/mail/mail";
+import { markAsRead } from "@/actions/mail/email-actions";
 import PaginationComponent from "./pagination";
 
 interface MailListProps {

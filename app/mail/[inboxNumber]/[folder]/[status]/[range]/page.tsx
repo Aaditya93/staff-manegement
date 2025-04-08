@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Mail } from "@/components/mail/mail";
-import { fetchFolderEmails } from "@/actions/mail/mail";
 
+import { fetchFolderEmails } from "@/actions/mail/fetch-emails";
 interface MailPageProps {
   params: {
     inboxNumber: number;

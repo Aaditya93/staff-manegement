@@ -10,9 +10,9 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
 import { EmojiPickerPopover } from "./emojis";
-import { sendEmail } from "@/actions/mail/mail";
+import { sendEmail } from "@/actions/mail/send-email";
 import { Badge } from "../ui/badge";
-
+import { fileToBase64 } from "@/utils/sanitize-email";
 interface ComposeMailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -44,15 +44,6 @@ export function ComposeMailDialog({
   const [toEmails, setToEmails] = useState<string[]>([]);
   const [ccEmails, setCcEmails] = useState<string[]>([]);
   const [bccEmails, setBccEmails] = useState<string[]>([]);
-
-  // Parse emails when input changes
-  const parseEmails = (input: string): string[] => {
-    if (!input.trim()) return [];
-    return input
-      .split(/[,;]/)
-      .map((email) => email.trim())
-      .filter((email) => email !== "");
-  };
 
   // ...existing code...
 
@@ -189,23 +180,6 @@ export function ComposeMailDialog({
     }
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        if (reader.result) {
-          // Remove the data URL prefix
-          const base64String = reader.result.toString().split(",")[1];
-          resolve(base64String);
-        } else {
-          reject(new Error("Failed to convert file to base64"));
-        }
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleEmojiSelect = ({ emoji }: { emoji: string }) => {
     if (!textareaRef.current) return;
 
@@ -246,24 +220,38 @@ export function ComposeMailDialog({
   };
 
   const handleSendEmail = async () => {
-    if (!to.trim()) {
+    // Check if there are any recipients (either in the input or as badges)
+    if (to.trim() === "" && toEmails.length === 0) {
       toast.error("Please enter at least one recipient");
       return;
     }
 
+    // Consider both badges and current input for validation
+    const allToEmails = [...toEmails];
+    if (to.trim()) {
+      allToEmails.push(to.trim());
+    }
+
+    const allCcEmails = [...ccEmails];
+    if (cc.trim()) {
+      allCcEmails.push(cc.trim());
+    }
+
+    const allBccEmails = [...bccEmails];
+    if (bcc.trim()) {
+      allBccEmails.push(bcc.trim());
+    }
+
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const parsedToEmails = parseEmails(to);
-    const parsedCcEmails = showCc ? parseEmails(cc) : [];
-    const parsedBccEmails = showBcc ? parseEmails(bcc) : [];
 
-    const invalidToEmails = parsedToEmails.filter(
+    const invalidToEmails = allToEmails.filter(
       (email) => !emailRegex.test(email)
     );
-    const invalidCcEmails = parsedCcEmails.filter(
+    const invalidCcEmails = allCcEmails.filter(
       (email) => !emailRegex.test(email)
     );
-    const invalidBccEmails = parsedBccEmails.filter(
+    const invalidBccEmails = allBccEmails.filter(
       (email) => !emailRegex.test(email)
     );
 
@@ -297,13 +285,13 @@ export function ComposeMailDialog({
         );
       }
 
-      // Prepare email data
+      // Prepare email data - use the badge arrays plus any content in input fields
       const emailData = {
         subject: subject || "(No subject)",
         body: body,
-        toRecipients: parsedToEmails,
-        ccRecipients: parsedCcEmails,
-        bccRecipients: parsedBccEmails,
+        toRecipients: allToEmails,
+        ccRecipients: allCcEmails,
+        bccRecipients: allBccEmails,
         inboxNumber: inboxNumber,
         attachments: emailAttachments,
       };
@@ -573,7 +561,7 @@ export function ComposeMailDialog({
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent pb-4" />
                   ) : (
                     <>
                       <Send className="mr-2 h-3 w-3" />
@@ -613,7 +601,7 @@ export function ComposeMailDialog({
       <DialogContent
         className={`${
           isMinimized ? "max-h-14" : "max-h-[80vh]"
-        } bottom-0 right-0 top-auto 
+        } bottom-4 right-0 top-auto 
   sm:max-w-[500px] p-0 rounded-t-lg rounded-b-none border shadow-lg gap-0 overflow-hidden transition-all duration-200`}
         style={{
           position: "fixed",
@@ -621,7 +609,7 @@ export function ComposeMailDialog({
           height: isMinimized ? "auto" : "500px",
           zIndex: 50,
           margin: 0,
-          bottom: 0,
+          bottom: 4,
           right: "2rem",
         }}
       >

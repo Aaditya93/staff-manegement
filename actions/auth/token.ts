@@ -1,10 +1,9 @@
 "use server";
 import User from "@/db/models/User";
 import dbConnect from "@/db/db";
-import { auth, signIn, signOut } from "@/auth";
+import { auth } from "@/auth";
 
 import { ExtenedUser } from "@/next-auth";
-import { SignOut } from "./sign-out";
 
 export interface UserTokens {
   accessToken: string;
