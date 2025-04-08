@@ -6,8 +6,6 @@ import {
   Forward,
   MoreVertical,
   Paperclip,
-  Reply,
-  ReplyAll,
   Trash2,
   X,
 } from "lucide-react";
@@ -34,6 +32,7 @@ export interface EmailMessage {
   id: string;
   subject: string;
   receivedDateTime: string;
+  sentDateTime: string;
   hasAttachments: boolean;
   isRead: boolean;
   body: {
@@ -41,6 +40,12 @@ export interface EmailMessage {
     content: string;
   };
   from: {
+    emailAddress: {
+      name: string;
+      address: string;
+    };
+  };
+  sender: {
     emailAddress: {
       name: string;
       address: string;
@@ -57,15 +62,69 @@ export interface EmailMessage {
 interface MailDisplayProps {
   mail: EmailMessage | null;
   inboxNumber: number;
+  currentFolder?: string;
 }
 
-export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
+export function MailDisplay({
+  mail,
+  inboxNumber,
+  currentFolder,
+}: MailDisplayProps) {
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
   const [replyText, setReplyText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+  const [isForwarding, setIsForwarding] = useState(false);
+  const [forwardRecipients, setForwardRecipients] = useState("");
+  const [forwardText, setForwardText] = useState("");
+  const forwardTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const handleForwardClick = () => {
+    if (!mail) return;
+
+    setIsForwarding(true);
+
+    // Add a header to the forwarded message, but keep HTML intact
+    let forwardContent = "";
+
+    if (mail.body.contentType === "html") {
+      // For HTML emails, create a nicely formatted header as HTML
+      const originalSender = mail.from.emailAddress.name;
+      const originalEmail = mail.from.emailAddress.address;
+      const originalDate = format(new Date(mail.receivedDateTime), "PPpp");
+      const originalSubject = mail.subject;
+
+      // Create HTML formatted header
+      const forwardHeader = `
+        <div style="padding: 10px 0; margin-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
+          <p style="margin: 5px 0; color: #666;">---------- Forwarded message ---------</p>
+          <p style="margin: 5px 0;"><b>From:</b> ${originalSender} &lt;${originalEmail}&gt;</p>
+          <p style="margin: 5px 0;"><b>Date:</b> ${originalDate}</p>
+          <p style="margin: 5px 0;"><b>Subject:</b> ${originalSubject}</p>
+          <p style="margin: 5px 0;"><b>To:</b> ${mail.from.emailAddress.address}</p>
+        </div>
+      `;
+
+      // Combine header with original HTML content
+      forwardContent = forwardHeader + mail.body.content;
+    } else {
+      // For plain text emails, format as plain text
+      const originalSender = mail.from.emailAddress.name;
+      const originalDate = format(new Date(mail.receivedDateTime), "PPpp");
+      const originalSubject = mail.subject;
+
+      let textContent = `\n\n---------- Forwarded message ---------\n`;
+      textContent += `From: ${originalSender} <${mail.from.emailAddress.address}>\n`;
+      textContent += `Date: ${originalDate}\n`;
+      textContent += `Subject: ${originalSubject}\n`;
+      textContent += `To: ${mail.from.emailAddress.address}\n\n`;
+
+      forwardContent = textContent + mail.body.content;
+    }
+
+    setForwardText(forwardContent);
+  };
 
   const handleDownloadAttachment = async (attachmentId: string) => {
     if (!mail) return;
@@ -585,32 +644,256 @@ export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
         <div className="ml-auto flex items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!mail}>
-                <Reply className="h-4 w-4" />
-                <span className="sr-only">Reply</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Reply</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!mail}>
-                <ReplyAll className="h-4 w-4" />
-                <span className="sr-only">Reply all</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Reply all</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!mail}>
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={!mail}
+                onClick={handleForwardClick}
+              >
                 <Forward className="h-4 w-4" />
                 <span className="sr-only">Forward</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>Forward</TooltipContent>
           </Tooltip>
+          {isForwarding && mail && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div className="w-full max-w-2xl rounded-lg bg-background p-4 shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Forward Email</h3>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsForwarding(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="mb-4">
+                  <Label
+                    htmlFor="forward-to"
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    To:
+                  </Label>
+                  <input
+                    id="forward-to"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    placeholder="email@example.com, anotheremail@example.com"
+                    value={forwardRecipients}
+                    onChange={(e) => setForwardRecipients(e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <Label
+                    htmlFor="forward-subject"
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    Subject:
+                  </Label>
+                  <input
+                    id="forward-subject"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={`Fwd: ${mail.subject}`}
+                    readOnly
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <Label
+                    htmlFor="forward-message"
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    Message:
+                  </Label>
+                  <Textarea
+                    id="forward-message"
+                    ref={forwardTextareaRef}
+                    className="min-h-[200px] w-full"
+                    value={forwardText}
+                    onChange={(e) => setForwardText(e.target.value)}
+                  />
+                </div>
+
+                {/* File attachments from original email */}
+                {mail.attachments && mail.attachments.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="mb-2 text-sm font-medium">
+                      Original Attachments:
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {mail.attachments.map((attachment) => (
+                        <div
+                          key={attachment.id}
+                          className="flex items-center gap-2 rounded-md border p-2 text-sm"
+                        >
+                          <Paperclip className="h-4 w-4" />
+                          <span className="max-w-[200px] truncate">
+                            {attachment.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Attachments for forwarded email */}
+                <div className="mb-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h4 className="text-sm font-medium">
+                      Forward with Attachments:
+                    </h4>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label
+                          htmlFor="forward-file-upload"
+                          className="hover:bg-secondary-foreground/10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-2xl"
+                        >
+                          <input
+                            type="file"
+                            multiple
+                            onChange={handleFileChange}
+                            className="hidden"
+                            id="forward-file-upload"
+                            ref={uploadInputRef}
+                          />
+                          <Paperclip className="text-primary size-4" />
+                        </Label>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">Attach files</TooltipContent>
+                    </Tooltip>
+                  </div>
+
+                  {files.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {files.map((file, index) => (
+                        <div
+                          key={index}
+                          className="bg-secondary flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
+                        >
+                          <Paperclip className="size-4" />
+                          <span className="max-w-[120px] truncate">
+                            {file.name}
+                          </span>
+                          <Button
+                            onClick={() => handleRemoveFile(index)}
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 rounded-full p-0 opacity-70 hover:bg-destructive/10 hover:text-destructive hover:opacity-100"
+                          >
+                            <X className="h-3 w-3" />
+                            <span className="sr-only">Remove file</span>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsForwarding(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      // Validate recipients
+                      if (!forwardRecipients.trim()) {
+                        toast.error(
+                          "Please enter at least one recipient email"
+                        );
+                        return;
+                      }
+
+                      const recipientList = forwardRecipients
+                        .split(",")
+                        .map((email) => email.trim())
+                        .filter((email) => email);
+
+                      if (recipientList.length === 0) {
+                        toast.error("Please enter valid recipient emails");
+                        return;
+                      }
+
+                      // Set loading state
+                      setIsLoading((prev) => ({ ...prev, forwarding: true }));
+
+                      try {
+                        // Process attachments
+                        let emailAttachments = [];
+                        if (files.length > 0) {
+                          // Process each file to get base64 content
+                          emailAttachments = await Promise.all(
+                            files.map(async (file) => {
+                              const base64Content = await fileToBase64(file);
+                              return {
+                                "@odata.type":
+                                  "#microsoft.graph.fileAttachment",
+                                name: file.name,
+                                contentType: file.type,
+                                contentBytes: base64Content,
+                              };
+                            })
+                          );
+                        }
+
+                        // Get original message attachments if needed
+                        // Note: You may need to modify this based on your API capabilities
+                        // This example assumes you can somehow include original attachments
+
+                        // Prepare email data
+                        const emailData = {
+                          subject: `Fwd: ${mail.subject}`,
+                          inboxNumber: inboxNumber,
+                          body: forwardText,
+                          toRecipients: recipientList,
+                          attachments: emailAttachments,
+                        };
+
+                        // Send the forwarded email
+                        const result = await sendEmail(emailData);
+
+                        if (result.success) {
+                          toast.success("Email forwarded successfully");
+                          setIsForwarding(false);
+                          setForwardRecipients("");
+                          setForwardText("");
+                          setFiles([]);
+                        } else {
+                          toast.error(
+                            result.error || "Failed to forward email"
+                          );
+                        }
+                      } catch (error) {
+                        console.error("Error forwarding email:", error);
+                        toast.error(
+                          "An error occurred while forwarding the email"
+                        );
+                      } finally {
+                        setIsLoading((prev) => ({
+                          ...prev,
+                          forwarding: false,
+                        }));
+                      }
+                    }}
+                    disabled={isLoading.forwarding}
+                  >
+                    {isLoading.forwarding ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                    ) : (
+                      "Forward"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+
         <Separator orientation="vertical" className="mx-2 h-6" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -663,18 +946,31 @@ export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
               </Avatar>
               <div className="grid gap-1">
                 <div className="font-semibold">
-                  {mail.from.emailAddress.name}
+                  {currentFolder === "sent"
+                    ? mail.sender?.emailAddress.name
+                    : mail.from.emailAddress.name}
                 </div>
                 <div className="line-clamp-1 text-xs">{mail.subject}</div>
                 <div className="line-clamp-1 text-xs">
-                  <span className="font-medium">From:</span>{" "}
-                  {mail.from.emailAddress.address}
+                  <span className="font-medium">
+                    {currentFolder === "sent" ? "To" : "From"}
+                  </span>{" "}
+                  {currentFolder === "sent"
+                    ? mail.sender?.emailAddress.address
+                    : mail.from.emailAddress.address}
                 </div>
               </div>
             </div>
-            {mail.receivedDateTime && (
+            {(mail.receivedDateTime || mail.sentDateTime) && (
               <div className="ml-auto text-xs text-muted-foreground">
-                {format(new Date(mail.receivedDateTime), "PPpp")}
+                {format(
+                  new Date(
+                    currentFolder === "sent"
+                      ? mail.sentDateTime
+                      : mail.receivedDateTime
+                  ),
+                  "PPpp"
+                )}
               </div>
             )}
           </div>

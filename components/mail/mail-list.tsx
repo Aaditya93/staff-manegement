@@ -6,6 +6,7 @@ import { Badge } from "../ui/badge";
 import { ScrollArea } from "../ui/scroll-area";
 import { useMail } from "./use-mails";
 import { EmailMessage } from "./mail-display";
+import { markAsRead } from "@/actions/mail/mail";
 interface MailListProps {
   items: EmailMessage[];
   emptyState?: React.ReactNode;
@@ -60,12 +61,23 @@ export function MailList({ items, emptyState }: MailListProps) {
               "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
               mail.selected === item.id && "bg-muted"
             )}
-            onClick={() =>
+            onClick={async () => {
+              // Set selected mail in state
               setMail({
                 ...mail,
                 selected: item.id,
-              })
-            }
+              });
+
+              // If the email is unread, mark it as read
+              if (!item.isRead) {
+                // Assume inboxNumber is 0 or passed as a prop
+                const inboxNumber = 0; // Replace with actual inbox number if available
+                await markAsRead(item.id, inboxNumber);
+
+                // You may want to update the UI to reflect that the email is now read
+                // This could be done through a refresh or by updating the local state
+              }
+            }}
           >
             <div className="flex w-full flex-col gap-1">
               <div className="flex items-center">

@@ -336,6 +336,7 @@ export function Mail({
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[2]} minSize={30}>
           <MailDisplay
+            currentFolder={currentFolder}
             inboxNumber={inboxNumber || 0}
             mail={
               filteredMails.find((item) => item.id === mail.selected) || null

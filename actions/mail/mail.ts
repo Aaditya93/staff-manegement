@@ -6,6 +6,8 @@ import { getValidAccessToken } from "@/actions/auth/token";
 import { ExtenedUser } from "@/next-auth";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { revalidatePath } from "next/cache";
+
 // Schema for email filtering
 const EmailFilterSchema = z.object({
   limit: z.number().min(1).max(100).default(10),
@@ -98,7 +100,7 @@ export async function fetchFolderEmails(
     const queryParams = [
       `$top=${limit}`,
       `$skip=${skip}`,
-      "$select=id,subject,body,receivedDateTime,from,isRead,hasAttachments",
+      "$select=id,subject,body,receivedDateTime,sentDateTime,from,sender,isRead,hasAttachments",
       "$expand=attachments($select=id,name,contentType,size,isInline)",
       "$orderby=receivedDateTime desc",
     ];
@@ -832,6 +834,69 @@ export async function toggleEmailFlag(
     return { success: true };
   } catch (error) {
     console.error("Error toggling email flag:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+
+export async function markAsRead(
+  emailId: string,
+  inboxNumber: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Get a valid access token
+    const accessToken = await getValidAccessToken(inboxNumber);
+    if (!accessToken) {
+      return {
+        success: false,
+        error: "Authentication failed. Please sign in again.",
+      };
+    }
+
+    // Microsoft Graph API endpoint for updating message properties
+    const endpoint = `https://graph.microsoft.com/v1.0/me/messages/${emailId}`;
+
+    // Make request to Microsoft Graph API
+    const response = await fetch(endpoint, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        isRead: true,
+      }),
+    });
+
+    // Handle error responses
+    if (!response.ok) {
+      // Process error response
+      let errorMessage = `Failed to mark email as read: ${response.status} ${response.statusText}`;
+
+      try {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          if (errorData.error?.message) {
+            errorMessage = `Graph API error: ${errorData.error.message}`;
+          }
+        }
+      } catch (parseError) {
+        console.error("Error parsing error response:", parseError);
+      }
+
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+
+    // Success
+    return { success: true };
+  } catch (error) {
+    console.error("Error marking email as read:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",

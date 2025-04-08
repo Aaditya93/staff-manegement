@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Mail } from "@/components/mail/mail";
 import { fetchFolderEmails } from "@/actions/mail/mail";
-import { convertGraphEmailsToMailFormat } from "@/actions/mail/transfrom-mail";
+
 interface MailPageProps {
   params: {
     inboxNumber: number;
@@ -16,10 +16,6 @@ export const MailPage = async ({ params }: MailPageProps) => {
   const filterUnread = status === "unread";
 
   const mail = await fetchFolderEmails(folder, inboxNumber, { filterUnread });
-
-  console.log("Fetched emails:", mail);
-  const transformedMails = await convertGraphEmailsToMailFormat(mail);
-
   return (
     <>
       <div className="md:hidden ">
@@ -45,7 +41,7 @@ export const MailPage = async ({ params }: MailPageProps) => {
           defaultLayout={[20, 40, 40]} // Explicitly set default sizes
           defaultCollapsed={false}
           navCollapsedSize={4}
-          currentFolder={folder}
+          currentFolder={"sent"}
           currentStatus={status}
         />
       </div>
