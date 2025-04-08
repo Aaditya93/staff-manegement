@@ -11,7 +11,8 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { sendEmail } from "@/actions/mail/mail";
+import sanitizeHtml from "sanitize-html";
+import { downloadAttachment, sendEmail } from "@/actions/mail/mail";
 import { markAsUnread, toggleEmailFlag } from "@/actions/mail/mail";
 import { Star } from "lucide-react"; // Add this import
 import { useRef } from "react";
@@ -22,15 +23,39 @@ import { DropdownMenu, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Separator } from "../ui/separator";
 import { Textarea } from "../ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { Mail } from "./data";
+
 import { moveToArchive, moveToJunk, moveToTrash } from "@/actions/mail/mail";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EmojiPickerPopover } from "./emojis";
 import { Label } from "../ui/label";
 
+export interface EmailMessage {
+  id: string;
+  subject: string;
+  receivedDateTime: string;
+  hasAttachments: boolean;
+  isRead: boolean;
+  body: {
+    contentType: string;
+    content: string;
+  };
+  from: {
+    emailAddress: {
+      name: string;
+      address: string;
+    };
+  };
+  attachments: Array<{
+    id: string;
+    name: string;
+    contentType: string;
+    size: number;
+    isInline: boolean;
+  }>;
+}
 interface MailDisplayProps {
-  mail: Mail | null;
+  mail: EmailMessage | null;
   inboxNumber: number;
 }
 
@@ -41,6 +66,59 @@ export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDownloadAttachment = async (attachmentId: string) => {
+    if (!mail) return;
+
+    setIsLoading((prev) => ({ ...prev, [attachmentId]: true }));
+
+    try {
+      const result = await downloadAttachment(
+        mail.id,
+        attachmentId,
+        inboxNumber
+      );
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      if (result.content && result.name && result.contentType) {
+        // Create a blob from the base64 content
+        const byteCharacters = atob(result.content);
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+
+        const blob = new Blob(byteArrays, { type: result.contentType });
+
+        // Create a download link and trigger it
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = result.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error("Error downloading attachment:", error);
+      toast.error("Failed to download attachment");
+    } finally {
+      setIsLoading((prev) => ({ ...prev, [attachmentId]: false }));
+    }
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
@@ -203,8 +281,249 @@ export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
     });
   };
 
+  // Add this function to your component
+  // Improved sanitizeEmailContent function
+  // Improved sanitizeEmailContent function with responsive handling
+  const sanitizeEmailContent = (htmlContent: string): string => {
+    if (!htmlContent) return "";
+
+    try {
+      // First, remove any data attributes from body tags
+      let sanitized = htmlContent.replace(
+        /<body([^>]*)>/g,
+        (match, attributes) => {
+          // Strip out any data-* attributes including data-gr-* and data-new-gr-*
+          const cleanedAttributes = attributes.replace(
+            /\s+data-[\w\-]+="[^"]*"/g,
+            ""
+          );
+          return `<body${cleanedAttributes}>`;
+        }
+      );
+
+      // Next, handle inline attributes anywhere in the document
+      sanitized = sanitized.replace(
+        /\s+data-(new-gr-c-s-check-loaded|gr-ext-installed|cke-saved-src|mce-src)="[^"]*"/g,
+        ""
+      );
+
+      // Remove other known problematic attributes
+      sanitized = sanitized.replace(/\s+data-gramm="[^"]*"/g, "");
+      sanitized = sanitized.replace(/\s+data-gramm_editor="[^"]*"/g, "");
+      sanitized = sanitized.replace(/\s+data-enable-grammarly="[^"]*"/g, "");
+
+      // Remove Microsoft Office namespace attributes
+      sanitized = sanitized.replace(/\s+xmlns:o="[^"]*"/g, "");
+      sanitized = sanitized.replace(/\s+xmlns:w="[^"]*"/g, "");
+      sanitized = sanitized.replace(/\s+xmlns:m="[^"]*"/g, "");
+      sanitized = sanitized.replace(/\s+xmlns:v="[^"]*"/g, "");
+
+      // Fix tables with fixed widths to make them responsive
+      sanitized = sanitized.replace(
+        /<table([^>]*)width="([^"]*)"([^>]*)>/g,
+        '<table$1style="width: 100%; max-width: $2;"$3>'
+      );
+
+      // Add max-width to images to prevent them from overflowing
+      sanitized = sanitized.replace(/<img([^>]*)>/g, (match, attributes) => {
+        // Check if the image already has a style attribute
+        if (attributes.includes('style="')) {
+          // Add max-width to existing style
+          return match.replace(
+            /style="([^"]*)"/g,
+            'style="$1; max-width: 100%; height: auto;"'
+          );
+        } else {
+          // Add style attribute if it doesn't exist
+          return `<img${attributes} style="max-width: 100%; height: auto;">`;
+        }
+      });
+
+      // Add responsive wrapper around the content
+      sanitized = `
+      <div class="email-content-wrapper" style="width: 100%; overflow-x: auto;">
+        ${sanitized}
+      </div>
+    `;
+
+      // Add responsive meta tag if the content includes a <head> tag
+      if (sanitized.includes("<head>")) {
+        sanitized = sanitized.replace(
+          "<head>",
+          '<head><meta name="viewport" content="width=device-width, initial-scale=1.0">'
+        );
+      }
+
+      // Then run through sanitize-html to remove potentially dangerous HTML
+      sanitized = sanitizeHtml(sanitized, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+          "img",
+          "style",
+          "font",
+          "div",
+          "span",
+          "br",
+          "p",
+          "table",
+          "tr",
+          "td",
+          "th",
+          "thead",
+          "tbody",
+          "a",
+          "ul",
+          "ol",
+          "li",
+          "b",
+          "strong",
+          "i",
+          "em",
+          "hr",
+          "h1",
+          "h2",
+          "h3",
+          "h4",
+          "h5",
+          "h6",
+          "caption",
+          "col",
+          "colgroup",
+          "meta",
+        ]),
+        allowedAttributes: {
+          ...sanitizeHtml.defaults.allowedAttributes,
+          "*": ["style", "class", "id", "align", "dir", "lang"],
+          img: [
+            "src",
+            "alt",
+            "width",
+            "height",
+            "style",
+            "class",
+            "id",
+            "loading",
+          ],
+          a: ["href", "target", "rel", "style", "class", "id"],
+          table: [
+            "width",
+            "border",
+            "cellpadding",
+            "cellspacing",
+            "style",
+            "class",
+            "id",
+          ],
+          td: [
+            "width",
+            "valign",
+            "align",
+            "style",
+            "class",
+            "colspan",
+            "rowspan",
+          ],
+          th: [
+            "width",
+            "valign",
+            "align",
+            "style",
+            "class",
+            "colspan",
+            "rowspan",
+          ],
+          meta: ["name", "content"],
+        },
+        allowedStyles: {
+          "*": {
+            color: [/.*/],
+            "font-size": [/.*/],
+            "font-family": [/.*/],
+            "background-color": [/.*/],
+            "text-align": [/.*/],
+            width: [/.*/],
+            height: [/.*/],
+            "max-width": [/.*/],
+            "min-width": [/.*/],
+            "max-height": [/.*/],
+            "min-height": [/.*/],
+            margin: [/.*/],
+            "margin-top": [/.*/],
+            "margin-bottom": [/.*/],
+            "margin-left": [/.*/],
+            "margin-right": [/.*/],
+            padding: [/.*/],
+            "padding-top": [/.*/],
+            "padding-bottom": [/.*/],
+            "padding-left": [/.*/],
+            "padding-right": [/.*/],
+            border: [/.*/],
+            "border-top": [/.*/],
+            "border-bottom": [/.*/],
+            "border-left": [/.*/],
+            "border-right": [/.*/],
+            display: [/.*/],
+            "text-decoration": [/.*/],
+            "vertical-align": [/.*/],
+            overflow: [/.*/],
+            "overflow-x": [/.*/],
+            "overflow-y": [/.*/],
+          },
+        },
+        // Add CSS to make email more responsive
+        transformTags: {
+          table: (tagName, attribs) => {
+            // Add responsive styles to tables
+            let style = attribs.style || "";
+            if (!style.includes("max-width")) {
+              style += "; max-width: 100%; table-layout: auto;";
+            }
+            return {
+              tagName,
+              attribs: {
+                ...attribs,
+                style,
+              },
+            };
+          },
+        },
+      });
+
+      // Add additional responsive CSS for mobile screens
+      const responsiveStyles = `
+      <style>
+        * { box-sizing: border-box; }
+        body, html { width: 100%; }
+        img { max-width: 100% !important; height: auto !important; }
+        table { width: 100% !important; max-width: 100% !important; }
+        
+        @media (max-width: 600px) {
+          table, tr, td, th { 
+            width: 100% !important;
+            display: block !important;
+          }
+        }
+        
+        /* Make content fit container when resizing */
+        .email-content-wrapper {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+      </style>
+    `;
+
+      // Add the styles to the beginning of the content
+      sanitized = responsiveStyles + sanitized;
+
+      return sanitized;
+    } catch (error) {
+      console.error("Error sanitizing email content:", error);
+      // Return a plain text version as fallback
+      return htmlContent.replace(/<[^>]*>/g, " ");
+    }
+  };
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full w-full flex-col overflow-hidden">
       <div className="flex items-center p-2">
         <div className="flex items-center gap-2">
           <Tooltip>
@@ -330,47 +649,104 @@ export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
       </div>
       <Separator />
       {mail ? (
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col overflow-hidden">
           <div className="flex items-start p-4">
             <div className="flex items-start gap-4 text-sm">
               <Avatar>
-                <AvatarImage alt={mail.name} />
+                <AvatarImage alt={mail.from.emailAddress.name} />
                 <AvatarFallback>
-                  {mail.name
+                  {mail.from.emailAddress.name
                     .split(" ")
                     .map((chunk) => chunk[0])
                     .join("")}
                 </AvatarFallback>
               </Avatar>
               <div className="grid gap-1">
-                <div className="font-semibold">{mail.name}</div>
+                <div className="font-semibold">
+                  {mail.from.emailAddress.name}
+                </div>
                 <div className="line-clamp-1 text-xs">{mail.subject}</div>
                 <div className="line-clamp-1 text-xs">
-                  <span className="font-medium">Reply-To:</span> {mail.email}
+                  <span className="font-medium">From:</span>{" "}
+                  {mail.from.emailAddress.address}
                 </div>
               </div>
             </div>
-            {mail.date && (
+            {mail.receivedDateTime && (
               <div className="ml-auto text-xs text-muted-foreground">
-                {format(new Date(mail.date), "PPpp")}
+                {format(new Date(mail.receivedDateTime), "PPpp")}
               </div>
             )}
           </div>
           <Separator />
-          <div className="flex-1 whitespace-pre-wrap p-4 text-sm">
-            {mail.text}
+          {/* Email content */}
+
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="overflow-y-auto flex-1 p-4 text-sm">
+              {mail.body.contentType === "html" ? (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: mail.body.content
+                      ? sanitizeEmailContent(mail.body.content)
+                      : "",
+                  }}
+                  className="prose max-w-full w-full prose-img:max-w-full prose-img:h-auto email-body-container"
+                />
+              ) : (
+                <div className="whitespace-pre-wrap w-full">
+                  {mail.body.content}
+                </div>
+              )}
+            </div>
           </div>
+          {/* Attachments section */}
+          {mail.attachments && mail.attachments.length > 0 && (
+            <>
+              <Separator />
+              <div className="p-4">
+                <h3 className="mb-2 text-sm font-medium">Attachments</h3>
+                <div className="flex flex-wrap gap-2">
+                  {mail.attachments.map((attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="flex items-center gap-2 rounded-md border p-2 text-sm"
+                    >
+                      <Paperclip className="h-4 w-4" />
+                      <span className="max-w-[200px] truncate">
+                        {attachment.name}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2"
+                        onClick={() => handleDownloadAttachment(attachment.id)}
+                        disabled={isLoading[attachment.id]}
+                      >
+                        {isLoading[attachment.id] ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                        ) : (
+                          "Download"
+                        )}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
           <Separator className="mt-auto" />
+          {/* Reply section */}
           <div className="p-4">
             <form>
               <div className="grid gap-4">
                 <Textarea
                   ref={textareaRef}
                   className="p-4"
-                  placeholder={`Reply to ${mail.name}...`}
+                  placeholder={`Reply to ${mail.from.emailAddress.name}...`}
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                 />
+                {/* File attachments */}
                 {files.length > 0 && (
                   <div className="flex flex-wrap gap-2 pb-2">
                     {files.map((file, index) => (
@@ -395,6 +771,8 @@ export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
                     ))}
                   </div>
                 )}
+
+                {/* Reply controls */}
                 <div className="flex items-center">
                   <EmojiPickerPopover onEmojiSelect={handleEmojiSelect} />
                   <Tooltip>
@@ -426,7 +804,6 @@ export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
                           setIsLoading((prev) => ({ ...prev, sending: true }));
 
                           // Prepare attachments if any
-                          // Define interface for email attachments
                           interface EmailAttachment {
                             "@odata.type": string;
                             name: string;
@@ -450,13 +827,12 @@ export function MailDisplay({ mail, inboxNumber }: MailDisplayProps) {
                               })
                             );
                           }
-
                           // Prepare email data
                           const emailData = {
                             subject: `Re: ${mail?.subject || "No Subject"}`,
                             inboxNumber: inboxNumber,
                             body: replyText,
-                            toRecipients: [mail?.email || ""],
+                            toRecipients: [mail.from.emailAddress.address],
                             attachments: emailAttachments,
                           };
 

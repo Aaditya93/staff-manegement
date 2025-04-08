@@ -4,10 +4,10 @@ import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 import { ScrollArea } from "../ui/scroll-area";
-import { Mail } from "./data";
 import { useMail } from "./use-mails";
+import { EmailMessage } from "./mail-display";
 interface MailListProps {
-  items: Mail[];
+  items: EmailMessage[];
   emptyState?: React.ReactNode;
 }
 
@@ -23,6 +23,32 @@ export function MailList({ items, emptyState }: MailListProps) {
       )
     );
   }
+  const stripHtmlTags = (html: string): string => {
+    if (!html) return "";
+    // First remove script and style tags completely
+    const withoutScripts = html.replace(
+      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+      " "
+    );
+    const withoutStyles = withoutScripts.replace(
+      /<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi,
+      " "
+    );
+    // Then strip remaining HTML tags
+    const plainText = withoutStyles
+      .replace(/<\/[^>]+>/g, " ") // Replace closing tags with space
+      .replace(/<[^>]+>/g, " ") // Replace opening tags with space
+      .replace(/&nbsp;/g, " ") // Replace non-breaking spaces
+      .replace(/&gt;/g, ">") // Replace greater than entity
+      .replace(/&lt;/g, "<") // Replace less than entity
+      .replace(/&amp;/g, "&") // Replace ampersand entity
+      .replace(/&quot;/g, '"') // Replace quote entity
+      .replace(/&#39;/g, "'") // Replace apostrophe entity
+      .replace(/\s+/g, " ") // Collapse multiple spaces
+      .trim(); // Trim extra spaces
+
+    return plainText;
+  };
 
   return (
     <ScrollArea className="h-screen">
@@ -44,8 +70,10 @@ export function MailList({ items, emptyState }: MailListProps) {
             <div className="flex w-full flex-col gap-1">
               <div className="flex items-center">
                 <div className="flex items-center gap-2">
-                  <div className="font-semibold">{item.name}</div>
-                  {!item.read && (
+                  <div className="font-semibold">
+                    {item.from.emailAddress.name}
+                  </div>
+                  {!item.isRead && (
                     <span className="flex h-2 w-2 rounded-full bg-blue-600" />
                   )}
                 </div>
@@ -57,7 +85,7 @@ export function MailList({ items, emptyState }: MailListProps) {
                       : "text-muted-foreground"
                   )}
                 >
-                  {formatDistanceToNow(new Date(item.date), {
+                  {formatDistanceToNow(new Date(item.receivedDateTime), {
                     addSuffix: true,
                   })}
                 </div>
@@ -65,9 +93,11 @@ export function MailList({ items, emptyState }: MailListProps) {
               <div className="text-xs font-medium">{item.subject}</div>
             </div>
             <div className="line-clamp-2 text-xs text-muted-foreground">
-              {item.text.substring(0, 300)}
+              {item.body.contentType === "html"
+                ? stripHtmlTags(item.body.content).substring(0, 300)
+                : item.body.content.substring(0, 300)}
             </div>
-            {item.labels.length ? (
+            {/* {item..length ? (
               <div className="flex items-center gap-2">
                 {item.labels.map((label) => (
                   <Badge key={label} variant={getBadgeVariantFromLabel(label)}>
@@ -75,7 +105,7 @@ export function MailList({ items, emptyState }: MailListProps) {
                   </Badge>
                 ))}
               </div>
-            ) : null}
+            ) : null} */}
           </button>
         ))}
       </div>

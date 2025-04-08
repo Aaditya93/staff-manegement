@@ -98,7 +98,8 @@ export async function fetchFolderEmails(
     const queryParams = [
       `$top=${limit}`,
       `$skip=${skip}`,
-      "$select=id,subject,bodyPreview,receivedDateTime,from,isRead,hasAttachments",
+      "$select=id,subject,body,receivedDateTime,from,isRead,hasAttachments",
+      "$expand=attachments($select=id,name,contentType,size,isInline)",
       "$orderby=receivedDateTime desc",
     ];
 
@@ -190,6 +191,92 @@ export async function fetchFolderEmails(
     return {
       emails: [],
       totalCount: 0,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+/**
+ * Download an email attachment
+ * @param messageId ID of the email
+ * @param attachmentId ID of the attachment
+ * @param inboxNumber Inbox number to get the valid token
+ * @returns Object with attachment content and metadata, or error
+ */
+export async function downloadAttachment(
+  messageId: string,
+  attachmentId: string,
+  inboxNumber: number
+): Promise<{
+  content?: string; // Base64 encoded content
+  contentType?: string;
+  name?: string;
+  error?: string;
+}> {
+  try {
+    // Get a valid access token
+    const accessToken = await getValidAccessToken(inboxNumber);
+    if (!accessToken) {
+      return {
+        error: "Authentication failed. Please sign in again.",
+      };
+    }
+
+    // Microsoft Graph API endpoint for downloading attachment
+    const endpoint = `https://graph.microsoft.com/v1.0/me/messages/${messageId}/attachments/${attachmentId}`;
+
+    // Make request to Microsoft Graph API
+    const response = await fetch(endpoint, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Handle error responses
+    if (!response.ok) {
+      // Handle 401 unauthorized errors - token might be expired
+      if (response.status === 401) {
+        // Try getting a fresh token
+        const newToken = await getValidAccessToken(inboxNumber);
+        if (!newToken) {
+          return {
+            error: "Authentication failed after token refresh.",
+          };
+        }
+
+        // Retry the request with fresh token
+        const retryResponse = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${newToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (retryResponse.ok) {
+          const data = await retryResponse.json();
+          return {
+            content: data.contentBytes, // Base64 encoded content
+            contentType: data.contentType,
+            name: data.name,
+          };
+        }
+      }
+
+      // Process error response
+      let errorMessage = `Failed to download attachment: ${response.status} ${response.statusText}`;
+      return { error: errorMessage };
+    }
+
+    // Process successful response
+    const data = await response.json();
+    return {
+      content: data.contentBytes, // Base64 encoded content
+      contentType: data.contentType,
+      name: data.name,
+    };
+  } catch (error) {
+    console.error("Error downloading attachment:", error);
+    return {
       error: error instanceof Error ? error.message : "Unknown error occurred",
     };
   }
@@ -589,7 +676,7 @@ export async function markAsUnread(
       // Handle 401 unauthorized errors - token might be expired
       if (response.status === 401) {
         // Try getting a fresh token
-        const newToken = await getValidAccessToken();
+        const newToken = await getValidAccessToken(inboxNumber);
         if (!newToken) {
           return {
             success: false,
@@ -692,7 +779,7 @@ export async function toggleEmailFlag(
       // Handle 401 unauthorized errors - token might be expired
       if (response.status === 401) {
         // Try getting a fresh token
-        const newToken = await getValidAccessToken();
+        const newToken = await getValidAccessToken(inboxNumber);
         if (!newToken) {
           return {
             success: false,

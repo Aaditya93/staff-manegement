@@ -23,11 +23,10 @@ import { Separator } from "../ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TooltipProvider } from "../ui/tooltip";
 import { AccountSwitcher } from "./account-switcher";
-import { MailDisplay } from "./mail-display";
+import { EmailMessage, MailDisplay } from "./mail-display";
 import { MailList } from "./mail-list";
 import { Nav } from "./nav";
 
-import { type Mail } from "./data";
 import { useMail } from "./use-mails";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
@@ -37,7 +36,7 @@ import { ComposeButton } from "./compose-button";
 interface MailProps {
   currentFolder: string;
   currentStatus: string;
-  mails: Mail[];
+  mails: EmailMessage[];
   defaultLayout: number[] | undefined;
   defaultCollapsed?: boolean;
   navCollapsedSize: number;
@@ -60,9 +59,10 @@ export function Mail({
 
   // Add state for search query
   const [searchQuery, setSearchQuery] = useState("");
+  const mailsArray = Array.isArray(mails) ? mails : [];
 
   // Filter mails based on search query
-  const filteredMails = mails.filter((item) => {
+  const filteredMails = mailsArray.filter((item) => {
     if (!searchQuery.trim()) return true;
 
     const query = searchQuery.toLowerCase();
@@ -70,14 +70,17 @@ export function Mail({
     // Check various email fields for the search query
     return (
       // Search in email addresses
-      (item.email && item.email.toLowerCase().includes(query)) ||
+      (item.from?.emailAddress?.address &&
+        item.from.emailAddress.address.toLowerCase().includes(query)) ||
+      (item.from?.emailAddress?.name &&
+        item.from.emailAddress.name.toLowerCase().includes(query)) ||
       (item.subject && item.subject.toLowerCase().includes(query)) ||
-      (item.text && item.text.toLowerCase().includes(query))
+      (item.body?.content && item.body.content.toLowerCase().includes(query))
     );
   });
 
   // Create a filtered list of unread emails
-  const filteredUnreadMails = filteredMails.filter((item) => !item.read);
+  const filteredUnreadMails = filteredMails.filter((item) => !item.isRead);
 
   // Handle tab change
   const handleTabChange = (value: string) => {
@@ -88,7 +91,7 @@ export function Mail({
     if (value === "unread") {
       router.push(`/mail/${inboxNumber}/${folder}/unread`);
     } else {
-      router.push(`/mail/${inboxNumber}/${folder}/read`);
+      router.push(`/mail/${inboxNumber}/${folder}/all`);
     }
   };
 
@@ -257,7 +260,7 @@ export function Mail({
             </div>
             <TabsContent value="all" className="m-0">
               <MailList
-                items={filteredMails}
+                items={mails}
                 emptyState={
                   searchQuery ? (
                     <div className="flex h-[450px] items-center justify-center p-8">
@@ -333,7 +336,7 @@ export function Mail({
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[2]} minSize={30}>
           <MailDisplay
-            inboxNumber={inboxNumber}
+            inboxNumber={inboxNumber || 0}
             mail={
               filteredMails.find((item) => item.id === mail.selected) || null
             }

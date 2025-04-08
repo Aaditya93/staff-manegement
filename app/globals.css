@@ -3,6 +3,36 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Add these to your existing email-body-container styles */
+
+/* Simplified email styling */
+
+.email-body-container {
+  overflow: auto;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Basic responsive styling for email content */
+.email-body-container img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Simple table fixes */
+.email-body-container table {
+  max-width: 100%;
+}
+
+/* Remove nested scroll containers that might cause issues */
+.email-body-container div {
+  max-width: 100%;
+}
+
+.prose {
+  max-width: 100% !important;
+}
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

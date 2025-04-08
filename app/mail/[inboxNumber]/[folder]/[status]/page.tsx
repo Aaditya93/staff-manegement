@@ -41,7 +41,7 @@ export const MailPage = async ({ params }: MailPageProps) => {
       <div className="hidden flex-col md:flex h-screen">
         <Mail
           inboxNumber={inboxNumber}
-          mails={transformedMails}
+          mails={mail.emails}
           defaultLayout={[20, 40, 40]} // Explicitly set default sizes
           defaultCollapsed={false}
           navCollapsedSize={4}
