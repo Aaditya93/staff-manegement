@@ -7,15 +7,19 @@ interface MailPageProps {
     inboxNumber: number;
     folder: "inbox" | "drafts" | "sent" | "junk" | "trash" | "archive";
     status: string;
+    range: string;
   };
 }
 
 export const MailPage = async ({ params }: MailPageProps) => {
-  const { inboxNumber, folder, status } = await params;
+  const { inboxNumber, folder, status, range } = await params;
 
   const filterUnread = status === "unread";
+  const mail = await fetchFolderEmails(folder, inboxNumber, {
+    filterUnread,
+    range,
+  });
 
-  const mail = await fetchFolderEmails(folder, inboxNumber, { filterUnread });
   return (
     <>
       <div className="md:hidden ">
@@ -41,7 +45,7 @@ export const MailPage = async ({ params }: MailPageProps) => {
           defaultLayout={[20, 40, 40]} // Explicitly set default sizes
           defaultCollapsed={false}
           navCollapsedSize={4}
-          currentFolder={"sent"}
+          currentFolder={folder}
           currentStatus={status}
         />
       </div>

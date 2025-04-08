@@ -41,6 +41,7 @@ interface MailProps {
   defaultCollapsed?: boolean;
   navCollapsedSize: number;
   inboxNumber?: number;
+  range?: string;
 }
 
 export function Mail({
@@ -51,6 +52,7 @@ export function Mail({
   navCollapsedSize,
   currentFolder,
   currentStatus,
+  range,
 }: MailProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
   const [mail] = useMail();
@@ -89,9 +91,9 @@ export function Mail({
 
     // Navigate to the appropriate URL
     if (value === "unread") {
-      router.push(`/mail/${inboxNumber}/${folder}/unread`);
+      router.push(`/mail/${inboxNumber}/${folder}/unread/20`);
     } else {
-      router.push(`/mail/${inboxNumber}/${folder}/all`);
+      router.push(`/mail/${inboxNumber}/${folder}/all/20`);
     }
   };
 
@@ -173,42 +175,42 @@ export function Mail({
                 label: "",
                 icon: Inbox,
                 variant: currentFolder === "inbox" ? "default" : "ghost",
-                href: `/mail/${inboxNumber}/inbox/read`,
+                href: `/mail/${inboxNumber}/inbox/read/20`,
               },
               {
                 title: "Drafts",
                 label: "",
                 icon: File,
                 variant: currentFolder === "drafts" ? "default" : "ghost",
-                href: `/mail/${inboxNumber}/drafts/read`,
+                href: `/mail/${inboxNumber}/drafts/read/20`,
               },
               {
                 title: "Sent",
                 label: "",
                 icon: Send,
                 variant: currentFolder === "sent" ? "default" : "ghost",
-                href: `/mail/${inboxNumber}/sent/read`,
+                href: `/mail/${inboxNumber}/sent/read/20`,
               },
               {
                 title: "Junk",
                 label: "",
                 icon: ArchiveX,
                 variant: currentFolder === "junk" ? "default" : "ghost",
-                href: `/mail/${inboxNumber}/junk/read`,
+                href: `/mail/${inboxNumber}/junk/read/20`,
               },
               {
                 title: "Trash",
                 label: "",
                 icon: Trash2,
                 variant: currentFolder === "trash" ? "default" : "ghost",
-                href: `/mail/${inboxNumber}/trash/read`,
+                href: `/mail/${inboxNumber}/trash/read/20`,
               },
               {
                 title: "Archive",
                 label: "",
                 icon: Archive,
                 variant: currentFolder === "archive" ? "default" : "ghost",
-                href: `/mail/${inboxNumber}/archive/read`,
+                href: `/mail/${inboxNumber}/archive/read/20`,
               },
             ]}
           />
@@ -292,9 +294,13 @@ export function Mail({
                 }
               />
             </TabsContent>
-            <TabsContent value="unread" className="m-0">
+            <TabsContent value="unread" className="m-0 flex-1 overflow-hidden">
               <MailList
                 items={filteredUnreadMails}
+                folder={currentFolder}
+                status={currentStatus}
+                range={range}
+                inboxNumber={inboxNumber}
                 emptyState={
                   searchQuery ? (
                     <div className="flex h-[450px] items-center justify-center p-8">

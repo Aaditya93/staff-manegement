@@ -1,4 +1,4 @@
-import { ComponentProps } from "react";
+import { ComponentProps, useState } from "react";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 
 import { cn } from "@/lib/utils";
@@ -7,13 +7,36 @@ import { ScrollArea } from "../ui/scroll-area";
 import { useMail } from "./use-mails";
 import { EmailMessage } from "./mail-display";
 import { markAsRead } from "@/actions/mail/mail";
+import PaginationComponent from "./pagination";
+
 interface MailListProps {
   items: EmailMessage[];
   emptyState?: React.ReactNode;
+  folder?: string;
+  status?: string;
+  inboxNumber?: number;
+  range?: string;
 }
 
-export function MailList({ items, emptyState }: MailListProps) {
+export function MailList({
+  items,
+  emptyState,
+  folder,
+  status,
+  inboxNumber,
+  range,
+}: MailListProps) {
   const [mail, setMail] = useMail();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Calculate pagination values
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = items.slice(startIndex, endIndex);
+
+  // Pagination handlers
 
   if (items.length === 0) {
     return (
@@ -24,9 +47,10 @@ export function MailList({ items, emptyState }: MailListProps) {
       )
     );
   }
+
   const stripHtmlTags = (html: string): string => {
+    // ...existing stripHtmlTags function...
     if (!html) return "";
-    // First remove script and style tags completely
     const withoutScripts = html.replace(
       /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
       " "
@@ -35,93 +59,92 @@ export function MailList({ items, emptyState }: MailListProps) {
       /<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi,
       " "
     );
-    // Then strip remaining HTML tags
     const plainText = withoutStyles
-      .replace(/<\/[^>]+>/g, " ") // Replace closing tags with space
-      .replace(/<[^>]+>/g, " ") // Replace opening tags with space
-      .replace(/&nbsp;/g, " ") // Replace non-breaking spaces
-      .replace(/&gt;/g, ">") // Replace greater than entity
-      .replace(/&lt;/g, "<") // Replace less than entity
-      .replace(/&amp;/g, "&") // Replace ampersand entity
-      .replace(/&quot;/g, '"') // Replace quote entity
-      .replace(/&#39;/g, "'") // Replace apostrophe entity
-      .replace(/\s+/g, " ") // Collapse multiple spaces
-      .trim(); // Trim extra spaces
+      .replace(/<\/[^>]+>/g, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&gt;/g, ">")
+      .replace(/&lt;/g, "<")
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, " ")
+      .trim();
 
     return plainText;
   };
 
   return (
-    <ScrollArea className="h-screen">
-      <div className="flex flex-col gap-2 p-4 pt-0">
-        {items.map((item) => (
-          <button
-            key={item.id}
-            className={cn(
-              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
-              mail.selected === item.id && "bg-muted"
-            )}
-            onClick={async () => {
-              // Set selected mail in state
-              setMail({
-                ...mail,
-                selected: item.id,
-              });
+    <div className="flex flex-col h-full">
+      <ScrollArea className="h-[calc(100vh-10rem)]">
+        <div className="flex flex-col gap-2 p-4 pt-0">
+          {currentItems.map((item) => (
+            <button
+              key={item.id}
+              className={cn(
+                "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
+                mail.selected === item.id && "bg-muted"
+              )}
+              onClick={async () => {
+                // Set selected mail in state
+                setMail({
+                  ...mail,
+                  selected: item.id,
+                });
 
-              // If the email is unread, mark it as read
-              if (!item.isRead) {
-                // Assume inboxNumber is 0 or passed as a prop
-                const inboxNumber = 0; // Replace with actual inbox number if available
-                await markAsRead(item.id, inboxNumber);
-
-                // You may want to update the UI to reflect that the email is now read
-                // This could be done through a refresh or by updating the local state
-              }
-            }}
-          >
-            <div className="flex w-full flex-col gap-1">
-              <div className="flex items-center">
-                <div className="flex items-center gap-2">
-                  <div className="font-semibold">
-                    {item.from.emailAddress.name}
+                // If the email is unread, mark it as read
+                if (!item.isRead) {
+                  const inboxNumber = 0;
+                  await markAsRead(item.id, inboxNumber);
+                }
+              }}
+            >
+              <div className="flex w-full flex-col gap-1">
+                <div className="flex items-center">
+                  <div className="flex items-center gap-2">
+                    <div className="font-semibold">
+                      {item.from.emailAddress.name}
+                    </div>
+                    {!item.isRead && (
+                      <span className="flex h-2 w-2 rounded-full bg-blue-600" />
+                    )}
                   </div>
-                  {!item.isRead && (
-                    <span className="flex h-2 w-2 rounded-full bg-blue-600" />
-                  )}
+                  <div
+                    className={cn(
+                      "ml-auto text-xs",
+                      mail.selected === item.id
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {formatDistanceToNow(new Date(item.receivedDateTime), {
+                      addSuffix: true,
+                    })}
+                  </div>
                 </div>
-                <div
-                  className={cn(
-                    "ml-auto text-xs",
-                    mail.selected === item.id
-                      ? "text-foreground"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  {formatDistanceToNow(new Date(item.receivedDateTime), {
-                    addSuffix: true,
-                  })}
-                </div>
+                <div className="text-xs font-medium">{item.subject}</div>
               </div>
-              <div className="text-xs font-medium">{item.subject}</div>
-            </div>
-            <div className="line-clamp-2 text-xs text-muted-foreground">
-              {item.body.contentType === "html"
-                ? stripHtmlTags(item.body.content).substring(0, 300)
-                : item.body.content.substring(0, 300)}
-            </div>
-            {/* {item..length ? (
-              <div className="flex items-center gap-2">
-                {item.labels.map((label) => (
-                  <Badge key={label} variant={getBadgeVariantFromLabel(label)}>
-                    {label}
-                  </Badge>
-                ))}
+              <div className="line-clamp-2 text-xs text-muted-foreground">
+                {item.body.contentType === "html"
+                  ? stripHtmlTags(item.body.content).substring(0, 300)
+                  : item.body.content.substring(0, 300)}
               </div>
-            ) : null} */}
-          </button>
-        ))}
-      </div>
-    </ScrollArea>
+            </button>
+          ))}
+        </div>
+        {totalPages > 1 && (
+          <div className="sticky bottom-2 w-full  p-4 bg-background">
+            <PaginationComponent
+              currentValue={range}
+              folder={folder}
+              status={status}
+              inboxNumber={inboxNumber}
+              hasMore={true}
+            />
+          </div>
+        )}
+      </ScrollArea>
+    </div>
   );
 }
 

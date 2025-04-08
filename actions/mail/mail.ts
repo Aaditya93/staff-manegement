@@ -45,10 +45,11 @@ export async function fetchFolderEmails(
   folder: "inbox" | "drafts" | "sent" | "junk" | "trash" | "archive",
   inboxNumber: number,
   options: {
-    limit?: number;
-    skip?: number;
+    page?: number;
+    pageSize?: number;
     filterUnread?: boolean;
     includeCount?: boolean;
+    range?: string;
   } = {}
 ): Promise<{
   emails: EmailMessage[];
@@ -56,13 +57,16 @@ export async function fetchFolderEmails(
   error?: string;
 }> {
   try {
-    // Set default options
+    // Set default options with page-based pagination
     const {
-      limit = 10,
-      skip = 0,
+      page = 1,
+      pageSize = 10,
       filterUnread = false,
       includeCount = true,
     } = options;
+
+    // Calculate skip value based on page number (1-based)
+    const skip = (page - 1) * pageSize;
 
     // Get a valid access token
     const accessToken = await getValidAccessToken(inboxNumber);
@@ -98,9 +102,9 @@ export async function fetchFolderEmails(
 
     // Add query parameters
     const queryParams = [
-      `$top=${limit}`,
+      `$top=${pageSize}`,
       `$skip=${skip}`,
-      "$select=id,subject,body,receivedDateTime,sentDateTime,from,sender,isRead,hasAttachments",
+      "$select=id,subject,body,receivedDateTime,sentDateTime,from,sender,isRead,hasAttachments,toRecipients,ccRecipients,bccRecipients",
       "$expand=attachments($select=id,name,contentType,size,isInline)",
       "$orderby=receivedDateTime desc",
     ];
@@ -117,6 +121,8 @@ export async function fetchFolderEmails(
 
     // Combine URL and parameters
     graphUrl += `?${queryParams.join("&")}`;
+
+    // ... rest of the function remains the same
 
     // Make request to Microsoft Graph API
     const response = await fetch(graphUrl, {

@@ -51,6 +51,24 @@ export interface EmailMessage {
       address: string;
     };
   };
+  toRecipients?: Array<{
+    emailAddress: {
+      name: string;
+      address: string;
+    };
+  }>;
+  ccRecipients?: Array<{
+    emailAddress: {
+      name: string;
+      address: string;
+    };
+  }>;
+  bccRecipients?: Array<{
+    emailAddress: {
+      name: string;
+      address: string;
+    };
+  }>;
   attachments: Array<{
     id: string;
     name: string;
@@ -947,7 +965,7 @@ export function MailDisplay({
               <div className="grid gap-1">
                 <div className="font-semibold">
                   {currentFolder === "sent"
-                    ? mail.sender?.emailAddress.name
+                    ? mail.toRecipients?.[0]?.emailAddress.name || "Recipient"
                     : mail.from.emailAddress.name}
                 </div>
                 <div className="line-clamp-1 text-xs">{mail.subject}</div>
@@ -956,7 +974,8 @@ export function MailDisplay({
                     {currentFolder === "sent" ? "To" : "From"}
                   </span>{" "}
                   {currentFolder === "sent"
-                    ? mail.sender?.emailAddress.address
+                    ? mail.toRecipients?.[0]?.emailAddress.address ||
+                      "No recipient"
                     : mail.from.emailAddress.address}
                 </div>
               </div>
