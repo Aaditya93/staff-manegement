@@ -90,3 +90,17 @@ export async function updateUserBackgroundImage(
     return { success: false, error: error.message };
   }
 }
+
+export const getUserById = async (userId: string) => {
+  try {
+    await dbConnect();
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return null;
+  }
+};

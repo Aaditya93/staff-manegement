@@ -1,7 +1,20 @@
 import Image from "next/image";
 import { Mail } from "@/components/mail/mail";
-
+import AppSidebar from "@/components/sidebar/app-sidebar";
 import { fetchFolderEmails } from "@/actions/mail/fetch-emails";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 interface MailPageProps {
   params: {
     inboxNumber: number;
@@ -11,7 +24,7 @@ interface MailPageProps {
   };
 }
 
-export const MailPage = async ({ params }: MailPageProps) => {
+const DashboardPage = async ({ params }: MailPageProps) => {
   const { inboxNumber, folder, status, range } = await params;
 
   const filterUnread = status === "unread";
@@ -19,40 +32,58 @@ export const MailPage = async ({ params }: MailPageProps) => {
     filterUnread,
     range,
   });
-
   return (
-    <>
-      <div className="md:hidden ">
-        <Image
-          src="/examples/mail-dark.png"
-          width={1280}
-          height={727}
-          alt="Mail"
-          className="hidden dark:block"
-        />
-        <Image
-          src="/examples/mail-light.png"
-          width={1280}
-          height={727}
-          alt="Mail"
-          className="block dark:hidden"
-        />
-      </div>
-      <div className="hidden flex-col md:flex h-screen">
-        <Mail
-          inboxNumber={inboxNumber}
-          mails={mail.emails}
-          defaultLayout={[20, 40, 40]} // Explicitly set default sizes
-          defaultCollapsed={false}
-          navCollapsedSize={4}
-          currentFolder={folder}
-          currentStatus={status}
-        />
-      </div>
-    </>
+    <SidebarProvider>
+      <AppSidebar />
+
+      <SidebarInset className="flex flex-col h-screen overflow-hidden">
+        <header className="flex h-16 shrink-0 items-center gap-2">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+        <div className="flex-1 overflow-hidden">
+          <div className="md:hidden">
+            <Image
+              src="/examples/mail-dark.png"
+              width={1280}
+              height={727}
+              alt="Mail"
+              className="hidden dark:block"
+            />
+            <Image
+              src="/examples/mail-light.png"
+              width={1280}
+              height={727}
+              alt="Mail"
+              className="block dark:hidden"
+            />
+          </div>
+          <div className="hidden md:flex h-full w-full">
+            <Mail
+              inboxNumber={inboxNumber}
+              mails={mail.emails}
+              defaultLayout={[10, 40, 50]}
+              defaultCollapsed={false}
+              navCollapsedSize={4}
+              currentFolder={folder}
+              currentStatus={status}
+            />
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 
-export default MailPage;
-
+export default DashboardPage;
 export const dynamic = "force-dynamic";

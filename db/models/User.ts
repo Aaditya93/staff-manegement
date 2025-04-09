@@ -42,7 +42,8 @@ export default User;
 export async function getUserById(id: string) {
   try {
     await dbConnect();
-    const user = await User.findById(id);
+    const user = await User.findById(id).lean();
+    console.log("User found:", user);
     return user;
   } catch (error) {
     console.error("Error while getting user by ID:", error);

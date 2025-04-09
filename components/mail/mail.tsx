@@ -121,7 +121,7 @@ export function Mail({
             sizes
           )}`;
         }}
-        className="h-screen items-stretch"
+        className="h-full w-full max-h-full overflow-hidden"
       >
         <ResizablePanel
           defaultSize={defaultLayout[0]}
@@ -260,12 +260,12 @@ export function Mail({
                 </div>
               </form>
             </div>
-            <TabsContent value="all" className="m-0">
+            <TabsContent value="all" className="m-0 overflow-hidden">
               <MailList
                 items={mails}
                 emptyState={
                   searchQuery ? (
-                    <div className="flex h-[450px] items-center justify-center p-8">
+                    <div className="flex  items-center justify-center p-8">
                       <div className="flex flex-col items-center text-center">
                         <Search className="h-8 w-8  mb-4" />
                         <h3 className="text-lg font-medium">

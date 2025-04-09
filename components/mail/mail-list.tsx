@@ -41,7 +41,7 @@ export function MailList({
   if (items.length === 0) {
     return (
       emptyState || (
-        <div className="flex h-[450px] items-center justify-center">
+        <div className="flex  items-center justify-center">
           <p className="text-sm text-muted-foreground">No emails found</p>
         </div>
       )
