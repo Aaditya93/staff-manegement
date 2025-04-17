@@ -39,8 +39,10 @@ export const MutipleEmailSignIn = async (email: string) => {
         refreshToken?: string;
         expiresAt?: Date;
         provider?: string;
+        emailUpdatedAt?: Date;
       } = {
         email: email,
+        emailUpdatedAt: new Date(),
       };
 
       // If the existing user has accounts with tokens, use those instead

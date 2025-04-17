@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from "uuid";
-import { Mail as MailComponent } from "@/components/mail/mail";
 
 /**
  * Interface for application mail format

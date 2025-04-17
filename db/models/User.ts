@@ -2,6 +2,17 @@
 import mongoose from "mongoose";
 
 import dbConnect from "../db";
+const accountSchema = new mongoose.Schema(
+  {
+    accessToken: String,
+    refreshToken: String,
+    expiresAt: Number,
+    email: String,
+    provider: String,
+    emailUpdatedAt: Date,
+  },
+  { _id: true }
+);
 const userSchema = new mongoose.Schema(
   {
     name: String,
@@ -16,15 +27,8 @@ const userSchema = new mongoose.Schema(
       default: "Employee",
       required: true,
     },
-    accounts: [
-      {
-        accessToken: String,
-        refreshToken: String,
-        expiresAt: Number,
-        email: String,
-        provider: String,
-      },
-    ],
+    accounts: [accountSchema],
+
     country: String,
     provider: String,
     image: String,
@@ -43,7 +47,7 @@ export async function getUserById(id: string) {
   try {
     await dbConnect();
     const user = await User.findById(id).lean();
-    console.log("User found:", user);
+
     return user;
   } catch (error) {
     console.error("Error while getting user by ID:", error);

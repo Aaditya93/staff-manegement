@@ -49,6 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               refreshToken: user.refreshToken,
               expiresAt: user.expiresAt,
               provider: user.provider,
+              emailUpdatedAt: new Date(),
             },
             { new: true }
           );
@@ -70,6 +71,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             expiresAt: account.expires_at,
             email: user.email,
             provider: account.provider,
+            emailUpdatedAt: new Date(),
           },
         ];
       }
@@ -89,11 +91,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       if (token.accounts) {
         session.user.accounts = token.accounts as {
+          _id?: string;
           accessToken?: string;
           refreshToken?: string;
-          expiresAt?: number;
           provider?: string;
           email?: string;
+          emailUpdatedAt?: Date;
         }[];
       }
 

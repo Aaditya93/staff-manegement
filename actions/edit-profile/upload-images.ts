@@ -69,6 +69,7 @@ export async function getSignedURL({
     putObjectCommand,
     { expiresIn: 60 } // 60 seconds
   );
+  console.log("Generated signed URL:", url);
 
   return { success: { url } };
 

@@ -1,106 +1,51 @@
 "use server";
 
-import User from "@/db/models/User";
+import { auth } from "@/auth";
 import dbConnect from "@/db/db";
+import User from "@/db/models/User";
 import { revalidatePath } from "next/cache";
 
-export async function updateUserName(userId: string, name: string) {
+export const updateProfile = async (country?: string, name?: string) => {
   try {
+    const session = await auth();
+
+    if (!session?.user.id) {
+      throw new Error("Not authenticated");
+    }
+
     await dbConnect();
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { name },
-      { new: true }
+
+    const updateData: { country?: string; name?: string } = {};
+    if (country !== undefined) updateData.country = country;
+    if (name !== undefined) updateData.name = name;
+
+    const response = await User.findByIdAndUpdate(
+      session.user.id,
+      updateData,
+      { new: true } // Return the updated document
     );
 
-    if (!updatedUser) {
+    if (!response) {
       throw new Error("User not found");
     }
 
-    revalidatePath("/profile");
-    return { success: true, user: updatedUser };
+    // Revalidate the edit-profile path to reflect the changes
+    revalidatePath("/edit-profile");
+
+    return {
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        name: response.name,
+        country: response.country,
+      },
+    };
   } catch (error) {
-    console.error("Error updating user name:", error);
-    return { success: false, error: error.message };
-  }
-}
-
-export async function updateUserCountry(userId: string, country: string) {
-  try {
-    await dbConnect();
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { country },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      throw new Error("User not found");
-    }
-
-    revalidatePath("/profile");
-    return { success: true, user: updatedUser };
-  } catch (error) {
-    console.error("Error updating user country:", error);
-    return { success: false, error: error.message };
-  }
-}
-
-export async function updateUserProfileImage(userId: string, imageUrl: string) {
-  try {
-    await dbConnect();
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { image: imageUrl },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      throw new Error("User not found");
-    }
-
-    revalidatePath("/profile");
-    return { success: true, user: updatedUser };
-  } catch (error) {
-    console.error("Error updating profile image:", error);
-    return { success: false, error: error.message };
-  }
-}
-
-export async function updateUserBackgroundImage(
-  userId: string,
-  imageUrl: string
-) {
-  try {
-    await dbConnect();
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { backgroundImage: imageUrl },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      throw new Error("User not found");
-    }
-
-    revalidatePath("/profile");
-    return { success: true, user: updatedUser };
-  } catch (error) {
-    console.error("Error updating background image:", error);
-    return { success: false, error: error.message };
-  }
-}
-
-export const getUserById = async (userId: string) => {
-  try {
-    await dbConnect();
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new Error("User not found");
-    }
-    return user;
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    return null;
+    console.error("Error updating profile:", error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to update profile",
+    };
   }
 };

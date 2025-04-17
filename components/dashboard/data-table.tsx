@@ -92,11 +92,11 @@ const DataTable = <TData, TValue>({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Done":
-        return "bg-chart-1";
+        return "bg-primary-foreground";
       case "In Progress":
-        return "bg-chart-2";
+        return "bg-primary-foreground";
       case "Rejected":
-        return "bg-chart-3";
+        return "bg-primary-foreground";
       default:
         return "";
     }
