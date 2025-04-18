@@ -1,51 +1,41 @@
+// Example: actions/edit-profile/edit-profile.ts
 "use server";
 
-import { auth } from "@/auth";
-import dbConnect from "@/db/db";
+import { auth } from "@/auth"; // Assuming you use auth
 import User from "@/db/models/User";
 import { revalidatePath } from "next/cache";
 
-export const updateProfile = async (country?: string, name?: string) => {
+export async function updateProfile(
+  country?: string, // Assuming country is saved somewhere
+  name?: string,
+  accountType?: string
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, message: "Not authenticated" };
+  }
+
   try {
-    const session = await auth();
-
-    if (!session?.user.id) {
-      throw new Error("Not authenticated");
-    }
-
-    await dbConnect();
-
-    const updateData: { country?: string; name?: string } = {};
-    if (country !== undefined) updateData.country = country;
-    if (name !== undefined) updateData.name = name;
-
-    const response = await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       session.user.id,
-      updateData,
+      {
+        name: name,
+
+        country: country,
+        role: accountType, // Save the account type
+      },
       { new: true } // Return the updated document
     );
 
-    if (!response) {
-      throw new Error("User not found");
+    if (!updatedUser) {
+      return { success: false, message: "User not found" };
     }
 
-    // Revalidate the edit-profile path to reflect the changes
-    revalidatePath("/edit-profile");
+    revalidatePath("/profile"); // Or the relevant path
 
-    return {
-      success: true,
-      message: "Profile updated successfully",
-      user: {
-        name: response.name,
-        country: response.country,
-      },
-    };
+    return { success: true, message: "Profile updated successfully" };
   } catch (error) {
     console.error("Error updating profile:", error);
-    return {
-      success: false,
-      message:
-        error instanceof Error ? error.message : "Failed to update profile",
-    };
+    return { success: false, message: "Database error occurred" };
   }
-};
+}

@@ -44,7 +44,7 @@ export function EditProfile({ userData }: EditProfileProps) {
   const [selectedCountry, setSelectedCountry] = useState("us");
   // Initialize with user's name
   const [name, setName] = useState(userData.name || "");
-
+  const [accountType, setAccountType] = useState("");
   // Get unique emails from the accounts array
   const uniqueEmails = [
     ...new Set(userData.accounts.map((account) => account.email)),
@@ -95,7 +95,8 @@ export function EditProfile({ userData }: EditProfileProps) {
 
   const handleSaveChanges = async () => {
     try {
-      const result = await updateProfile(selectedCountry, name);
+      // Pass accountType to the updateProfile action
+      const result = await updateProfile(selectedCountry, name, accountType);
 
       if (result.success) {
         toast.success("Profile updated", {
@@ -199,29 +200,62 @@ export function EditProfile({ userData }: EditProfileProps) {
                   </div>
                 </div>
               </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Account Type Selector - Removed flex-1 */}
+                <div className="space-y-2">
+                  {" "}
+                  {/* Removed flex-1 */}
+                  <Label htmlFor={`${id}-account-type`}>Account Type</Label>
+                  <Select
+                    value={accountType}
+                    onValueChange={(value) =>
+                      setAccountType(value as "SalesStaff" | "ReservationStaff")
+                    }
+                  >
+                    {/* Set a specific width for the trigger */}
+                    <SelectTrigger
+                      id={`${id}-account-type`}
+                      className="w-[180px] "
+                    >
+                      <SelectValue placeholder="Select account type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SalesStaff">Sales Staff</SelectItem>
+                      <SelectItem value="ReservationStaff">
+                        Reservation Staff
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor={`${id}-country`}>Country</Label>
-                <Select
-                  value={selectedCountry}
-                  onValueChange={setSelectedCountry}
-                >
-                  <SelectTrigger id={`${id}-country`}>
-                    <SelectValue placeholder="Select country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="us">United States</SelectItem>
-                    <SelectItem value="ca">Canada</SelectItem>
-                    <SelectItem value="uk">United Kingdom</SelectItem>
-                    <SelectItem value="au">Australia</SelectItem>
-                    <SelectItem value="fr">France</SelectItem>
-                    <SelectItem value="de">Germany</SelectItem>
-                    <SelectItem value="in">India</SelectItem>
-                    <SelectItem value="jp">Japan</SelectItem>
-                    <SelectItem value="br">Brazil</SelectItem>
-                    <SelectItem value="mx">Mexico</SelectItem>
-                  </SelectContent>
-                </Select>
+                {/* Country Selector - Removed flex-1 */}
+                <div className="space-y-2">
+                  {" "}
+                  {/* Removed flex-1 */}
+                  <Label htmlFor={`${id}-country`}>Country</Label>
+                  <Select
+                    value={selectedCountry}
+                    onValueChange={setSelectedCountry}
+                  >
+                    {/* Set a specific width for the trigger */}
+                    <SelectTrigger id={`${id}-country`} className="w-[180px] ">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* Add more countries as needed */}
+                      <SelectItem value="us">United States</SelectItem>
+                      <SelectItem value="ca">Canada</SelectItem>
+                      <SelectItem value="uk">United Kingdom</SelectItem>
+                      <SelectItem value="au">Australia</SelectItem>
+                      <SelectItem value="fr">France</SelectItem>
+                      <SelectItem value="de">Germany</SelectItem>
+                      <SelectItem value="in">India</SelectItem>
+                      <SelectItem value="jp">Japan</SelectItem>
+                      <SelectItem value="br">Brazil</SelectItem>
+                      <SelectItem value="mx">Mexico</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </form>
           </div>

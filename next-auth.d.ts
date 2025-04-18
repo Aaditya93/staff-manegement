@@ -1,7 +1,7 @@
 import { type DefaultSession } from "next-auth";
 
 export type ExtenedUser = DefaultSession["Employee"] & {
-  role: "Admin" | "TravelAgent" | "Employee";
+  role: "Admin" | "TravelAgent" | "SalesStaff" | "ReservationStaff";
   _id?: string;
   accessToken: string;
   refreshToken: string;
