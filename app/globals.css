@@ -33,6 +33,7 @@
 .prose {
   max-width: 100% !important;
 }
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

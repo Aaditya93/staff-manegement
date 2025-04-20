@@ -1,9 +1,11 @@
 import { ChatDashboard } from "@/components/chat/chat-dashboard";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { fetchConversationById } from "@/actions/chat/conversation";
-
-import { fetchConversationMessages } from "@/actions/chat/conversation";
+import {
+  fetchConversationById,
+  fetchConversationMessages,
+} from "@/actions/chat/conversation";
+import { serializeData } from "@/utils/serialize";
 import { notFound } from "next/navigation";
 
 // Define message limit options
@@ -13,7 +15,6 @@ const MESSAGE_LIMITS = {
   large: 600, // Large load
   max: 900, // Maximum messages to load initially
 };
-
 export default async function MessagingPage({
   params,
   searchParams,
@@ -21,6 +22,10 @@ export default async function MessagingPage({
   params: { conversationId: string };
   searchParams?: { limit?: string };
 }) {
+  // Await params and searchParams before using their properties
+  params = await params;
+  searchParams = await searchParams;
+
   // Get conversationId from URL parameters
   const { conversationId } = params;
 
@@ -51,16 +56,19 @@ export default async function MessagingPage({
   if (error) {
     console.error("Error loading messages:", error);
   }
-  console.log("Fetched messages:", messages);
-  console.log("conversationData:", conversationData);
 
-  // Map fetched messages to add the required 'type' property
-  const formattedMessages =
-    messages?.map((message) => ({
-      ...message,
-      type: "text", // Default type, adjust as needed based on your application's message types
-    })) || [];
-  console.log("Formatted messages:", formattedMessages);
+  // Serialize conversation data to remove MongoDB-specific properties
+  const serializedConversation = serializeData(conversationData.conversation);
+
+  // Serialize and map messages to add the required 'type' property
+  const formattedMessages = messages
+    ? serializeData(
+        messages.map((message) => ({
+          ...message,
+          type: message.type || "text", // Use existing type or default to "text"
+        }))
+      )
+    : [];
 
   return (
     <SidebarProvider>
@@ -70,7 +78,7 @@ export default async function MessagingPage({
         <ChatDashboard
           initialConversationId={conversationId}
           initialMessages={formattedMessages}
-          initialConversation={conversationData.conversation}
+          initialConversation={serializedConversation}
           messageLimit={messageLimit}
         />
       </SidebarInset>

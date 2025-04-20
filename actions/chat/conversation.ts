@@ -156,6 +156,7 @@ export async function sendMessage(conversationId: string, content: string) {
         },
       }
     );
+    console.log("Message sent successfully:", newMessage);
 
     return { success: true, message: newMessage };
   } catch (error) {
