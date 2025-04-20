@@ -23,7 +23,7 @@ export async function searchUsers(query: string) {
 
     const users = await User.find({
       $and: [
-        { _id: { $ne: session.user.id } }, // Exclude current user
+        { _id: { $ne: session.user.id } },
         {
           $or: [{ name: searchRegex }, { email: searchRegex }],
         },
@@ -35,7 +35,7 @@ export async function searchUsers(query: string) {
     return {
       users: users.map((user) => ({
         ...user,
-        _id: user._id.toString(), // Convert MongoDB ObjectId to string
+        _id: user._id.toString(),
       })),
     };
   } catch (error) {

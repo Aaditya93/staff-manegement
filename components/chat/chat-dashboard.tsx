@@ -1,19 +1,16 @@
 "use client";
 
-// ** Imports: React & Hooks **
-import React, { useState, useEffect } from "react";
-import { searchUsers, createConversation } from "@/actions/chat/search";
+import { Skeleton } from "@/components/ui/skeleton";
 
+import React, { useState, useEffect, useRef } from "react";
+import { searchUsers, createConversation } from "@/actions/chat/search";
 import { useDebounce } from "@/hooks/use-debounce";
 import { SidebarInset } from "../ui/sidebar";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
 import { Badge } from "@/components/ui/badge";
-
 import {
   ResizableHandle,
   ResizablePanel,
@@ -21,43 +18,12 @@ import {
 } from "@/components/ui/resizable";
 import { Separator } from "@/components/ui/separator";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-// ** Dropdown Menu Components **
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-// ** Icons **
-import {
-  Camera,
-  CircleFadingPlus,
-  File,
-  Image,
-  MessageCircle,
+  Check,
+  CheckCheck,
   MessageSquareDashed,
   MessageSquareDot,
-  Mic,
-  MoreVertical,
-  Paperclip,
-  Phone,
   Search,
   Send,
-  Settings,
-  Smile,
-  Star,
-  User2,
-  UserRound,
-  Users,
-  Video,
 } from "lucide-react";
 
 // ** Server Actions **
@@ -66,6 +32,9 @@ import {
   fetchConversationMessages,
   sendMessage,
 } from "@/actions/chat/conversation";
+
+import { EmojiPickerPopover } from "../mail/emojis";
+import { useRouter } from "next/navigation";
 
 // ** Types for Chat Data **
 type Conversation = {
@@ -87,6 +56,7 @@ type Conversation = {
   unreadCount: number;
 };
 
+// In chat-dashboard.tsx
 type Message = {
   _id: string;
   senderId: {
@@ -98,6 +68,11 @@ type Message = {
   content: string[];
   createdAt: string;
   updatedAt: string;
+  seenBy?: {
+    // Add this field for tracking read receipts
+    userId: string;
+    seenAt: string;
+  }[];
 };
 type User = {
   _id: string;
@@ -106,16 +81,23 @@ type User = {
   image?: string;
 };
 // ...existing code...
-const menuItems = [
-  { title: "Messages", url: "#", icon: MessageCircle },
-  { title: "Phone", url: "#", icon: Phone },
-  { title: "Status", url: "#", icon: CircleFadingPlus },
-];
 
-export const ChatDashboard = () => {
+export const ChatDashboard = ({
+  initialConversationId,
+  initialMessages = [],
+}: // initialConversation = null,
+// messageLimit = 150,
+{
+  initialConversationId?: string;
+  initialMessages?: Message[];
+  initialConversation?: Conversation | null;
+  messageLimit?: number;
+}) => {
   const [currentConversationId, setCurrentConversationId] = useState<
     string | null
-  >(null);
+  >(initialConversationId || null);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -123,7 +105,7 @@ export const ChatDashboard = () => {
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [message, setMessage] = useState("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const debouncedSearchTerm = useDebounce(searchQuery, 500);
@@ -183,9 +165,6 @@ export const ChatDashboard = () => {
     loadConversations();
   }, []);
 
-  // Remove the first useEffect performSearch function entirely, and only keep the second one:
-
-  // Delete this first useEffect (lines ~70-89)
   useEffect(() => {
     async function performSearch() {
       if (!debouncedSearchTerm || debouncedSearchTerm.length < 2) {
@@ -222,28 +201,81 @@ export const ChatDashboard = () => {
     if (message.trim() && currentConversationId) {
       setIsSending(true);
 
-      const { success, error } = await sendMessage(
-        currentConversationId,
-        message.trim()
-      );
+      // Create optimistic message to show immediately
+      const optimisticMessage: Message = {
+        _id: `temp-${Date.now()}`,
+        senderId: {
+          _id: "currentUser", // This will be replaced when actual data returns
+          name: "You",
+          image: undefined,
+        },
+        type: "text",
+        content: [message.trim()],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: "sending", // Custom status to track message state
+      };
 
-      if (success) {
-        setMessage("");
-        // Reload messages to show the new one
-        const { messages } = await fetchConversationMessages(
-          currentConversationId
+      // Add optimistic message to UI immediately with animation class
+      setMessages((prev) => [...prev, optimisticMessage]);
+
+      // Clear input right away for better UX
+      setMessage("");
+
+      try {
+        const { success, error } = await sendMessage(
+          currentConversationId,
+          optimisticMessage.content[0]
         );
-        if (messages) {
-          setMessages(messages);
-        }
-      } else if (error) {
-        console.error("Error sending message:", error);
-      }
 
-      setIsSending(false);
+        if (success) {
+          // Update optimistic message status or replace with actual message
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg._id === optimisticMessage._id
+                ? { ...msg, status: "sent" }
+                : msg
+            )
+          );
+
+          // Optionally fetch to sync with server (can be done less aggressively)
+          const { messages: serverMessages } = await fetchConversationMessages(
+            currentConversationId
+          );
+          if (serverMessages) {
+            // Replace messages but keep animations for recent ones
+            const typedMessages = serverMessages.map((msg) => ({
+              ...msg,
+              type: msg.type || "text",
+            })) as Message[];
+            setMessages(typedMessages);
+          }
+        } else if (error) {
+          // Mark message as failed
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg._id === optimisticMessage._id
+                ? { ...msg, status: "failed" }
+                : msg
+            )
+          );
+          console.error("Error sending message:", error);
+        }
+      } catch (err) {
+        // Mark message as failed
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === optimisticMessage._id
+              ? { ...msg, status: "failed" }
+              : msg
+          )
+        );
+        console.error("Error sending message:", err);
+      } finally {
+        setIsSending(false);
+      }
     }
   };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -281,6 +313,12 @@ export const ChatDashboard = () => {
         c.participants.every((p) => p._id !== message.senderId._id)
     );
   };
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Add this effect to scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <>
@@ -291,62 +329,23 @@ export const ChatDashboard = () => {
         >
           {/* Left Panel - Chat List */}
           <ResizablePanel defaultSize={30} minSize={25} className="flex-grow">
-            <div className="flex flex-col h-screen border-r bg-background">
-              {/* Header */}
-              <div className="p-3 flex items-center justify-between bg-muted/20 border-b ">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8 border">
-                    <AvatarImage src="https://github.com/rayimanoj8.png" />
-                    <AvatarFallback>YU</AvatarFallback>
-                  </Avatar>
-                  <h2 className="text-sm font-medium">Your Account</h2>
-                </div>
-                <div className="flex gap-1">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-full border"
-                        >
-                          <CircleFadingPlus className="h-5 w-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Status</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-full border"
-                      >
-                        <MoreVertical className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="rounded-xl border"
-                    >
-                      <DropdownMenuItem>
-                        <User2 className="mr-2 h-4 w-4" /> Profile
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Users className="mr-2 h-4 w-4" /> New Group
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Star className="mr-2 h-4 w-4" /> Starred Messages
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Settings className="mr-2 h-4 w-4" /> Settings
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+            <div className="p-3 flex items-center justify-between bg-muted/20 border-b">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8 border">
+                  <AvatarImage
+                    src={conversations[0]?.participants[0]?.image || ""}
+                    alt="User avatar"
+                  />
+                  <AvatarFallback>
+                    {conversations[0]?.participants[0]?.name?.[0] || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <h2 className="text-sm font-medium">
+                  {conversations[0]?.participants[0]?.name || "Chat"}
+                </h2>
               </div>
-
+            </div>
+            <div>
               <div className="p-3 relative">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -438,12 +437,22 @@ export const ChatDashboard = () => {
               {/* Contact List */}
               <ScrollArea className="flex-grow h-[calc(100vh-120px)]">
                 {isLoading && conversations.length === 0 ? (
-                  <div className="p-4 text-center text-muted-foreground">
-                    Loading conversations...
+                  <div className="">
+                    {[1, 2, 3, 4].map((item) => (
+                      <div
+                        key={item}
+                        className=" p-1 flex items-center justify-between w-full"
+                      >
+                        <Skeleton className="h-12 w-full ">
+                          <Skeleton className="h-10 w-10 rounded-full" />
+                        </Skeleton>
+                      </div>
+                    ))}
                   </div>
                 ) : conversations.length === 0 ? (
-                  <div className="p-4 text-center text-muted-foreground">
-                    No conversations found
+                  <div className="p-4 text-center text-muted-foreground flex flex-col items-center gap-2">
+                    <MessageSquareDashed className="h-8 w-8 opacity-50" />
+                    <p>No conversations found</p>
                   </div>
                 ) : (
                   conversations.map((conversation, index) => (
@@ -512,6 +521,8 @@ export const ChatDashboard = () => {
               {currentChat ? (
                 <>
                   {/* Chat Header */}
+
+                  {/* Chat Header - Enhanced with participant info */}
                   <div className="h-16 border-b bg-muted/20 flex items-center justify-between px-4 rounded-tr-lg">
                     <div className="flex items-center gap-3">
                       <Avatar className="border">
@@ -524,69 +535,46 @@ export const ChatDashboard = () => {
                         <p className="font-medium text-sm">
                           {getConversationName(currentChat)}
                         </p>
-                        <p className="text-xs text-muted-foreground">Online</p>
                       </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full border"
-                      >
-                        <Video className="h-5 w-5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full border"
-                      >
-                        <Phone className="h-5 w-5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full border"
-                      >
-                        <Search className="h-5 w-5" />
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full border"
-                          >
-                            <MoreVertical className="h-5 w-5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="rounded-xl border"
-                        >
-                          <DropdownMenuItem>View contact</DropdownMenuItem>
-                          <DropdownMenuItem>
-                            Media, links, and docs
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>Search</DropdownMenuItem>
-                          <DropdownMenuItem>
-                            Mute notifications
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
-                            Block
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                   </div>
 
                   {/* Messages Area */}
-                  <ScrollArea className="flex-grow p-4">
+                  <ScrollArea
+                    className="flex-grow p-4 h-[calc(100vh-10rem)]"
+                    viewportClassName="min-h-[400px]"
+                  >
                     {isLoading ? (
-                      <div className="flex items-center justify-center h-full">
-                        <p className="text-muted-foreground">
-                          Loading messages...
-                        </p>
+                      <div className="flex flex-col items-center justify-center h-full space-y-6">
+                        <div className="flex flex-col space-y-3 w-full max-w-md">
+                          {/* Loading animation with pulsing chat bubbles */}
+                          <div className="flex justify-start">
+                            <div className="bg-secondary/40 animate-pulse h-10 w-48 rounded-2xl rounded-bl-none"></div>
+                          </div>
+                          <div className="flex justify-end">
+                            <div className="bg-primary/40 animate-pulse h-10 w-32 rounded-2xl rounded-br-none"></div>
+                          </div>
+                          <div className="flex justify-start">
+                            <div className="bg-secondary/40 animate-pulse h-10 w-40 rounded-2xl rounded-bl-none"></div>
+                          </div>
+                          <div className="flex justify-end">
+                            <div className="bg-primary/40 animate-pulse h-10 w-56 rounded-2xl rounded-br-none"></div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="h-3 w-3 bg-primary/60 rounded-full animate-bounce"
+                            style={{ animationDelay: "0ms" }}
+                          ></div>
+                          <div
+                            className="h-3 w-3 bg-primary/60 rounded-full animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          ></div>
+                          <div
+                            className="h-3 w-3 bg-primary/60 rounded-full animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          ></div>
+                        </div>
                       </div>
                     ) : messages.length === 0 ? (
                       <div className="flex items-center justify-center h-full">
@@ -599,7 +587,7 @@ export const ChatDashboard = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-4 mb-4">
+                      <div className="space-y-4 mb-4 pb-2">
                         {messages.map((msg) => (
                           <div
                             key={msg._id}
@@ -610,66 +598,68 @@ export const ChatDashboard = () => {
                             }`}
                           >
                             <div
-                              className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm border shadow-sm ${
-                                isCurrentUserMessage(msg)
-                                  ? "bg-primary text-primary-foreground rounded-br-none"
-                                  : "bg-secondary text-secondary-foreground rounded-bl-none"
-                              }`}
+                              className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm border shadow-sm 
+              ${
+                isCurrentUserMessage(msg)
+                  ? "bg-primary text-primary-foreground rounded-br-none"
+                  : "bg-secondary text-secondary-foreground rounded-bl-none"
+              } 
+              ${
+                msg._id.startsWith("temp-")
+                  ? "animate-slide-in-up opacity-90"
+                  : "animate-fade-in"
+              }
+              ${msg.status === "sending" ? "opacity-80" : ""}
+              ${msg.status === "failed" ? "border-red-500" : ""}
+            `}
+                              style={{
+                                animationDuration: "0.3s",
+                                animationFillMode: "forwards",
+                              }}
                             >
-                              <div>{msg.content[0]}</div>
+                              <div className="break-words">
+                                {msg.content[0]}
+                              </div>
                               <div
-                                className={`text-xs mt-1 text-right ${
+                                className={`text-xs mt-1 flex items-center justify-end gap-1 ${
                                   isCurrentUserMessage(msg)
                                     ? "text-primary-foreground/70"
                                     : "text-muted-foreground"
                                 }`}
                               >
-                                {formatMessageTime(msg.createdAt)}
+                                <span>{formatMessageTime(msg.createdAt)}</span>
+
+                                {/* Show different indicators based on message status */}
+                                {isCurrentUserMessage(msg) && (
+                                  <span className="flex items-center ml-1">
+                                    {msg.status === "sending" ? (
+                                      <span className="h-3 w-3 relative">
+                                        <span className="absolute animate-ping h-2 w-2 rounded-full bg-blue-300 opacity-75"></span>
+                                        <span className="absolute h-3 w-3 rounded-full bg-blue-400"></span>
+                                      </span>
+                                    ) : msg.status === "failed" ? (
+                                      <span className="text-red-500 text-xs">
+                                        ⚠️
+                                      </span>
+                                    ) : msg.seenBy && msg.seenBy.length > 0 ? (
+                                      <CheckCheck className="h-3 w-3 text-blue-400" />
+                                    ) : (
+                                      <Check className="h-3 w-3" />
+                                    )}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
                         ))}
+                        {/* This empty div serves as a marker for scrolling to the bottom */}
+                        <div ref={messagesEndRef} className="h-1" />
                       </div>
                     )}
                   </ScrollArea>
-
                   {/* Chat Input */}
                   <div className="p-3 flex items-center gap-2 bg-muted/20 rounded-br-lg border-t">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="rounded-full border"
-                    >
-                      <Smile className="h-5 w-5" />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="rounded-full border"
-                        >
-                          <Paperclip className="h-5 w-5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="rounded-xl border"
-                      >
-                        <DropdownMenuItem>
-                          <Image className="mr-2 h-4 w-4" /> Photos & Videos
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Camera className="mr-2 h-4 w-4" /> Camera
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <File className="mr-2 h-4 w-4" /> Document
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <UserRound className="mr-2 h-4 w-4" /> Contact
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <EmojiPickerPopover />
                     <div className="relative flex-grow">
                       <Input
                         className="rounded-full pl-4 pr-10 py-5 bg-muted/30 border"
@@ -687,11 +677,7 @@ export const ChatDashboard = () => {
                       onClick={handleSendMessage}
                       disabled={isSending || !message.trim()}
                     >
-                      {message.trim() ? (
-                        <Send className="h-5 w-5" />
-                      ) : (
-                        <Mic className="h-5 w-5" />
-                      )}
+                      <Send className="h-5 w-5" />
                     </Button>
                   </div>
                 </>
