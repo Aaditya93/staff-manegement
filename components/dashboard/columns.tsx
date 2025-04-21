@@ -15,14 +15,28 @@ import Link from "next/link";
 // Define the TravelBooking type to match our data structure
 export type TravelBooking = {
   id?: string;
+  agent: string;
+  receivedTime: string;
   noOfPax: number;
-  companyName: string;
-  departureDate: string;
-  arrivalDate: string;
+  ticket: string;
   destination: string;
+  arrival: string;
+  departure: string;
+  reservationInCharge: string;
+  salesInCharge: string;
+  market: string;
+  status: string;
+  estimateTimeToSendPrice: number;
+  waitingTime: number;
+  speed: string;
+  inbox: number;
+  sent: number;
+  timeSent: number;
+  lastInbox: string;
+  lastSent: string;
+  balance: number;
+  email: number;
   costOfPackage: number;
-  notes: string;
-  status: "In Progress" | "Done" | "Rejected";
 };
 
 export const columns: ColumnDef<TravelBooking>[] = [
@@ -55,16 +69,26 @@ export const columns: ColumnDef<TravelBooking>[] = [
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Company Name
+        Company
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => <div>{row.getValue("companyName")}</div>,
   },
   {
+    accessorKey: "receivedTime",
+    header: "Received time",
+    cell: ({ row }) => <div>{row.getValue("receivedTime")}</div>,
+  },
+  {
     accessorKey: "noOfPax",
-    header: "Number of Passengers",
+    header: "Pax",
     cell: ({ row }) => <div>{row.getValue("noOfPax")}</div>,
+  },
+  {
+    accessorKey: "ticket",
+    header: "Ticket",
+    cell: ({ row }) => <div>{row.getValue("ticket")}</div>,
   },
   {
     accessorKey: "destination",
@@ -80,29 +104,29 @@ export const columns: ColumnDef<TravelBooking>[] = [
     cell: ({ row }) => <div>{row.getValue("destination")}</div>,
   },
   {
-    accessorKey: "departureDate",
-    header: "Departure Date",
-    cell: ({ row }) => <div>{row.getValue("departureDate")}</div>,
+    accessorKey: "arrival",
+    header: "Arrival",
+    cell: ({ row }) => <div>{row.getValue("arrival")}</div>,
   },
   {
-    accessorKey: "arrivalDate",
-    header: "Arrival Date",
-    cell: ({ row }) => <div>{row.getValue("arrivalDate")}</div>,
+    accessorKey: "departure",
+    header: "Departure",
+    cell: ({ row }) => <div>{row.getValue("departure")}</div>,
   },
   {
-    accessorKey: "costOfPackage",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Cost (₹)
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <div>₹{row.getValue("costOfPackage").toLocaleString()}</div>
-    ),
+    accessorKey: "reservationInCharge",
+    header: "Reservation in Charge",
+    cell: ({ row }) => <div>{row.getValue("reservationInCharge")}</div>,
+  },
+  {
+    accessorKey: "salesInCharge",
+    header: "Sales in Charge",
+    cell: ({ row }) => <div>{row.getValue("salesInCharge")}</div>,
+  },
+  {
+    accessorKey: "market",
+    header: "Market",
+    cell: ({ row }) => <div>{row.getValue("market")}</div>,
   },
   {
     accessorKey: "status",
@@ -112,9 +136,9 @@ export const columns: ColumnDef<TravelBooking>[] = [
       return (
         <div
           className={`rounded-full px-2 py-1 text-xs font-medium ${
-            status === "Done"
+            status === "done" || status === "Done"
               ? "bg-green-100 text-green-800"
-              : status === "In Progress"
+              : status === "new" || status === "In Progress"
               ? "bg-blue-100 text-blue-800"
               : "bg-red-100 text-red-800"
           }`}
@@ -125,9 +149,63 @@ export const columns: ColumnDef<TravelBooking>[] = [
     },
   },
   {
-    accessorKey: "notes",
-    header: "Notes",
-    cell: ({ row }) => <div>{row.getValue("notes")}</div>,
+    accessorKey: "estimateTimeToSendPrice",
+    header: "Estimate time to send price",
+    cell: ({ row }) => <div>{row.getValue("estimateTimeToSendPrice")}</div>,
+  },
+  {
+    accessorKey: "waitingTime",
+    header: "Waiting time",
+    cell: ({ row }) => <div>{row.getValue("waitingTime")}</div>,
+  },
+  {
+    accessorKey: "speed",
+    header: "Speed",
+    cell: ({ row }) => <div>{row.getValue("speed")}</div>,
+  },
+  {
+    accessorKey: "inbox",
+    header: "Inbox",
+    cell: ({ row }) => <div>{row.getValue("inbox")}</div>,
+  },
+  {
+    accessorKey: "sent",
+    header: "Sent",
+    cell: ({ row }) => <div>{row.getValue("sent")}</div>,
+  },
+  {
+    accessorKey: "timeSent",
+    header: "Time sent",
+    cell: ({ row }) => <div>{row.getValue("timeSent")}</div>,
+  },
+  {
+    accessorKey: "lastInbox",
+    header: "Last inbox",
+    cell: ({ row }) => <div>{row.getValue("lastInbox")}</div>,
+  },
+  {
+    accessorKey: "lastSent",
+    header: "Last sent",
+    cell: ({ row }) => <div>{row.getValue("lastSent")}</div>,
+  },
+  {
+    accessorKey: "balance",
+    header: "Balance",
+    cell: ({ row }) => <div>{row.getValue("balance")}</div>,
+  },
+
+  {
+    accessorKey: "costOfPackage",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Cost
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div>${row.getValue("costOfPackage")}</div>,
   },
   {
     id: "actions",
@@ -144,14 +222,11 @@ export const columns: ColumnDef<TravelBooking>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <Link href={`/booking/${row.original.id || "detail"}`}>
+              <Link href={`/booking/${row.original.ticket || "detail"}`}>
                 View Details
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>Edit Booking</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">
-              Cancel Booking
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import { Dispatch, SetStateAction } from "react";
 import { DataTablePagination } from "./data-table-pagination";
+import DateRangePicker from "./date-range";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -103,7 +104,7 @@ const DataTable = <TData, TValue>({
   };
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 gap-4">
         <Input
           placeholder={`Search by ${searchSelections}...`}
           value={
@@ -118,6 +119,7 @@ const DataTable = <TData, TValue>({
           }
           className="max-w-sm"
         />
+        <DateRangePicker />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -196,7 +198,6 @@ const DataTable = <TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
-                // @ts-ignore - we know status exists on our data
                 const status = (row.original as any).status || "";
 
                 return (

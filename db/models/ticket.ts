@@ -1,4 +1,6 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import { Schema, Document } from "mongoose";
+
+import mongoose from "mongoose";
 // Email sub-document interfaces for better type safety
 interface EmailFrom {
   name: string;
@@ -18,22 +20,29 @@ interface EmailEntry {
   emailType?: string;
   from: EmailFrom;
   to: EmailTo[];
+  timestamp: Date; // Optional timestamp for email entries
+}
+
+// Add interfaces for personnel types
+interface PersonnelInfo {
+  name: string;
+  emailId: string;
 }
 
 // Interface to define the Ticket document structure
 export interface ITicket extends Document {
+  companyName: string;
   _id: string;
-  userId: string;
-  agent: string;
   receivedDateTime: string;
+  sentDateTime?: string;
   pax: number;
-  ticketId?: string;
   destination: string;
-  arrivalDate: Date;
-  departureDate: Date;
+  arrivalDate?: Date;
+  departureDate?: Date;
   isApproved: boolean;
-  reservationInCharge: string;
-  salesInCharge: string;
+  reservationInCharge: PersonnelInfo; // Changed to PersonnelInfo type
+  salesInCharge: PersonnelInfo; // Changed to PersonnelInfo type
+  travelAgent: PersonnelInfo; // Added new field
   market: string;
   status: string;
   estimateTimeToSendPrice: number;
@@ -42,8 +51,6 @@ export interface ITicket extends Document {
   speed: string;
   inbox: number;
   sent: number;
-  emailId: string;
-  agentEmailId: string;
   lastMailTimeReceived: number;
   lastMailTimeSent: number;
   balance?: number;
@@ -93,6 +100,9 @@ const EmailEntrySchema = new Schema(
     },
     weblink: String,
     emailType: String,
+    timestamp: {
+      type: Date,
+    },
     from: {
       type: EmailFromSchema,
       required: true,
@@ -102,25 +112,38 @@ const EmailEntrySchema = new Schema(
   { _id: true }
 ); // Keep _id for email entries for better reference
 
+// Define schema for personnel info
+const PersonnelSchema = new Schema(
+  {
+    name: {
+      type: String,
+      trim: true,
+    },
+    emailId: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+  },
+  { _id: false }
+);
+
 // Define the schema for the Ticket model
 const TicketSchema = new Schema<ITicket>(
   {
-    userId: {
-      type: String,
-      required: true,
-      index: true, // Add index for faster lookups by userId
-    },
-    agent: {
-      type: String,
-      required: true,
-    },
-
     receivedDateTime: String,
+    sentDateTime: String,
     pax: {
       type: Number,
       default: 0,
       min: 0,
     },
+    companyName: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+
     cost: {
       type: Number,
       default: 0,
@@ -129,12 +152,18 @@ const TicketSchema = new Schema<ITicket>(
     destination: String,
     arrivalDate: Date,
     departureDate: Date,
-    reservationInCharge: String,
-    salesInCharge: String,
+    reservationInCharge: {
+      type: PersonnelSchema,
+    },
+    salesInCharge: {
+      type: PersonnelSchema,
+    },
+    travelAgent: {
+      type: PersonnelSchema,
+    },
     market: String,
     status: {
       type: String,
-      index: true, // Add index for faster status filtering
     },
     estimateTimeToSendPrice: Number,
     waitingTime: {
@@ -160,18 +189,10 @@ const TicketSchema = new Schema<ITicket>(
       type: Number,
       default: 0,
     },
-    emailId: {
-      type: String,
-      required: true,
-    },
+    balance: Number,
     isApproved: {
       type: Boolean,
       default: false,
-    },
-    agentEmailId: {
-      type: String,
-      index: true,
-      required: true,
     },
     email: [EmailEntrySchema],
   },
@@ -189,7 +210,9 @@ TicketSchema.virtual("ticketAge").get(function (this: ITicket) {
   return new Date().getTime() - this.createdAt.getTime();
 });
 
-const Ticket: Model<ITicket> =
-  mongoose.models.Ticket || mongoose.model<ITicket>("Ticket", TicketSchema);
+// Create and export the Ticket model
+
+const Ticket = (mongoose.models?.Ticket ||
+  mongoose.model("Ticket", TicketSchema)) as mongoose.Model<ITicket>;
 
 export default Ticket;
