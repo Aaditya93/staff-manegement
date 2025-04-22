@@ -226,7 +226,6 @@ export const columns: ColumnDef<TravelBooking>[] = [
                 View Details
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>Edit Booking</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

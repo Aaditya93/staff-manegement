@@ -3,19 +3,14 @@
 import * as React from "react";
 import { LifeBuoy, Send, SquareTerminal } from "lucide-react";
 import { CiMail } from "react-icons/ci";
-import { NavMain } from "./nav-main";
-import { GrAnalytics } from "react-icons/gr";
-import { BsFiletypePdf } from "react-icons/bs";
-import { IoDocumentTextOutline } from "react-icons/io5";
+
 import { CiViewTable } from "react-icons/ci";
-import { CiSearch } from "react-icons/ci";
-import { IoIosQrScanner } from "react-icons/io";
-import { BsPassport } from "react-icons/bs";
+
 import { BsListTask } from "react-icons/bs";
 import Image from "next/image";
 import { TfiPieChart } from "react-icons/tfi";
 import { NavProjects } from "./nav-projects";
-
+import { CiChat1 } from "react-icons/ci";
 import NavUser from "./nav-user";
 import {
   Sidebar,
@@ -107,6 +102,11 @@ const data = {
       name: "Ticket",
       url: "/ticket/10",
       icon: BsListTask,
+    },
+    {
+      name: "Messages",
+      url: "/chat/10",
+      icon: CiChat1,
     },
 
     {

@@ -1,13 +1,8 @@
 import { ChatDashboard } from "@/components/chat/chat-dashboard";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import {
-  fetchConversationById,
-  fetchConversationMessages,
-} from "@/actions/chat/conversation";
+import { fetchConversationMessages } from "@/actions/chat/conversation";
 import { serializeData } from "@/utils/serialize";
-import { notFound } from "next/navigation";
-
 // Define message limit options
 const MESSAGE_LIMITS = {
   default: 150, // Default message count
@@ -40,12 +35,6 @@ export default async function MessagingPage({
     : MESSAGE_LIMITS.default;
 
   // Fetch conversation data
-  const conversationData = await fetchConversationById(conversationId);
-
-  // If conversation not found, show 404
-  if (!conversationData || conversationData.error) {
-    return notFound();
-  }
 
   // Fetch messages for the conversation with the specified limit
   const { messages, error } = await fetchConversationMessages(
@@ -57,28 +46,14 @@ export default async function MessagingPage({
     console.error("Error loading messages:", error);
   }
 
-  // Serialize conversation data to remove MongoDB-specific properties
-  const serializedConversation = serializeData(conversationData.conversation);
-
-  // Serialize and map messages to add the required 'type' property
-  const formattedMessages = messages
-    ? serializeData(
-        messages.map((message) => ({
-          ...message,
-          type: message.type || "text", // Use existing type or default to "text"
-        }))
-      )
-    : [];
-
+  // Process messages with type property
+  const safeMessages = serializeData(messages) || [];
   return (
     <SidebarProvider>
       <AppSidebar />
-
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
         <ChatDashboard
-          initialConversationId={conversationId}
-          initialMessages={formattedMessages}
-          initialConversation={serializedConversation}
+          initialMessages={safeMessages}
           messageLimit={messageLimit}
         />
       </SidebarInset>

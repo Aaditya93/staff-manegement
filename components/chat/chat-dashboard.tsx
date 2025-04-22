@@ -3,8 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { SidebarInset } from "../ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-import { useRouter } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   ResizableHandle,

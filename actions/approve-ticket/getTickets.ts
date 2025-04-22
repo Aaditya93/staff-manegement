@@ -1,26 +1,47 @@
 "use server";
 import { auth } from "@/auth";
 
-import Ticket, { ITicket } from "../../db/models/ticket";
+import Ticket from "../../db/models/ticket";
 import { revalidatePath } from "next/cache";
-/**
- * Retrieves all tickets belonging to a specific user
- * @param userId - The ID of the user whose tickets to retrieve
- * @returns A promise that resolves to an array of ticket documents
- */
-export async function getTickets(): Promise<ITicket[]> {
+import dbConnect from "@/db/db";
+import User from "@/db/models/User";
+
+export const getAllUnApprovedTickets = async () => {
   try {
+    await dbConnect();
+
+    let query: any = {};
     const session = await auth();
-    const tickets = await Ticket.find({
-      userId: session?.user.id,
-      isApproved: false,
-    });
+    const email = session?.user?.email;
+    const role = session?.user?.role;
+
+    // Search based on role if provided
+    if (role) {
+      if (role === "sales") {
+        query = { "salesInCharge.emailId": email };
+      } else if (role === "reservation") {
+        query = { "reservationInCharge.emailId": email };
+      } else if (role === "travelAgent") {
+        query = { "travelAgent.emailId": email };
+      }
+    } else {
+      // If no role specified, search in all staff fields
+      query = {
+        $or: [
+          { "salesInCharge.emailId": email },
+          { "reservationInCharge.emailId": email },
+          { "travelAgent.emailId": email },
+        ],
+      };
+    }
+
+    const tickets = await Ticket.find(query).lean();
     return tickets;
   } catch (error) {
-    console.error("Error fetching tickets by userId:", error);
-    throw new Error(`Failed to get tickets for user`);
+    console.error("Error fetching tickets by email:", error);
+    throw error;
   }
-}
+};
 
 export async function approveTicket(
   ticketId: string,
@@ -66,3 +87,15 @@ export async function approveTicket(
     };
   }
 }
+
+export const getAllEmployees = async () => {
+  try {
+    await dbConnect();
+    const result = User.find({
+      role: { $in: ["ReservationStaff", "SalesStaff"] },
+    }).lean();
+    return result;
+  } catch (error) {
+    console.error("Error fetching employees:", error);
+  }
+};

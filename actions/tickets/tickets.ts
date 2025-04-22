@@ -54,3 +54,17 @@ export const getAllTicketsByEmail = async (fromDate?: Date, toDate?: Date) => {
     throw error;
   }
 };
+
+export const getTicketById = async (id: string) => {
+  try {
+    await dbConnect();
+    const ticket = await Ticket.findById(id).lean();
+    if (!ticket) {
+      throw new Error("Ticket not found");
+    }
+    return ticket;
+  } catch (error) {
+    console.error("Error fetching ticket by ID:", error);
+    throw error;
+  }
+};
