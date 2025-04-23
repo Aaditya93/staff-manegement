@@ -3,7 +3,7 @@ import {
   getAllUnApprovedTickets,
 } from "@/actions/approve-ticket/getTickets";
 import AppSidebar from "@/components/sidebar/app-sidebar";
-import { SelectStaff } from "@/components/pending-ticket/select-reservation";
+import { TicketProvider } from "@/components/pending-ticket/context";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   Table,
@@ -13,61 +13,54 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { approveTicket } from "@/actions/approve-ticket/getTickets";
-import { ITicket } from "@/db/models/ticket"; // Import ITicket if not already imported
+import { ApproveControl } from "@/components/pending-ticket/approve";
 
-// Helper component for the approve button to handle form action
-function ApproveControl({ ticketId }: { ticketId: string }) {
-  // Use a form action to call the server action
-  const approveAction = async (formData: FormData) => {
-    "use server"; // Required for form actions calling server actions
+import { SelectSalesStaff } from "@/components/pending-ticket/select-sales";
+import { SelectReservationStaff } from "@/components/pending-ticket/select-reservation";
 
-    const reservationInCharge = formData.get("reservationInCharge") as string;
-    const ticketIdFromData = formData.get("ticketId") as string; // Get ticketId from hidden input
-
-    if (!reservationInCharge) {
-      // Handle error - maybe return an error state or log
-      console.error("Reservation in charge not selected.");
-      return;
-    }
-
-    if (!ticketIdFromData) {
-      console.error("Ticket ID missing from form data.");
-      return;
-    }
-
-    const result = await approveTicket(ticketIdFromData, reservationInCharge);
-
-    if (!result.success) {
-      // Handle error appropriately, maybe show a toast notification
-      console.error("Failed to approve ticket:", result.error);
-    }
-    // Revalidation is handled within the action itself
-  };
-
-  return (
-    // Use the form action directly
-    <form action={approveAction} className="flex items-center gap-2">
-      {/* Hidden input to pass ticketId */}
-      <input type="hidden" name="ticketId" value={ticketId} />
-
-      {/* Use the SelectStaff component from select-reservation.tsx */}
-      <SelectStaff />
-
-      <Button type="submit" size="sm" variant="outline">
-        Approve
-      </Button>
-    </form>
+interface Employee {
+  _id: string | unknown;
+  name: string;
+  email: string;
+  role: string;
+  country?: string;
+  __v?: number;
+  // Add other fields as needed
+}
+export function serializeData(data: any) {
+  // Use replacer function to handle circular references
+  const seen = new WeakSet();
+  return JSON.parse(
+    JSON.stringify(data, (key, value) => {
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) {
+          return; // Don't serialize circular references
+        }
+        seen.add(value);
+      }
+      return value;
+    })
   );
 }
 
 export default async function PendingTicketsPage() {
-  const pendingTickets: ITicket[] = await getAllUnApprovedTickets(); // Ensure type safety
-  const employee = await getAllEmployees();
-  console.log("Employee", employee);
+  // Get raw data first
+  const pendingTickets = await getAllUnApprovedTickets();
+  const employees = await getAllEmployees();
 
-  // Function to format date nicely
+  // Safely serialize data
+  const serializedTickets = serializeData(pendingTickets);
+  const serializedEmployee = serializeData(employees);
+
+  // Filter employees by role
+  const salesStaff = serializedEmployee.filter(
+    (emp) => emp.role === "SalesStaff"
+  ) as Employee[];
+
+  const reservationStaff = serializedEmployee.filter(
+    (emp) => emp.role === "ReservationStaff"
+  ) as Employee[];
+
   const formatDate = (date: Date | string | undefined) => {
     if (!date) return "N/A";
     return new Date(date).toLocaleDateString("en-US", {
@@ -109,27 +102,43 @@ export default async function PendingTicketsPage() {
                     <TableHead>Destination</TableHead>
                     <TableHead>Arrival</TableHead>
                     <TableHead>Departure</TableHead>
-                    <TableHead className="text-center">Pax</TableHead>
+                    <TableHead>Pax</TableHead>
                     <TableHead>Received Time</TableHead>
-                    <TableHead className="text-center">Actions</TableHead>
+                    <TableHead>Sales Staff</TableHead>
+                    <TableHead>Reservation Staff</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pendingTickets.map((ticket) => (
+                  {serializedTickets.map((ticket) => (
                     <TableRow key={ticket._id.toString()}>
-                      <TableCell>{ticket.agent}</TableCell>
-                      <TableCell>{ticket.destination}</TableCell>
-                      <TableCell>{formatDate(ticket.arrivalDate)}</TableCell>
-                      <TableCell>{formatDate(ticket.departureDate)}</TableCell>
-                      <TableCell className="text-center">
-                        {ticket.pax}
-                      </TableCell>
-                      <TableCell>
-                        {formatDateTime(ticket.receivedDateTime)}
-                      </TableCell>
-                      <TableCell>
-                        <ApproveControl ticketId={ticket._id.toString()} />
-                      </TableCell>
+                      <TicketProvider ticketId={ticket._id.toString()}>
+                        <TableCell>{ticket.companyName}</TableCell>
+                        <TableCell>{ticket.destination}</TableCell>
+                        <TableCell>{formatDate(ticket.arrivalDate)}</TableCell>
+                        <TableCell>
+                          {formatDate(ticket.departureDate)}
+                        </TableCell>
+                        <TableCell>{ticket.pax}</TableCell>
+                        <TableCell>
+                          {formatDateTime(ticket.receivedDateTime)}
+                        </TableCell>
+                        <TableCell>
+                          <SelectSalesStaff
+                            staffList={salesStaff}
+                            default={ticket.salesInCharge}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <SelectReservationStaff
+                            staffList={reservationStaff}
+                            default={ticket.reservationInCharge}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <ApproveControl ticketId={ticket._id.toString()} />
+                        </TableCell>
+                      </TicketProvider>
                     </TableRow>
                   ))}
                 </TableBody>

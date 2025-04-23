@@ -17,16 +17,26 @@ export const getAllUnApprovedTickets = async () => {
 
     // Search based on role if provided
     if (role) {
-      if (role === "sales") {
-        query = { "salesInCharge.emailId": email };
-      } else if (role === "reservation") {
-        query = { "reservationInCharge.emailId": email };
-      } else if (role === "travelAgent") {
-        query = { "travelAgent.emailId": email };
+      if (role === "SalesStaff") {
+        query = {
+          isApproved: false,
+          "salesInCharge.emailId": email,
+        };
+      } else if (role === "ReservationStaff") {
+        query = {
+          isApproved: false,
+          "reservationInCharge.emailId": email,
+        };
+      } else if (role === "TravelAgent") {
+        query = {
+          isApproved: false,
+          "travelAgent.emailId": email,
+        };
       }
     } else {
       // If no role specified, search in all staff fields
       query = {
+        isApproved: false,
         $or: [
           { "salesInCharge.emailId": email },
           { "reservationInCharge.emailId": email },
@@ -45,49 +55,72 @@ export const getAllUnApprovedTickets = async () => {
 
 export async function approveTicket(
   ticketId: string,
-  reservationInCharge: string // Add reservationInCharge parameter
+  reservationInCharge: {
+    id: string;
+    name: string;
+    emailId: string;
+  },
+  salesInCharge: {
+    id: string;
+    name: string;
+    emailId: string;
+  }
 ) {
   try {
-    // Validate if reservationInCharge is provided
-    if (!reservationInCharge) {
-      throw new Error("Reservation in charge is required.");
+    await dbConnect();
+
+    // Basic validation
+    if (!ticketId || !reservationInCharge || !salesInCharge) {
+      return {
+        success: false,
+        error: "Missing required information",
+      };
     }
 
-    const updatedTicket = await Ticket.findByIdAndUpdate(
-      ticketId,
+    // Create clean objects to avoid any unexpected properties
+    const cleanReservation = {
+      id: reservationInCharge.id,
+      name: reservationInCharge.name,
+      emailId: reservationInCharge.emailId,
+    };
+
+    const cleanSales = {
+      id: salesInCharge.id,
+      name: salesInCharge.name,
+      emailId: salesInCharge.emailId,
+    };
+
+    // Use updateOne instead of findByIdAndUpdate for simplicity
+    const result = await Ticket.updateOne(
+      { _id: ticketId },
       {
-        isApproved: true,
-        reservationInCharge: reservationInCharge, // Set the reservationInCharge field
-      },
-      { new: true } // Return the updated document
+        $set: {
+          isApproved: true,
+          reservationInCharge: cleanReservation,
+          salesInCharge: cleanSales,
+        },
+      }
     );
 
-    if (!updatedTicket) {
-      throw new Error("Ticket not found");
+    if (result.modifiedCount === 0) {
+      return {
+        success: false,
+        error: "Ticket not found or no changes made",
+      };
     }
 
-    // Revalidate the path to update the UI after approval
+    // Revalidate the path
     revalidatePath("/pending-tickets");
 
-    return { success: true, ticket: updatedTicket };
+    return { success: true };
   } catch (error) {
     console.error("Error approving ticket:", error);
-    let errorMessage = "Failed to approve ticket.";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-    // Return specific error if validation failed
-    if (errorMessage === "Reservation in charge is required.") {
-      return { success: false, error: errorMessage };
-    }
-    // Generic error for other issues
     return {
       success: false,
-      error: "An unexpected error occurred while approving the ticket.",
+      error: error instanceof Error ? error.message : "Unknown error occurred",
     };
   }
 }
-
 export const getAllEmployees = async () => {
   try {
     await dbConnect();

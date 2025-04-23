@@ -25,6 +25,7 @@ interface EmailEntry {
 
 // Add interfaces for personnel types
 interface PersonnelInfo {
+  id?: string;
   name: string;
   emailId: string;
 }
@@ -115,6 +116,10 @@ const EmailEntrySchema = new Schema(
 // Define schema for personnel info
 const PersonnelSchema = new Schema(
   {
+    id: {
+      type: String,
+      required: false,
+    },
     name: {
       type: String,
       trim: true,

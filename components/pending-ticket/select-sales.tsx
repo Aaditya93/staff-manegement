@@ -18,13 +18,11 @@ import {
 import { Check, ChevronDown } from "lucide-react";
 import { useId, useState, useEffect } from "react";
 import { useTicketContext } from "./context";
-// Define Employee interface
 interface Employee {
   _id: string;
   name: string;
   email: string;
   role: string;
-  country?: string;
   // Add other fields as needed
 }
 
@@ -33,20 +31,21 @@ interface PersonnelInfo {
   emailId?: string;
 }
 
-interface SelectReservationStaffProps {
+interface SelectSalesStaffProps {
   staffList: Employee[];
   default?: PersonnelInfo;
 }
 
-export function SelectReservationStaff({
+// ...existing imports and interfaces...
+
+export function SelectSalesStaff({
   staffList,
   default: defaultValue,
-}: SelectReservationStaffProps) {
+}: SelectSalesStaffProps) {
   const id = useId();
   const [open, setOpen] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
-
-  const { setSelectedReservationStaff } = useTicketContext();
+  const { setSelectedSalesStaff } = useTicketContext();
 
   // Find default value by matching email
   useEffect(() => {
@@ -57,14 +56,14 @@ export function SelectReservationStaff({
       if (matchedStaff) {
         setValue(matchedStaff._id.toString());
         // Pass complete staff info instead of just ID
-        setSelectedReservationStaff({
+        setSelectedSalesStaff({
           id: matchedStaff._id.toString(),
           name: matchedStaff.name,
           email: matchedStaff.email,
         });
       }
     }
-  }, [defaultValue, staffList, setSelectedReservationStaff]);
+  }, [defaultValue, staffList, setSelectedSalesStaff]);
 
   const handleSelect = (staffId: string) => {
     setValue(staffId);
@@ -74,7 +73,7 @@ export function SelectReservationStaff({
 
     if (selectedStaff) {
       // Pass complete staff info instead of just ID
-      setSelectedReservationStaff({
+      setSelectedSalesStaff({
         id: staffId,
         name: selectedStaff.name,
         email: selectedStaff.email,
@@ -97,7 +96,7 @@ export function SelectReservationStaff({
             <span className={cn("truncate", !value && "text-muted-foreground")}>
               {value
                 ? staffList.find((staff) => staff._id === value)?.name
-                : defaultValue?.name || "Select Reservation Staff"}
+                : defaultValue?.name || "Select Sales Staff"}
             </span>
             <ChevronDown
               size={16}
@@ -114,7 +113,7 @@ export function SelectReservationStaff({
           <Command>
             <CommandInput placeholder="Search by name or email..." />
             <CommandList>
-              <CommandEmpty>No reservation staff found.</CommandEmpty>
+              <CommandEmpty>No sales staff found.</CommandEmpty>
               <CommandGroup>
                 {staffList.map((staff) => (
                   <CommandItem
