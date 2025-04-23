@@ -18,7 +18,7 @@ import { ApproveControl } from "@/components/pending-ticket/approve";
 import { SelectSalesStaff } from "@/components/pending-ticket/select-sales";
 import { SelectReservationStaff } from "@/components/pending-ticket/select-reservation";
 import { DeleteControl } from "@/components/pending-ticket/delete";
-
+import { SelectEstimatedTime } from "@/components/pending-ticket/select-estimated-time";
 interface Employee {
   _id: string | unknown;
   name: string;
@@ -107,6 +107,8 @@ export default async function PendingTicketsPage() {
                     <TableHead>Received Time</TableHead>
                     <TableHead>Sales Staff</TableHead>
                     <TableHead>Reservation Staff</TableHead>
+                    <TableHead>Estimated Time</TableHead>
+
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -124,6 +126,7 @@ export default async function PendingTicketsPage() {
                         <TableCell>
                           {formatDateTime(ticket.receivedDateTime)}
                         </TableCell>
+
                         <TableCell>
                           <SelectSalesStaff
                             staffList={salesStaff}
@@ -135,6 +138,9 @@ export default async function PendingTicketsPage() {
                             staffList={reservationStaff}
                             default={ticket.reservationInCharge}
                           />
+                        </TableCell>
+                        <TableCell>
+                          <SelectEstimatedTime defaultTime={"1H"} />
                         </TableCell>
                         <TableCell>
                           <ApproveControl ticketId={ticket._id.toString()} />

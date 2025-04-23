@@ -14,7 +14,8 @@ interface ApproveControlProps {
 
 export function ApproveControl({ ticketId }: ApproveControlProps) {
   const [isPending, startTransition] = useTransition();
-  const { selectedReservationStaff, selectedSalesStaff } = useTicketContext();
+  const { selectedReservationStaff, selectedSalesStaff, estimatedTime } =
+    useTicketContext();
   const router = useRouter();
 
   const handleApprove = () => {
@@ -46,7 +47,8 @@ export function ApproveControl({ ticketId }: ApproveControlProps) {
         const result = await approveTicket(
           ticketId,
           reservationInChargeData,
-          salesInChargeData
+          salesInChargeData,
+          estimatedTime
         );
 
         if (!result.success) {

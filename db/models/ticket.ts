@@ -1,6 +1,7 @@
 import { Schema, Document } from "mongoose";
 
 import mongoose from "mongoose";
+
 // Email sub-document interfaces for better type safety
 interface EmailFrom {
   name: string;
@@ -44,7 +45,7 @@ export interface ITicket extends Document {
   reservationInCharge: PersonnelInfo; // Changed to PersonnelInfo type
   salesInCharge: PersonnelInfo; // Changed to PersonnelInfo type
   travelAgent: PersonnelInfo; // Added new field
-
+  createdBy: PersonnelInfo;
   market: string;
   status: string;
   estimateTimeToSendPrice: number;
@@ -205,6 +206,9 @@ const TicketSchema = new Schema<ITicket>(
       type: Boolean,
       default: false,
       index: true,
+    },
+    createdBy: {
+      type: PersonnelSchema,
     },
     email: [EmailEntrySchema],
   },

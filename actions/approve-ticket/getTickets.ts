@@ -5,7 +5,8 @@ import Ticket from "../../db/models/ticket";
 import { revalidatePath } from "next/cache";
 import dbConnect from "@/db/db";
 import User from "@/db/models/User";
-
+import { sendConfirmationEmail } from "./send-approval-mail";
+import { convertTimeToSeconds } from "@/lib/utils";
 export const getAllUnApprovedTickets = async () => {
   try {
     await dbConnect();
@@ -64,19 +65,21 @@ export async function approveTicket(
     id: string;
     name: string;
     emailId: string;
-  }
+  },
+  estimatedTime: string
 ) {
   try {
     await dbConnect();
     const session = await auth();
 
     // Basic validation
-    if (!ticketId || !reservationInCharge || !salesInCharge) {
+    if (!ticketId || !reservationInCharge || !salesInCharge || !estimatedTime) {
       return {
         success: false,
         error: "Missing required information",
       };
     }
+    const estimatedTimeInSeconds = convertTimeToSeconds(estimatedTime);
 
     // Create clean objects to avoid any unexpected properties
     const cleanReservation = {
@@ -105,6 +108,7 @@ export async function approveTicket(
           reservationInCharge: cleanReservation,
           salesInCharge: cleanSales,
           approvedBy: approver,
+          estimateTimeToSendPrice: estimatedTimeInSeconds,
         },
       }
     );
@@ -115,6 +119,12 @@ export async function approveTicket(
         error: "Ticket not found or no changes made",
       };
     }
+    await sendConfirmationEmail({
+      ticketId,
+      reservationStaff: reservationInCharge,
+      salesStaff: salesInCharge,
+      estimatedTimeInSeconds,
+    });
 
     // Revalidate the path
     revalidatePath("/pending-tickets");
