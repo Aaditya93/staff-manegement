@@ -6,6 +6,7 @@ import { useTicketContext } from "./context";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface ApproveControlProps {
   ticketId: string;
@@ -68,7 +69,13 @@ export function ApproveControl({ ticketId }: ApproveControlProps) {
       size="sm"
       disabled={isPending || !selectedReservationStaff || !selectedSalesStaff}
     >
-      {isPending ? "Processing..." : "Approve"}
+      {isPending ? (
+        <>
+          <Loader2 className=" h-4 w-4 animate-spin " />
+        </>
+      ) : (
+        "Approve"
+      )}
     </Button>
   );
 }

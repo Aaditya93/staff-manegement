@@ -17,6 +17,7 @@ import { ApproveControl } from "@/components/pending-ticket/approve";
 
 import { SelectSalesStaff } from "@/components/pending-ticket/select-sales";
 import { SelectReservationStaff } from "@/components/pending-ticket/select-reservation";
+import { DeleteControl } from "@/components/pending-ticket/delete";
 
 interface Employee {
   _id: string | unknown;
@@ -137,6 +138,7 @@ export default async function PendingTicketsPage() {
                         </TableCell>
                         <TableCell>
                           <ApproveControl ticketId={ticket._id.toString()} />
+                          <DeleteControl ticketId={ticket._id.toString()} />
                         </TableCell>
                       </TicketProvider>
                     </TableRow>

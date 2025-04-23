@@ -14,15 +14,16 @@ export const getAllTicketsByEmail = async (fromDate?: Date, toDate?: Date) => {
     // Search based on role if provided
     if (role) {
       if (role === "sales") {
-        query = { "salesInCharge.emailId": email };
+        query = { "salesInCharge.emailId": email, isApproved: true };
       } else if (role === "reservation") {
-        query = { "reservationInCharge.emailId": email };
+        query = { "reservationInCharge.emailId": email, isApproved: true };
       } else if (role === "travelAgent") {
-        query = { "travelAgent.emailId": email };
+        query = { "travelAgent.emailId": email, isApproved: true };
       }
     } else {
       // If no role specified, search in all staff fields
       query = {
+        isApproved: true,
         $or: [
           { "salesInCharge.emailId": email },
           { "reservationInCharge.emailId": email },

@@ -44,11 +44,13 @@ export interface ITicket extends Document {
   reservationInCharge: PersonnelInfo; // Changed to PersonnelInfo type
   salesInCharge: PersonnelInfo; // Changed to PersonnelInfo type
   travelAgent: PersonnelInfo; // Added new field
+
   market: string;
   status: string;
   estimateTimeToSendPrice: number;
   cost: number;
   waitingTime: number;
+  approvedBy: PersonnelInfo;
   speed: string;
   inbox: number;
   sent: number;
@@ -147,6 +149,7 @@ const TicketSchema = new Schema<ITicket>(
       type: String,
       trim: true,
       lowercase: true,
+      index: true,
     },
 
     cost: {
@@ -164,6 +167,9 @@ const TicketSchema = new Schema<ITicket>(
       type: PersonnelSchema,
     },
     travelAgent: {
+      type: PersonnelSchema,
+    },
+    approvedBy: {
       type: PersonnelSchema,
     },
     market: String,
@@ -198,6 +204,7 @@ const TicketSchema = new Schema<ITicket>(
     isApproved: {
       type: Boolean,
       default: false,
+      index: true,
     },
     email: [EmailEntrySchema],
   },

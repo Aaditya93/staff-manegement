@@ -68,6 +68,7 @@ export async function approveTicket(
 ) {
   try {
     await dbConnect();
+    const session = await auth();
 
     // Basic validation
     if (!ticketId || !reservationInCharge || !salesInCharge) {
@@ -89,6 +90,11 @@ export async function approveTicket(
       name: salesInCharge.name,
       emailId: salesInCharge.emailId,
     };
+    const approver = {
+      id: session?.user.id || "",
+      name: session?.user.name || "",
+      emailId: session?.user.email || "",
+    };
 
     // Use updateOne instead of findByIdAndUpdate for simplicity
     const result = await Ticket.updateOne(
@@ -98,10 +104,11 @@ export async function approveTicket(
           isApproved: true,
           reservationInCharge: cleanReservation,
           salesInCharge: cleanSales,
+          approvedBy: approver,
         },
       }
     );
-
+    console.log("Update result:", result);
     if (result.modifiedCount === 0) {
       return {
         success: false,
@@ -132,3 +139,20 @@ export const getAllEmployees = async () => {
     console.error("Error fetching employees:", error);
   }
 };
+
+export async function deleteTicket(ticketId: string) {
+  try {
+    await dbConnect();
+
+    // Find and delete the ticket
+    await Ticket.findByIdAndDelete(ticketId);
+
+    // Revalidate related paths to refresh the UI
+    revalidatePath("/pending-tickets");
+
+    return { success: true, message: "Ticket deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting ticket:", error);
+    throw new Error("Failed to delete ticket");
+  }
+}

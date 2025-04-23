@@ -100,7 +100,7 @@ const data = {
     },
     {
       name: "Ticket",
-      url: "/ticket/10",
+      url: "/pending-tickets",
       icon: BsListTask,
     },
     {
