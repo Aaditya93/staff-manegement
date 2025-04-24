@@ -1,7 +1,10 @@
 import { ChatDashboard } from "@/components/chat/chat-dashboard";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { fetchConversationMessages } from "@/actions/chat/conversation";
+import {
+  fetchConversationMessages,
+  fetchUserConversations,
+} from "@/actions/chat/conversation";
 import { serializeData } from "@/utils/serialize";
 // Define message limit options
 const MESSAGE_LIMITS = {
@@ -22,7 +25,7 @@ export default async function MessagingPage({
   searchParams = await searchParams;
 
   // Get conversationId from URL parameters
-  const { conversationId } = params;
+  const { conversationId } = await params;
 
   // Get message limit from query params (e.g. /chat/123?limit=300)
   const requestedLimit = searchParams?.limit
@@ -35,6 +38,8 @@ export default async function MessagingPage({
     : MESSAGE_LIMITS.default;
 
   // Fetch conversation data
+  const conversation = await fetchUserConversations();
+  console.log("Fetched conversation data:", conversation);
 
   // Fetch messages for the conversation with the specified limit
   const { messages, error } = await fetchConversationMessages(
@@ -47,12 +52,17 @@ export default async function MessagingPage({
   }
 
   // Process messages with type property
-  const safeMessages = serializeData(messages) || [];
+  const safeMessages = serializeData(messages);
+  console.log("Serialized messages:", safeMessages);
+  const safeConversation = serializeData(conversation);
+
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
         <ChatDashboard
+          initialConversationId={conversationId}
+          conversationsData={safeConversation.conversations}
           initialMessages={safeMessages}
           messageLimit={messageLimit}
         />

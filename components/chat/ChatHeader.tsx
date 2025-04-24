@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { type Conversation } from "./chat-types";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { useSession } from "next-auth/react"; // Add this import
 
 interface ChatHeaderProps {
   conversation?: Conversation | null;
@@ -16,24 +16,66 @@ export function ChatHeader({
   isMainHeader,
   onBack,
 }: ChatHeaderProps) {
+  // Get session data for the current user
+  const { data: session } = useSession();
+
   const getConversationName = (conversation?: Conversation | null) => {
-    if (!conversation) return "Chat";
-    if (conversation.name) return conversation.name;
-    return conversation.participants[0]?.name || "Unknown";
+    // If not main header, use current user's name from session
+    if (!isMainHeader && session?.user?.name) {
+      return session.user.name;
+    }
+    return conversation?.participants[0]?.name || "Unknown";
   };
 
   const getConversationImage = (conversation?: Conversation | null) => {
-    if (!conversation) return "";
-    if (!conversation.isGroup && conversation.participants[0]?.image) {
+    // If not main header, use current user's image from session
+    if (!isMainHeader && session?.user?.image) {
+      return session.user.image;
+    }
+    if (conversation?.participants[0]?.image) {
       return conversation.participants[0].image;
     }
     return "";
   };
 
   const getStatus = () => {
+    // If not main header, assume current user is online
+    if (!isMainHeader) {
+      return "online";
+    }
     // This is a placeholder - you would implement actual status logic here
     // Using optional chaining with status property that might not exist in the type
     return (conversation?.participants[0] as any)?.status || "offline";
+  };
+
+  const getLastSeen = () => {
+    // Get lastMessage createdAt from conversation or fallback to current time
+    const lastMessageTime =
+      conversation?.lastMessage?.createdAt || new Date().toString();
+    const lastSeenDate = new Date(lastMessageTime);
+
+    // Check if it's today
+    const today = new Date();
+    const isToday =
+      lastSeenDate.getDate() === today.getDate() &&
+      lastSeenDate.getMonth() === today.getMonth() &&
+      lastSeenDate.getFullYear() === today.getFullYear();
+
+    if (isToday) {
+      return `Last seen today at ${lastSeenDate.getHours()}:${lastSeenDate
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`;
+    } else {
+      // Format for different dates
+      const options: Intl.DateTimeFormatOptions = {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      return `Last seen ${lastSeenDate.toLocaleDateString("en-US", options)}`;
+    }
   };
 
   return (
@@ -69,15 +111,9 @@ export function ChatHeader({
           {(getStatus() === "online" || isMainHeader) && (
             <p className="text-xs text-muted-foreground">
               {getStatus() === "online" ? (
-                <>
-                  <Badge
-                    variant="outline"
-                    className="h-2 w-2 rounded-full bg-green-500 border-0 mr-1"
-                  />
-                  Online
-                </>
+                <>Online</>
               ) : (
-                isMainHeader && "Last seen today at 12:30"
+                isMainHeader && getLastSeen()
               )}
             </p>
           )}

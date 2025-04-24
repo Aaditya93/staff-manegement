@@ -20,10 +20,12 @@ import {
   Eye,
   ArrowDownLeft,
   ArrowUpRight,
+  Pencil,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Link from "next/link";
 
 const TicketPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -60,13 +62,20 @@ const TicketPage = async ({ params }: { params: Promise<{ id: string }> }) => {
             Manage and view ticket information
           </p>
         </div>
-        <Badge
-          className={`${getStatusColor(
-            ticket.status
-          )} text-white px-3 py-1 text-sm font-medium`}
-        >
-          {ticket.status.toUpperCase()}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Link href={`/ticket/${id}/edit`}>
+            <Button className="gap-2" variant="outline">
+              <Pencil className="h-4 w-4" /> Edit Ticket
+            </Button>
+          </Link>
+          <Badge
+            className={`${getStatusColor(
+              ticket.status
+            )} text-white px-3 py-1 text-sm font-medium`}
+          >
+            {ticket.status.toUpperCase()}
+          </Badge>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -236,6 +245,26 @@ const TicketPage = async ({ params }: { params: Promise<{ id: string }> }) => {
                   {ticket.waitingTime} minutes
                 </p>
               </div>
+
+              {ticket.approvedBy && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" />
+                    Approved By
+                  </p>
+                  <div className="bg-secondary/30 p-3 rounded-md hover:bg-secondary/40 transition-colors">
+                    <p className="font-medium">{ticket.approvedBy.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {ticket.approvedBy.emailId}
+                    </p>
+                    {ticket.approvedBy.market && (
+                      <p className="text-xs mt-1 text-muted-foreground">
+                        Market: {ticket.approvedBy.market}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

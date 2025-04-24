@@ -23,9 +23,13 @@ export function ChatInput({
     }
   };
 
+  const handleEmojiSelect = (emoji: { emoji: string }) => {
+    setMessage(message + emoji.emoji);
+  };
+
   return (
     <div className="p-3 flex items-center gap-2 bg-muted/20 rounded-br-lg border-t">
-      <EmojiPickerPopover />
+      <EmojiPickerPopover onEmojiSelect={handleEmojiSelect} />
       <div className="relative flex-grow">
         <Input
           className="rounded-full pl-4 pr-10 py-5 bg-muted/30 border"

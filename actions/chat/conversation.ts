@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import Conversation from "@/db/models/Conversation";
 import Message from "@/db/models/Message";
 import mongoose from "mongoose";
 import { auth } from "@/auth";
+import { serializeData } from "@/utils/serialize";
 
 /**
  * Fetch conversations for the current user
@@ -156,9 +156,18 @@ export async function sendMessage(conversationId: string, content: string) {
         },
       }
     );
-    console.log("Message sent successfully:", newMessage);
 
-    return { success: true, message: newMessage };
+    // Populate sender info for the response
+    const populatedMessage = await Message.findById(newMessage._id).lean();
+
+    // Check if populatedMessage is null
+    if (!populatedMessage) {
+      return { error: "Failed to retrieve the created message" };
+    }
+
+    const cleanMessage = serializeData(populatedMessage);
+    console.log("Message sent successfully:", cleanMessage);
+    return { success: true, message: cleanMessage };
   } catch (error) {
     console.error("Error sending message:", error);
     return { error: "Failed to send message" };
@@ -178,10 +187,6 @@ export async function fetchConversationMessages(
     // Convert string ID to MongoDB ObjectId
     const convoId = new mongoose.Types.ObjectId(conversationId);
 
-    // Find user's membership in this conversation (for authorization)
-    // This is a simplified check - you might want to implement actual authorization
-
-    // Fetch messages with pagination (most recent messages first, then reverse for display)
     const messages = await Message.find({ conversationId: convoId })
       .sort({ createdAt: -1 }) // Latest messages first
       .limit(limit)
@@ -191,23 +196,25 @@ export async function fetchConversationMessages(
       })
       .lean();
 
-    // Transform messages for client-side use and reverse to get chronological order
+    // Create a clean, serializable structure to avoid circular references
+    const cleanMessages = messages.map((msg) => ({
+      _id: msg._id.toString(),
+      content: msg.content,
+      senderId: {
+        _id: msg.senderId._id.toString(),
+        name: msg.senderId.name,
+        email: msg.senderId.email,
+        image: msg.senderId.image,
+      },
+      conversationId: msg.conversationId.toString(),
+      type: msg.type,
+      createdAt: msg.createdAt.toISOString(),
+      updatedAt: msg.updatedAt.toISOString(),
+    }));
+
+    // Return in chronological order (oldest to newest)
     return {
-      messages: messages
-        .map((msg) => ({
-          _id: msg._id.toString(),
-          content: msg.content,
-          senderId: {
-            _id: msg.senderId._id.toString(),
-            name: msg.senderId.name,
-            email: msg.senderId.email,
-            image: msg.senderId.image,
-          },
-          conversationId: msg.conversationId.toString(),
-          createdAt: msg.createdAt.toISOString(),
-          updatedAt: msg.updatedAt.toISOString(),
-        }))
-        .reverse(), // Reverse to get oldest to newest
+      messages: cleanMessages.reverse(),
     };
   } catch (error) {
     console.error("Error fetching conversation messages:", error);

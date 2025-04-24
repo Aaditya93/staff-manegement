@@ -9,6 +9,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 // Types
 import { Conversation, Message, User } from "./chat-types";
@@ -30,14 +32,15 @@ import { MessageItem } from "./MessageItem";
 import { ChatHeader } from "./ChatHeader";
 import { ChatInput } from "./ChatInput";
 import { EmptyState } from "./EmptyState";
-import { LoadingMessages } from "./LoadingMessages";
 
 export const ChatDashboard = ({
   initialConversationId,
   initialMessages = [],
+  conversationsData = [],
 }: {
   initialConversationId?: string;
   initialMessages?: Message[];
+  conversationsData?: Conversation[];
 }) => {
   // State
   const [currentConversationId, setCurrentConversationId] = useState<
@@ -50,7 +53,9 @@ export const ChatDashboard = ({
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [message, setMessage] = useState("");
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>(
+    Array.isArray(conversationsData) ? conversationsData : []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const debouncedSearchTerm = useDebounce(searchQuery, 500);
@@ -74,6 +79,23 @@ export const ChatDashboard = ({
         c.participants.every((p) => p._id !== message.senderId._id)
     );
   };
+  useEffect(() => {
+    if (initialMessages && initialMessages.length > 0) {
+      setIsLoading(false);
+    }
+  }, [initialMessages]);
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    // Use a small timeout to ensure the DOM has updated
+    const timer = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [messages]);
 
   // Handle creating a new conversation
   const handleCreateConversation = async (userId: string) => {
@@ -101,88 +123,39 @@ export const ChatDashboard = ({
     }
   };
 
-  // Handle sending a message
   const handleSendMessage = async () => {
-    if (message.trim() && currentConversationId) {
-      setIsSending(true);
+    if (!message.trim() || !currentConversationId || isSending) return;
 
-      // Create optimistic message
-      const optimisticMessage: Message = {
-        _id: `temp-${Date.now()}`,
-        senderId: {
-          _id: "currentUser",
-          name: "You",
-          image: undefined,
-        },
-        type: "text",
-        content: [message.trim()],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        status: "sending",
-      };
+    // Store message content and clear input
+    const messageContent = message.trim();
+    setMessage("");
+    setIsSending(true);
 
-      setMessages((prev) => [...prev, optimisticMessage]);
-      setMessage("");
+    try {
+      // Send the message to the server
+      const response = await sendMessage(currentConversationId, messageContent);
 
-      try {
-        const { success, error } = await sendMessage(
-          currentConversationId,
-          optimisticMessage.content[0]
-        );
+      // Get the message from the response
+      const serverMessage = response.message || response;
 
-        if (success) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg._id === optimisticMessage._id
-                ? { ...msg, status: "sent" }
-                : msg
-            )
-          );
-
-          const { messages: serverMessages } = await fetchConversationMessages(
-            currentConversationId
-          );
-
-          if (serverMessages) {
-            // Preserve status information when updating from server
-            const typedMessages = serverMessages.map((msg) => {
-              // Find if we have this message in our current state
-              const existingMsg = messages.find(
-                (m) =>
-                  // Match by ID or by content/time if it's our optimistic message
-                  m._id === msg._id ||
-                  (m.content[0] === msg.content[0] &&
-                    Math.abs(
-                      new Date(m.createdAt).getTime() -
-                        new Date(msg.createdAt).getTime()
-                    ) < 10000)
-              );
-
-              return {
-                ...msg,
-                type: msg.type || "text",
-                // Keep the status if it exists
-                status: existingMsg?.status || msg.status,
-              };
-            }) as Message[];
-            setMessages(typedMessages);
-          }
-        }
-      } catch (err) {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg._id === optimisticMessage._id
-              ? { ...msg, status: "failed" }
-              : msg
-          )
-        );
-        console.error("Error sending message:", err);
-      } finally {
-        setIsSending(false);
+      if (serverMessage && serverMessage._id) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...serverMessage,
+            status: "sent",
+          },
+        ]);
+      } else {
+        throw new Error("Failed to send message");
       }
+    } catch (err) {
+      console.error("Error sending message:", err);
+      // Show error notification or handle error appropriately
+    } finally {
+      setIsSending(false);
     }
   };
-
   // Handle click outside search dropdown
   const handleClickOutside = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest("[data-search-result]")) {
@@ -190,30 +163,6 @@ export const ChatDashboard = ({
     }
   };
 
-  // Effects
-
-  // Load conversations on mount
-  useEffect(() => {
-    async function loadConversations() {
-      setIsLoading(true);
-      const { conversations, error } = await fetchUserConversations();
-
-      if (conversations) {
-        setConversations(conversations);
-        if (conversations.length > 0 && !currentConversationId) {
-          setCurrentConversationId(conversations[0]._id);
-        }
-      } else if (error) {
-        console.error("Error loading conversations:", error);
-      }
-
-      setIsLoading(false);
-    }
-
-    loadConversations();
-  }, []);
-
-  // Search users
   useEffect(() => {
     async function performSearch() {
       if (!debouncedSearchTerm || debouncedSearchTerm.length < 2) {
@@ -254,10 +203,7 @@ export const ChatDashboard = ({
           <div className="flex items-center justify-between  border-b">
             <div className="flex items-center gap-2">
               {/* User avatar and header */}
-              <ChatHeader
-                conversation={conversations[0]}
-                isMainHeader={false}
-              />
+              <ChatHeader conversation={currentChat} isMainHeader={false} />
             </div>
           </div>
 
@@ -314,20 +260,64 @@ export const ChatDashboard = ({
                 {/* Messages Area */}
                 <ScrollArea className="flex-grow p-4 h-[calc(100vh-10rem)] min-h-[400px]">
                   {isLoading ? (
-                    <LoadingMessages />
+                    <div className="flex flex-col items-center justify-center">
+                      <Loader2 className="animate-spin text-muted" />
+                    </div>
                   ) : messages.length === 0 ? (
                     <EmptyState type="noMessages" />
                   ) : (
                     <div className="space-y-4 mb-4 pb-2">
-                      {messages.map((msg) => (
-                        <MessageItem
-                          key={msg._id}
-                          message={msg}
-                          isCurrentUser={isCurrentUserMessage(msg)}
-                          formatTime={formatMessageTime}
-                        />
-                      ))}
-                      <div ref={messagesEndRef} className="h-1" />
+                      <AnimatePresence mode="popLayout">
+                        {isLoading ? (
+                          <div className="flex flex-col items-center justify-center">
+                            <Loader2 className="animate-spin text-muted" />
+                          </div>
+                        ) : messages.length === 0 ? (
+                          <EmptyState type="noMessages" />
+                        ) : (
+                          <div className="space-y-4 mb-4 pb-2">
+                            <AnimatePresence mode="popLayout">
+                              {messages.map((msg, index) => {
+                                const isNewestMessage =
+                                  index === messages.length - 1;
+
+                                return (
+                                  <motion.div
+                                    key={msg._id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{
+                                      type: "spring",
+                                      stiffness: isNewestMessage ? 600 : 500,
+                                      damping: isNewestMessage ? 25 : 30,
+                                      // No delay for newest message, small delay for others
+                                      delay: isNewestMessage ? 0 : 0.1,
+                                    }}
+                                    layout
+                                  >
+                                    <MessageItem
+                                      message={msg}
+                                      isCurrentUser={isCurrentUserMessage(msg)}
+                                      formatTime={formatMessageTime}
+                                    />
+                                  </motion.div>
+                                );
+                              })}
+                            </AnimatePresence>
+                            <div
+                              ref={messagesEndRef}
+                              className="h-1"
+                              aria-hidden="true"
+                            />
+                          </div>
+                        )}
+                      </AnimatePresence>
+                      <div
+                        ref={messagesEndRef}
+                        className="h-1"
+                        aria-hidden="true"
+                      />
                     </div>
                   )}
                 </ScrollArea>

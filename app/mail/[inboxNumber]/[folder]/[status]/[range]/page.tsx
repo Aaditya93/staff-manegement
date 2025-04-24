@@ -2,19 +2,8 @@ import Image from "next/image";
 import { Mail } from "@/components/mail/mail";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { fetchFolderEmails } from "@/actions/mail/fetch-emails";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 interface MailPageProps {
   params: {
     inboxNumber: number;
