@@ -1,6 +1,7 @@
 import dbConnect from "@/db/db";
 import Ticket from "@/db/models/ticket";
 import { auth } from "@/auth";
+import { serializeData } from "@/utils/serialize";
 
 export const getAllTicketsByEmail = async (fromDate?: Date, toDate?: Date) => {
   try {
@@ -60,10 +61,12 @@ export const getTicketById = async (id: string) => {
   try {
     await dbConnect();
     const ticket = await Ticket.findById(id).lean();
+    const serializedTicket = serializeData(ticket);
+
     if (!ticket) {
       throw new Error("Ticket not found");
     }
-    return ticket;
+    return serializedTicket;
   } catch (error) {
     console.error("Error fetching ticket by ID:", error);
     throw error;

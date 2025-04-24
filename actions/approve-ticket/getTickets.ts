@@ -7,6 +7,7 @@ import dbConnect from "@/db/db";
 import User from "@/db/models/User";
 import { sendConfirmationEmail } from "./send-approval-mail";
 import { convertTimeToSeconds } from "@/lib/utils";
+import { serializeData } from "@/utils/serialize";
 export const getAllUnApprovedTickets = async () => {
   try {
     await dbConnect();
@@ -141,10 +142,11 @@ export async function approveTicket(
 export const getAllEmployees = async () => {
   try {
     await dbConnect();
-    const result = User.find({
+    const result = await User.find({
       role: { $in: ["ReservationStaff", "SalesStaff"] },
     }).lean();
-    return result;
+    const seralizedResult = await serializeData(result);
+    return seralizedResult;
   } catch (error) {
     console.error("Error fetching employees:", error);
   }
