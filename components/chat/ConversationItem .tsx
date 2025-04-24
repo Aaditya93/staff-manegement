@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { type Conversation } from "./chat-types";
+import { useRouter } from "next/navigation";
 
 interface ConversationItemProps {
   conversation: Conversation;
@@ -18,6 +19,8 @@ export function ConversationItem({
   formatTime,
   isLastItem,
 }: ConversationItemProps) {
+  const router = useRouter();
+
   const getConversationName = (conversation: Conversation) => {
     if (conversation.name) return conversation.name;
     return conversation.participants[0]?.name || "Unknown";
@@ -30,10 +33,17 @@ export function ConversationItem({
     return "";
   };
 
+  const handleClick = () => {
+    // Update the URL with the conversation ID
+    router.push(`/chat/${conversation._id || "none"}`);
+    // Call the original onSelect function
+    onSelect();
+  };
+
   return (
     <div>
       <button
-        onClick={onSelect}
+        onClick={handleClick}
         className={`p-3 w-full hover:bg-muted cursor-pointer text-left flex items-center justify-between ${
           isActive ? "bg-muted/50" : ""
         }`}

@@ -155,8 +155,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                   expiresAt: refreshedTokens.expiresAt,
                   provider: account.provider || "microsoft-entra-id",
                 });
-
-                console.log(`Successfully refreshed token for account ${i}`);
               } else {
                 console.error(`Failed to refresh token for account ${i}`);
               }

@@ -105,8 +105,9 @@ export async function fetchUserConversations() {
       },
       { $sort: { updatedAt: -1 } },
     ]);
+    const cleanConversations = serializeData(conversations);
 
-    return { conversations };
+    return { cleanConversations };
   } catch (error) {
     console.error("Error fetching conversations:", error);
     return { error: "Failed to fetch conversations" };

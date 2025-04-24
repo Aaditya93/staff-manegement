@@ -25,7 +25,6 @@ export async function updateUserTokens(
 ): Promise<void> {
   try {
     await dbConnect();
-    console.log("Updating user tokens for email:", email);
 
     // Create the update object with proper MongoDB dot notation
     const updateObj: any = {};

@@ -95,7 +95,7 @@ const data = {
     },
     {
       name: "Dashboard",
-      url: "/dashboard",
+      url: `/dashboard/from=${seven}&to=${to}`,
       icon: CiViewTable,
     },
     {

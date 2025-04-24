@@ -5,10 +5,10 @@ import {
   fetchConversationMessages,
   fetchUserConversations,
 } from "@/actions/chat/conversation";
-import { serializeData } from "@/utils/serialize";
+
 // Define message limit options
 const MESSAGE_LIMITS = {
-  default: 150, // Default message count
+  default: 100, // Default message count
   medium: 300, // Medium load
   large: 600, // Large load
   max: 900, // Maximum messages to load initially
@@ -25,23 +25,36 @@ export default async function MessagingPage({
   searchParams = await searchParams;
 
   // Get conversationId from URL parameters
-  const { conversationId } = await params;
+  const { conversationId } = params;
 
   // Get message limit from query params (e.g. /chat/123?limit=300)
-  const requestedLimit = searchParams?.limit
-    ? parseInt(searchParams.limit)
-    : MESSAGE_LIMITS.default;
+  const requestedLimit = searchParams?.limit;
 
-  // Ensure limit is valid (use default if invalid)
-  const messageLimit = Object.values(MESSAGE_LIMITS).includes(requestedLimit)
-    ? requestedLimit
+  const messageLimit = requestedLimit
+    ? parseInt(requestedLimit)
     : MESSAGE_LIMITS.default;
 
   // Fetch conversation data
-  const conversation = await fetchUserConversations();
-  console.log("Fetched conversation data:", conversation);
+  const conversations = await fetchUserConversations();
 
-  // Fetch messages for the conversation with the specified limit
+  if (conversationId == "none") {
+    // Process messages with type property
+
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className="flex flex-col h-screen overflow-hidden">
+          <ChatDashboard
+            initialConversationId={""}
+            conversationsData={conversations.cleanConversations}
+            initialMessages={[]}
+            messageLimit={messageLimit}
+          />
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
   const { messages, error } = await fetchConversationMessages(
     conversationId,
     messageLimit
@@ -51,19 +64,14 @@ export default async function MessagingPage({
     console.error("Error loading messages:", error);
   }
 
-  // Process messages with type property
-  const safeMessages = serializeData(messages);
-  console.log("Serialized messages:", safeMessages);
-  const safeConversation = serializeData(conversation);
-
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
         <ChatDashboard
           initialConversationId={conversationId}
-          conversationsData={safeConversation.conversations}
-          initialMessages={safeMessages}
+          conversationsData={conversations.cleanConversations}
+          initialMessages={messages}
           messageLimit={messageLimit}
         />
       </SidebarInset>

@@ -27,27 +27,11 @@ const DashboardPage = async ({ params }: MailPageProps) => {
 
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
         <div className="flex-1 overflow-hidden">
-          <div className="md:hidden">
-            <Image
-              src="/examples/mail-dark.png"
-              width={1280}
-              height={727}
-              alt="Mail"
-              className="hidden dark:block"
-            />
-            <Image
-              src="/examples/mail-light.png"
-              width={1280}
-              height={727}
-              alt="Mail"
-              className="block dark:hidden"
-            />
-          </div>
-          <div className="hidden md:flex h-full w-full">
+          <div className="hidden md:flex h-full w-full border-b">
             <Mail
               inboxNumber={inboxNumber}
               mails={mail.emails}
-              defaultLayout={[10, 40, 50]}
+              defaultLayout={[20, 40, 40]}
               defaultCollapsed={false}
               navCollapsedSize={4}
               currentFolder={folder}

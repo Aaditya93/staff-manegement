@@ -300,6 +300,7 @@ export const ChatDashboard = ({
                                       message={msg}
                                       isCurrentUser={isCurrentUserMessage(msg)}
                                       formatTime={formatMessageTime}
+                                      isFirstMessage={index === 0} // Add this line to make first message true
                                     />
                                   </motion.div>
                                 );

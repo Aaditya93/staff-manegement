@@ -121,7 +121,7 @@ export function Mail({
             sizes
           )}`;
         }}
-        className="h-full w-full max-h-full overflow-hidden"
+        className="h-full w-full max-h-full overflow-hidden "
       >
         <ResizablePanel
           defaultSize={defaultLayout[0]}
