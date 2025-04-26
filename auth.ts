@@ -26,8 +26,8 @@ declare module "next-auth" {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
+    signIn: "/auth/travel-agent/signin",
+    error: "/auth/travel-agent/error",
   },
 
   events: {

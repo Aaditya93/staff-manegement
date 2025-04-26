@@ -1,6 +1,6 @@
 "use server";
 import mongoose from "mongoose";
-
+import bcrypt from "bcryptjs";
 import dbConnect from "../db";
 const accountSchema = new mongoose.Schema(
   {
@@ -21,18 +21,23 @@ const userSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
+    password: {
+      type: String,
+    },
     role: {
       type: String,
-      enum: ["Admin", "TravelAgent", "Employee"],
-      default: "Employee",
       required: true,
     },
     accounts: [accountSchema],
-
+    travelAgentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TravelAgentUser",
+    },
     country: String,
     provider: String,
     image: String,
     backgroundImage: String,
+
     emailVerified: Date,
   },
   { timestamps: true }
@@ -82,5 +87,34 @@ export async function emailVerified(id: string) {
   } catch (error) {
     console.error("Error verifying email:", error);
     throw error;
+  }
+}
+
+export async function authenticateUser({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) {
+  try {
+    // Check if the user exists
+    await dbConnect();
+    const user = await User.findOne({ email });
+    if (!user) {
+      return { error: "User does not exist" };
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return { error: "Invalid password" };
+    }
+
+    return user;
+  } catch (error) {
+    console.error("Error during authentication:", error);
+    return { error: "Error while authenticating" };
   }
 }
