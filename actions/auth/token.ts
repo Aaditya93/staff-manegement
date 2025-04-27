@@ -190,12 +190,64 @@ export async function getValidAccessToken(
   console.log("Could not refresh token");
   return null;
 }
-
 /**
- * Refreshes a user's token by user ID
- * @param userId The ID of the user
- * @returns The new token info or null if refresh failed
+ * Gets a valid access token for a specific user and inbox, refreshing if necessary
+ * @param user The user object containing account information
+ * @param inboxNumber The index of the inbox/account to use
+ * @returns A valid access token or null if unable to get one
  */
+export async function getValidAccessTokenForUser(
+  user: Pick<ExtenedUser["user"], "email" | "accounts">,
+  inboxNumber: number
+): Promise<string | null> {
+  if (!user?.email || !user.accounts || !user.accounts[inboxNumber]) {
+    console.log("Invalid user data or inbox number");
+    return null;
+  }
+
+  // Check if token is expired
+  const now = Math.floor(Date.now() / 1000);
+  const tokenExpired =
+    !user.accounts[inboxNumber].expiresAt ||
+    user.accounts[inboxNumber].expiresAt < now;
+
+  console.log(
+    "Token expired?",
+    tokenExpired,
+    "Current time:",
+    now,
+    "Expires at:",
+    user.accounts[inboxNumber].expiresAt
+  );
+
+  // If token is not expired, return it
+  if (!tokenExpired && user.accounts[inboxNumber].accessToken) {
+    return user.accounts[inboxNumber].accessToken;
+  }
+
+  // Otherwise refresh the token
+  if (user.accounts[inboxNumber].refreshToken) {
+    const newTokens = await refreshAccessToken(
+      user.accounts[inboxNumber].refreshToken
+    );
+
+    if (newTokens) {
+      console.log("Token refreshed successfully");
+
+      // Update the tokens in the database
+      await updateUserTokens(user.email, inboxNumber, {
+        ...newTokens,
+        provider: "microsoft-entra-id",
+      });
+
+      return newTokens.accessToken;
+    }
+  }
+
+  console.log("Could not refresh token");
+  return null;
+}
+
 export async function refreshUserToken(
   userId: string
 ): Promise<{ accessToken: string; expiresAt: number } | null> {

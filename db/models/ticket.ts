@@ -35,6 +35,7 @@ interface PersonnelInfo {
 export interface ITicket extends Document {
   companyName: string;
   _id: string;
+
   receivedDateTime: string;
   sentDateTime?: string;
   pax: number;
@@ -94,6 +95,7 @@ const EmailEntrySchema = new Schema(
       type: String,
       required: true,
     },
+
     emailSummary: {
       type: String,
       required: true,

@@ -1,8 +1,6 @@
 import { format } from "date-fns";
 import Link from "next/link";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   Calendar,
   Clock,
   DollarSign,
@@ -14,8 +12,10 @@ import {
   Users,
 } from "lucide-react";
 import { CiMap } from "react-icons/ci";
+import { LuMail } from "react-icons/lu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FaRegUser } from "react-icons/fa";
 import {
   Card,
   CardContent,
@@ -25,8 +25,10 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { ITicket } from "@/db/models/ticket";
+import { getEmail } from "@/actions/tickets/get-email";
+import EmailShowcase from "./email-showcase";
 
 export function TicketDashboard({ ticket }: ITicket) {
   // Helper function to format dates
@@ -77,18 +79,30 @@ export function TicketDashboard({ ticket }: ITicket) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Company & Destination Info */}
         <Card className="shadow-sm hover:shadow-md transition-shadow duration-300">
-          <CardHeader className="bg-secondary/20 pb-2">
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" />
-              {ticket.destination}
+          <CardHeader className="bg-primary pb-2 rounded-t-lg">
+            <CardTitle className="flex items-center gap-2 text-primary-foreground mb-4">
+              <MapPin className="h-5 w-5" />
+              Ticket Information
             </CardTitle>
-            <CardDescription className="text-base font-medium">
-              {ticket.companyName}
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <MapPin className="h-4 w-4 text-primary" />
+                Destination
+              </span>
+              <span className="font-semibold">{ticket.destination}</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <User className="h-4 w-4 text-primary" />
+                Company
+              </span>
+              <span className="font-semibold">{ticket.companyName}</span>
+            </div>
+
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-sm font-medium">
                 <Calendar className="h-4 w-4 text-primary" />
@@ -118,6 +132,7 @@ export function TicketDashboard({ ticket }: ITicket) {
               </span>
               <span className="font-semibold">{ticket.pax}</span>
             </div>
+
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-sm font-medium">
                 <CiMap className="h-4 w-4 text-primary" />
@@ -147,12 +162,14 @@ export function TicketDashboard({ ticket }: ITicket) {
             </div>
           </CardContent>
         </Card>
-
-        {/* Personnel Info */}
         <Card className="shadow-sm hover:shadow-md transition-shadow duration-300">
-          <CardHeader className="bg-secondary/20 pb-2">
-            <CardTitle>Personnel Information</CardTitle>
+          <CardHeader className="bg-primary pb-2 rounded-t-lg">
+            <CardTitle className="flex items-center gap-2 text-primary-foreground mb-4">
+              <FaRegUser className="h-5 w-5" />
+              Personnel Information
+            </CardTitle>
           </CardHeader>
+
           <CardContent className="space-y-4 pt-4">
             <div className="space-y-2">
               <h3 className="text-sm font-medium flex items-center gap-2">
@@ -206,9 +223,13 @@ export function TicketDashboard({ ticket }: ITicket) {
         </Card>
 
         {/* Email Stats */}
+
         <Card className="shadow-sm hover:shadow-md transition-shadow duration-300">
-          <CardHeader className="bg-secondary/20 pb-2">
-            <CardTitle>Email Statistics</CardTitle>
+          <CardHeader className="bg-primary pb-2 rounded-t-lg">
+            <CardTitle className="flex items-center gap-2 text-primary-foreground mb-4">
+              <LuMail className="h-5 w-5" />
+              Email Statistics
+            </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="space-y-4">
@@ -267,179 +288,95 @@ export function TicketDashboard({ ticket }: ITicket) {
 
       {/* Emails Section */}
       <Card className="shadow-sm hover:shadow-md transition-shadow duration-300">
-        <CardHeader className="bg-secondary/20 pb-2">
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5 text-primary" />
+        <CardHeader className="bg-primary pb-2 rounded-t-lg">
+          <CardTitle className="flex items-center  text-primary-foreground gap-2">
+            <Mail className="h-6 w-6 text-primary-foreground" />
             Email Communication
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-primary-foreground">
             {ticket.email.length} email(s) in this conversation
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
-          <Tabs defaultValue="emails">
-            <TabsList className="mb-4">
-              <TabsTrigger value="emails">Emails</TabsTrigger>
-              <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="emails">
-              <ScrollArea className="h-[500px] pr-4">
-                <div className="space-y-5">
-                  {ticket.email.map((email, index) => (
-                    <Card
-                      key={email.id}
-                      className={`border-l-4 ${
-                        email.emailType === "received"
-                          ? "border-l-blue-500"
-                          : "border-l-green-600"
-                      } shadow-sm hover:shadow-md transition-all`}
-                    >
-                      <CardHeader className="pb-2 bg-secondary/10">
-                        <div className="flex justify-between items-start gap-4">
-                          <div>
-                            <p className="font-medium flex items-center gap-1">
-                              <Mail className="h-4 w-4 text-primary" />
-                              {email.from.name}{" "}
-                              <span className="text-muted-foreground text-sm">
-                                &lt;{email.from.email}&gt;
-                              </span>
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              To: {email.to.map((to) => to.name).join(", ")}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="outline"
-                              className={
-                                email.rating >= 7
-                                  ? "bg-green-50"
-                                  : "bg-amber-50"
-                              }
-                            >
-                              Rating:{" "}
-                              <span className="font-bold ml-1">
-                                {email.rating}/10
-                              </span>
-                            </Badge>
-                            <Badge
-                              variant={
-                                email.emailType === "received"
-                                  ? "secondary"
-                                  : "default"
-                              }
-                              className={
-                                email.emailType === "received"
-                                  ? ""
-                                  : "bg-green-100 text-green-800 hover:bg-green-200"
-                              }
-                            >
-                              {email.emailType === "received"
-                                ? "Received"
-                                : "Sent"}
-                            </Badge>
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1 font-medium">
-                          {email.timestamp
-                            ? format(new Date(email.timestamp), "PPpp")
-                            : "N/A"}
-                        </p>
-                      </CardHeader>
-                      <CardContent className="pt-4">
-                        <p className="text-sm mb-5 leading-relaxed">
-                          {email.emailSummary}
-                        </p>
-                        <div className="flex gap-3 justify-end">
-                          <Button variant="outline" size="sm" className="gap-2">
-                            <Mail className="h-4 w-4" /> Open in Outlook
-                          </Button>
-                          <Button size="sm" className="gap-2">
-                            <Eye className="h-4 w-4" /> View Full Email
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-
-            <TabsContent value="timeline">
-              <ScrollArea className="h-[500px] pr-4">
-                <div className="relative pl-8 border-l-2 border-primary/30 space-y-8 py-4">
-                  {ticket.email.map((email, index) => (
-                    <div key={email.id} className="relative">
-                      <div
-                        className={`absolute -left-[13px] w-6 h-6 rounded-full flex items-center justify-center ${
-                          email.emailType === "received"
-                            ? "bg-blue-100 text-blue-600"
-                            : "bg-green-100 text-green-600"
-                        }`}
-                      >
-                        {email.emailType === "received" ? (
-                          <ArrowDownLeft className="h-3 w-3" />
-                        ) : (
-                          <ArrowUpRight className="h-3 w-3" />
-                        )}
-                      </div>
-                      <div className="mb-2">
-                        <p className="text-sm font-bold">
-                          {email.timestamp
-                            ? format(new Date(email.timestamp), "MMM dd, yyyy")
-                            : "N/A"}
-                          <span className="text-muted-foreground font-normal ml-2">
-                            {email.timestamp
-                              ? format(new Date(email.timestamp), "p")
-                              : ""}
+          <ScrollArea className="h-[500px] pr-4">
+            <div className="space-y-5">
+              {ticket.email.map((email, index) => (
+                <Card
+                  key={email.id}
+                  className={`border-l-4 ${
+                    email.emailType === "received"
+                      ? "border-l-blue-500"
+                      : "border-l-green-600"
+                  } shadow-sm hover:shadow-md transition-all`}
+                >
+                  <CardHeader className="pb-2 bg-secondary/10">
+                    <div className="flex justify-between items-start gap-4">
+                      <div>
+                        <p className="font-medium flex items-center gap-1">
+                          <Mail className="h-4 w-4 text-primary" />
+                          {email.from.name}{" "}
+                          <span className="text-muted-foreground text-sm">
+                            &lt;{email.from.email}&gt;
                           </span>
                         </p>
+                        <p className="text-sm text-muted-foreground">
+                          To: {email.to.map((to) => to.name).join(", ")}
+                        </p>
                       </div>
-                      <Card className="shadow-sm hover:shadow-md transition-all">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium flex items-center gap-1">
-                                {email.emailType === "received" ? (
-                                  <ArrowDownLeft className="h-4 w-4 text-blue-600" />
-                                ) : (
-                                  <ArrowUpRight className="h-4 w-4 text-green-600" />
-                                )}
-                                {email.emailType === "received"
-                                  ? "Received from"
-                                  : "Sent to"}
-                                : {email.from.name}
-                              </p>
-                              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                                {email.emailSummary.substring(0, 100)}...
-                              </p>
-                            </div>
-                            <Badge
-                              variant={
-                                email.emailType === "received"
-                                  ? "secondary"
-                                  : "default"
-                              }
-                              className={
-                                email.emailType === "received"
-                                  ? ""
-                                  : "bg-green-100 text-green-800"
-                              }
-                            >
-                              {email.emailType === "received"
-                                ? "Received"
-                                : "Sent"}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={
+                            email.rating >= 7 ? "bg-green-50" : "bg-amber-50"
+                          }
+                        >
+                          Rating:{" "}
+                          <span className="font-bold ml-1">
+                            {email.rating}/10
+                          </span>
+                        </Badge>
+                        <Badge
+                          variant={
+                            email.emailType === "received"
+                              ? "secondary"
+                              : "default"
+                          }
+                          className={
+                            email.emailType === "received"
+                              ? ""
+                              : "bg-green-100 text-green-800 hover:bg-green-200"
+                          }
+                        >
+                          {email.emailType === "received" ? "Received" : "Sent"}
+                        </Badge>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
+                    <p className="text-sm text-muted-foreground mt-1 font-medium">
+                      {email.timestamp
+                        ? format(new Date(email.timestamp), "PPpp")
+                        : "N/A"}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-sm mb-5 leading-relaxed">
+                      {email.emailSummary}
+                    </p>
+                    <div className="flex gap-3 justify-end">
+                      <a href={email.weblink}>
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Mail className="h-4 w-4" /> Open in Outlook
+                        </Button>
+                      </a>
+                      <EmailShowcase
+                        emailId={email.id}
+                        userId={ticket.createdBy.id}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
         </CardContent>
       </Card>
     </div>

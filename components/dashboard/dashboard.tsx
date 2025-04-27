@@ -29,13 +29,7 @@ const Dashboard = ({ tickets = [] }: DashboardProps) => {
 
   return (
     <SidebarProvider>
-      <AppSidebar
-        data={tableData}
-        columnFilters={columnFilters}
-        setColumnFilters={setColumnFilters}
-        searchSelections={searchSelections}
-        setSearchSelections={setSearchSelections}
-      />
+      <AppSidebar />
       <SidebarInset>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <DataTable

@@ -14,7 +14,7 @@ import Link from "next/link";
 
 // Define the TravelBooking type to match our data structure
 export type TravelBooking = {
-  id?: string;
+  _id: string;
   agent: string;
   receivedTime: string;
   noOfPax: number;
@@ -139,8 +139,8 @@ export const columns: ColumnDef<TravelBooking>[] = [
             status === "done" || status === "Done"
               ? "bg-green-100 text-green-800"
               : status === "new" || status === "In Progress"
-              ? "bg-blue-100 text-blue-800"
-              : "bg-red-100 text-red-800"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-red-100 text-red-800"
           }`}
         >
           {status}
@@ -222,9 +222,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <Link href={`/booking/${row.original.ticket || "detail"}`}>
-                View Details
-              </Link>
+              <Link href={`/ticket/${row.original.ticket}`}>View Details</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

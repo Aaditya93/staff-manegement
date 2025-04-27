@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
       required: true,
+      index: true,
     },
     password: {
       type: String,
@@ -27,6 +28,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
+      index: true,
     },
     accounts: [accountSchema],
     travelAgentId: {

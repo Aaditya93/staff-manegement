@@ -82,7 +82,6 @@ export async function approveTicket(
     }
     const estimatedTimeInSeconds = convertTimeToSeconds(estimatedTime);
 
-    // Create clean objects to avoid any unexpected properties
     const cleanReservation = {
       id: reservationInCharge.id,
       name: reservationInCharge.name,
@@ -113,7 +112,6 @@ export async function approveTicket(
         },
       }
     );
-    console.log("Update result:", result);
     if (result.modifiedCount === 0) {
       return {
         success: false,

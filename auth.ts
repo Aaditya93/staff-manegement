@@ -119,7 +119,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       if (token?.accounts && token.accounts.length > 0) {
         const nowInSeconds = Math.floor(Date.now() / 1000);
-        console.log(token.email);
 
         // Process each account in the token.accounts array
         for (let i = 0; i < token.accounts.length; i++) {

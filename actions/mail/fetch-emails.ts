@@ -211,3 +211,38 @@ export async function fetchEmailById(emailId: string): Promise<{
     };
   }
 }
+
+export async function fetchUserEmailById(
+  emailId: string,
+  accessToken: string
+): Promise<{
+  email?: string;
+  error?: string;
+}> {
+  try {
+    const graphUrl = `https://graph.microsoft.com/v1.0/me/messages/${emailId}`;
+
+    const response = await fetch(graphUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Graph API error:", errorData);
+      return {
+        error: `Failed to fetch email: ${response.status} ${response.statusText}`,
+      };
+    }
+
+    const email = await response.json();
+    return { email };
+  } catch (error) {
+    console.error("Error fetching email:", error);
+    return {
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
