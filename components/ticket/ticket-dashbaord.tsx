@@ -63,7 +63,7 @@ export function TicketDashboard({ ticket }: ITicket) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href={`/ticket/${ticket.id}/edit`}>
+          <Link href={`/ticket-edit/${ticket._id}`}>
             <Button className="gap-2" variant="outline">
               <Pencil className="h-4 w-4" /> Edit Ticket
             </Button>

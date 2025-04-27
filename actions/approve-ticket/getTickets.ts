@@ -140,9 +140,7 @@ export async function approveTicket(
 export const getAllEmployees = async () => {
   try {
     await dbConnect();
-    const result = await User.find({
-      role: { $in: ["ReservationStaff", "SalesStaff"] },
-    }).lean();
+    const result = await User.find({}).lean();
     const seralizedResult = await serializeData(result);
     return seralizedResult;
   } catch (error) {

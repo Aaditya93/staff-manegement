@@ -45,10 +45,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+
 import { toast } from "sonner";
 import { updateTicket } from "@/actions/tickets/edit-ticket";
 import { useRouter } from "next/navigation";
+import { useId, useEffect } from "react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Check, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 // Form schema
 const formSchema = z.object({
   destination: z.string().min(2, "Destination is required"),
@@ -56,7 +67,7 @@ const formSchema = z.object({
   arrivalDate: z.date({ required_error: "Arrival date is required" }),
   departureDate: z.date({ required_error: "Departure date is required" }),
   pax: z.number().min(1, "Number of passengers is required"),
-  cost: z.string().min(1, "Cost is required"),
+  cost: z.number().min(1, "Cost is required"),
   speed: z.string().min(1, "Speed is required"),
   salesInCharge: z.string().min(1, "Sales in charge is required"),
   reservationInCharge: z.string().min(1, "Reservation in charge is required"),
@@ -125,7 +136,11 @@ export default function EditTicketForm({
       salesInCharge: ticket?.salesInCharge.id || salesPersonnel[0]?.id || "",
       reservationInCharge:
         ticket?.reservationInCharge.id || reservationPersonnel[0]?.id || "",
-      travelAgent: ticket?.travelAgent.id || travelAgents[0]?.id || "",
+      travelAgent:
+        ticket?.travelAgent?.id ||
+        ticket?.travelAgent ||
+        travelAgents[0]?.id ||
+        "",
       status: ticket?.status || "pending",
     },
   });
@@ -138,7 +153,7 @@ export default function EditTicketForm({
 
       if (result.success) {
         toast.success("Ticket updated successfully");
-        router.push(`/ticket/${ticket._id}`); // Redirect to tickets list
+        router.push(`/ticket/${ticket._id}`);
       } else {
         toast.error("Failed to update ticket");
       }
@@ -160,12 +175,12 @@ export default function EditTicketForm({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card>
-              <CardHeader className="bg-muted/50 pb-3">
+              <CardHeader className="bg-primary rounded-t-lg pb-3 text-primary-foreground">
                 <CardTitle className="flex items-center gap-2 text-xl">
-                  <MapPin className="h-5 w-5 text-primary" />
+                  <MapPin className="h-5 w-5 text-primary-foreground" />
                   Destination & Trip Details
                 </CardTitle>
-                <CardDescription className="text-sm">
+                <CardDescription className="text-sm text-primary-foreground">
                   Enter the travel destination and trip details
                 </CardDescription>
               </CardHeader>
@@ -433,12 +448,12 @@ export default function EditTicketForm({
 
             {/* Personnel Info */}
             <Card>
-              <CardHeader className="bg-muted/50 pb-3">
+              <CardHeader className="bg-primary pb-3 text-primary-foreground rounded-t-lg">
                 <CardTitle className="flex items-center gap-2 text-xl">
-                  <User className="h-5 w-5 text-secondary" />
+                  <User className="h-5 w-5 text-primary-foreground" />
                   Personnel Information
                 </CardTitle>
-                <CardDescription className="text-sm">
+                <CardDescription className="text-sm text-primary-foreground">
                   Select the staff members in charge of this trip
                 </CardDescription>
               </CardHeader>
@@ -453,23 +468,63 @@ export default function EditTicketForm({
                           <User className="h-4 w-4 text-secondary" />
                           Sales In Charge
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full bg-background">
-                              <SelectValue placeholder="Select sales person" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {salesPersonnel.map((person) => (
-                              <SelectItem key={person.id} value={person.id}>
-                                {person.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full justify-between bg-background px-3 font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  salesPersonnel.find(
+                                    (person) => person.id === field.value
+                                  )?.name
+                                ) : (
+                                  <span>Select sales person</span>
+                                )}
+                                <ChevronDown
+                                  size={16}
+                                  className="shrink-0 opacity-50"
+                                />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search sales staff..." />
+                              <CommandList>
+                                <CommandEmpty>
+                                  No sales staff found.
+                                </CommandEmpty>
+                                <CommandGroup>
+                                  {salesPersonnel.map((person) => (
+                                    <CommandItem
+                                      key={person.id}
+                                      value={`${person.name} ${person.emailId}`}
+                                      onSelect={() => {
+                                        field.onChange(person.id);
+                                      }}
+                                    >
+                                      <div className="flex flex-col items-start">
+                                        <div>{person.name}</div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {person.emailId}
+                                        </div>
+                                      </div>
+                                      {field.value === person.id && (
+                                        <Check size={16} className="ml-auto" />
+                                      )}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -484,28 +539,67 @@ export default function EditTicketForm({
                           <User className="h-4 w-4 text-secondary" />
                           Reservation In Charge
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full bg-background">
-                              <SelectValue placeholder="Select reservation person" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {reservationPersonnel.map((person) => (
-                              <SelectItem key={person.id} value={person.id}>
-                                {person.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full justify-between bg-background px-3 font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  reservationPersonnel.find(
+                                    (person) => person.id === field.value
+                                  )?.name
+                                ) : (
+                                  <span>Select reservation person</span>
+                                )}
+                                <ChevronDown
+                                  size={16}
+                                  className="shrink-0 opacity-50"
+                                />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search reservation staff..." />
+                              <CommandList>
+                                <CommandEmpty>
+                                  No reservation staff found.
+                                </CommandEmpty>
+                                <CommandGroup>
+                                  {reservationPersonnel.map((person) => (
+                                    <CommandItem
+                                      key={person.id}
+                                      value={`${person.name} ${person.emailId}`}
+                                      onSelect={() => {
+                                        field.onChange(person.id);
+                                      }}
+                                    >
+                                      <div className="flex flex-col items-start">
+                                        <div>{person.name}</div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {person.emailId}
+                                        </div>
+                                      </div>
+                                      {field.value === person.id && (
+                                        <Check size={16} className="ml-auto" />
+                                      )}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="travelAgent"
@@ -515,34 +609,73 @@ export default function EditTicketForm({
                           <User className="h-4 w-4 text-secondary" />
                           Travel Agent
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full bg-background">
-                              <SelectValue placeholder="Select travel agent" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {travelAgents.map((agent) => (
-                              <SelectItem key={agent.id} value={agent.id}>
-                                {agent.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full justify-between bg-background px-3 font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  travelAgents.find(
+                                    (agent) => agent.id === field.value
+                                  )?.name
+                                ) : (
+                                  <span>Select travel agent</span>
+                                )}
+                                <ChevronDown
+                                  size={16}
+                                  className="shrink-0 opacity-50"
+                                />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search travel agents..." />
+                              <CommandList>
+                                <CommandEmpty>
+                                  No travel agents found.
+                                </CommandEmpty>
+                                <CommandGroup>
+                                  {travelAgents.map((agent) => (
+                                    <CommandItem
+                                      key={agent.id}
+                                      value={`${agent.name} ${agent.emailId}`}
+                                      onSelect={() => {
+                                        field.onChange(agent.id);
+                                      }}
+                                    >
+                                      <div className="flex flex-col items-start">
+                                        <div>{agent.name}</div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {agent.emailId}
+                                        </div>
+                                      </div>
+                                      {field.value === agent.id && (
+                                        <Check size={16} className="ml-auto" />
+                                      )}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
                   <Separator className="my-4" />
                 </div>
                 <div className="rounded-lg border bg-card shadow-sm">
                   <div className="flex flex-row items-center justify-between px-4 py-3 bg-muted/40 border-b">
                     <h3 className="text-sm font-medium flex items-center gap-2">
-                      <User className="h-4 w-4 text-secondary" />
+                      <User className="h-4 w-4 text-primary" />
                       Selected Personnel Details
                     </h3>
                   </div>
@@ -600,9 +733,16 @@ export default function EditTicketForm({
                           </CardHeader>
                           <CardContent className="pt-0 px-4 pb-4">
                             <div className="flex flex-col items-center justify-center mt-2">
-                              {travelAgents.map((agent) => (
-                                <div key={agent.id}>{agent.name}</div>
-                              ))}
+                              {travelAgents
+                                .filter(
+                                  (agent) =>
+                                    agent.id === form.watch("travelAgent")
+                                )
+                                .map((travelAgent) => (
+                                  <div key={travelAgent.id}>
+                                    {travelAgent.name}
+                                  </div>
+                                ))}
                             </div>
                           </CardContent>
                         </Card>
