@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import ReportComplaint from "./report";
 
 // Define the TravelBooking type to match our data structure
 export type TravelBooking = {
@@ -62,34 +63,18 @@ export const columns: ColumnDef<TravelBooking>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+
   {
-    accessorKey: "companyName",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Company
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("companyName")}</div>,
+    accessorKey: "ticket",
+    header: "Ticket",
+    cell: ({ row }) => <div>{row.getValue("ticket")}</div>,
   },
   {
     accessorKey: "receivedTime",
     header: "Received time",
     cell: ({ row }) => <div>{row.getValue("receivedTime")}</div>,
   },
-  {
-    accessorKey: "noOfPax",
-    header: "Pax",
-    cell: ({ row }) => <div>{row.getValue("noOfPax")}</div>,
-  },
-  {
-    accessorKey: "ticket",
-    header: "Ticket",
-    cell: ({ row }) => <div>{row.getValue("ticket")}</div>,
-  },
+
   {
     accessorKey: "destination",
     header: ({ column }) => (
@@ -114,13 +99,18 @@ export const columns: ColumnDef<TravelBooking>[] = [
     cell: ({ row }) => <div>{row.getValue("departure")}</div>,
   },
   {
+    accessorKey: "noOfPax",
+    header: "Pax",
+    cell: ({ row }) => <div>{row.getValue("noOfPax")}</div>,
+  },
+  {
     accessorKey: "reservationInCharge",
-    header: "Reservation in Charge",
+    header: "Reservation",
     cell: ({ row }) => <div>{row.getValue("reservationInCharge")}</div>,
   },
   {
     accessorKey: "salesInCharge",
-    header: "Sales in Charge",
+    header: "Sales",
     cell: ({ row }) => <div>{row.getValue("salesInCharge")}</div>,
   },
   {
@@ -193,9 +183,14 @@ export const columns: ColumnDef<TravelBooking>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <Link href={`/travel-agent/ticket/${row.original.ticket}`}>
-                View Details
-              </Link>
+              <Button variant="ghost" asChild>
+                <Link href={`/travel-agent/ticket/${row.original.ticket}`}>
+                  View Details
+                </Link>
+              </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <ReportComplaint ticketId={row.original.ticket} />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

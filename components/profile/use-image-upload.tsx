@@ -7,6 +7,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import compress from "browser-image-compression";
 
 interface UseImageUploadProps {
   onUpload?: (url: string) => void;
@@ -41,8 +42,18 @@ export function useImageUpload({
         const localPreviewUrl = URL.createObjectURL(file);
         setPreviewUrl(localPreviewUrl);
 
-        // Calculate checksum
-        const arrayBuffer = await file.arrayBuffer();
+        // Apply compression to the image
+        const IMAGE_COMPRESSION_OPTIONS = {
+          maxSizeMB: 0.25, // Target file size of 250KB
+          maxWidthOrHeight: 1920, // Maximum width or height
+          useWebWorker: true,
+          fileType: "image/jpeg", // Convert to JPEG for consistent compression
+        };
+
+        const processedFile = await compress(file, IMAGE_COMPRESSION_OPTIONS);
+
+        // Calculate checksum on the compressed file
+        const arrayBuffer = await processedFile.arrayBuffer();
         const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray
@@ -51,13 +62,13 @@ export function useImageUpload({
 
         // Generate a key for S3
         const uuid = crypto.randomUUID();
-        const fileExtension = file.name.split(".").pop();
+        const fileExtension = "jpg"; // Always jpg since we're converting to jpeg
         const uniqueKey = `${type}/${session.data?.user.id}/images/${uuid}.${fileExtension}`;
 
         // Get signed URL
         const response = await getSignedURL({
-          fileType: file.type,
-          fileSize: file.size,
+          fileType: processedFile.type,
+          fileSize: processedFile.size,
           checksum: hashHex,
           key: uniqueKey,
         });
@@ -69,12 +80,13 @@ export function useImageUpload({
         // Upload to S3
         const uploadResult = await fetch(response.success.url, {
           method: "PUT",
-          body: file,
+          body: processedFile,
           headers: {
-            "Content-Type": file.type,
-            "Content-Length": file.size.toString(),
+            "Content-Type": processedFile.type,
+            "Content-Length": processedFile.size.toString(),
           },
         });
+        console.log("Upload result:", uploadResult);
 
         if (!uploadResult.ok) {
           throw new Error("Failed to upload to S3");
@@ -109,7 +121,7 @@ export function useImageUpload({
         );
       } catch (error) {
         console.error("Error uploading image:", error);
-        toast.error(`Failed to upload ${type} image`);
+        toast.error(`Failed to upload ${type} image - ${error}`);
 
         // Reset to previous state
         handleRemove();

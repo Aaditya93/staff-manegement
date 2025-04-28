@@ -32,6 +32,12 @@ interface UserData {
   image?: string;
   backgroundImage?: string;
   accounts: Account[];
+  role: string;
+  destination: string;
+
+  // Add potential fields if they exist in the user data
+  office?: string;
+  position?: string;
 }
 
 interface EditProfileProps {
@@ -41,10 +47,16 @@ interface EditProfileProps {
 export function EditProfile({ userData }: EditProfileProps) {
   const id = useId();
 
-  const [selectedCountry, setSelectedCountry] = useState("us");
-  // Initialize with user's name
+  const [selectedCountry, setSelectedCountry] = useState(
+    userData.destination || "Vietnam"
+  ); // Default or from userData
   const [name, setName] = useState(userData.name || "");
-  const [accountType, setAccountType] = useState("");
+  const [accountType, setAccountType] = useState(userData.role || ""); // Default or from userData
+  const [selectedOffice, setSelectedOffice] = useState(userData.office || ""); // Initialize office state
+  const [selectedPosition, setSelectedPosition] = useState(
+    userData.position || ""
+  ); // Initialize position state
+
   // Get unique emails from the accounts array
   const uniqueEmails = [
     ...new Set(userData.accounts.map((account) => account.email)),
@@ -95,8 +107,15 @@ export function EditProfile({ userData }: EditProfileProps) {
 
   const handleSaveChanges = async () => {
     try {
-      // Pass accountType to the updateProfile action
-      const result = await updateProfile(selectedCountry, name, accountType);
+      // Pass accountType, office, and position to the updateProfile action
+      // Note: You might need to update the `updateProfile` action signature
+      const result = await updateProfile(
+        selectedCountry,
+        name,
+        accountType,
+        selectedOffice, // Pass office
+        selectedPosition // Pass position
+      );
 
       if (result.success) {
         toast.success("Profile updated", {
@@ -116,7 +135,7 @@ export function EditProfile({ userData }: EditProfileProps) {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-3xl mx-auto ">
       <div className="overflow-hidden rounded-lg border border-border bg-background shadow-sm">
         <div className="overflow-y-auto">
           <ProfileBg
@@ -200,11 +219,10 @@ export function EditProfile({ userData }: EditProfileProps) {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                {/* Account Type Selector - Removed flex-1 */}
+              {/* Grid layout for selectors */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+                {/* Account Type Selector */}
                 <div className="space-y-2">
-                  {" "}
-                  {/* Removed flex-1 */}
                   <Label htmlFor={`${id}-account-type`}>Account Type</Label>
                   <Select
                     value={accountType}
@@ -212,11 +230,7 @@ export function EditProfile({ userData }: EditProfileProps) {
                       setAccountType(value as "SalesStaff" | "ReservationStaff")
                     }
                   >
-                    {/* Set a specific width for the trigger */}
-                    <SelectTrigger
-                      id={`${id}-account-type`}
-                      className="w-[180px] "
-                    >
+                    <SelectTrigger id={`${id}-account-type`} className="w-full">
                       <SelectValue placeholder="Select account type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -228,31 +242,84 @@ export function EditProfile({ userData }: EditProfileProps) {
                   </Select>
                 </div>
 
-                {/* Country Selector - Removed flex-1 */}
+                {/* Destination Selector */}
                 <div className="space-y-2">
-                  {" "}
-                  {/* Removed flex-1 */}
-                  <Label htmlFor={`${id}-country`}>Country</Label>
+                  <Label htmlFor={`${id}-Destination`}>Destination</Label>
                   <Select
                     value={selectedCountry}
                     onValueChange={setSelectedCountry}
                   >
-                    {/* Set a specific width for the trigger */}
-                    <SelectTrigger id={`${id}-country`} className="w-[180px] ">
-                      <SelectValue placeholder="Select country" />
+                    <SelectTrigger id={`${id}-Destination`} className="w-full">
+                      <SelectValue placeholder="Select Destination" />
                     </SelectTrigger>
                     <SelectContent>
                       {/* Add more countries as needed */}
-                      <SelectItem value="us">United States</SelectItem>
-                      <SelectItem value="ca">Canada</SelectItem>
-                      <SelectItem value="uk">United Kingdom</SelectItem>
-                      <SelectItem value="au">Australia</SelectItem>
-                      <SelectItem value="fr">France</SelectItem>
-                      <SelectItem value="de">Germany</SelectItem>
-                      <SelectItem value="in">India</SelectItem>
-                      <SelectItem value="jp">Japan</SelectItem>
-                      <SelectItem value="br">Brazil</SelectItem>
-                      <SelectItem value="mx">Mexico</SelectItem>
+                      <SelectItem value="Vietnam">Vietnam</SelectItem>
+                      <SelectItem value="Singapore">Singapore</SelectItem>
+                      <SelectItem value="Thailand">Thailand</SelectItem>
+                      <SelectItem value="Malaysia">Malaysia</SelectItem>
+                      <SelectItem value="Indonesia">Indonesia</SelectItem>
+                      <SelectItem value="China">China</SelectItem>
+                      <SelectItem value="Taiwan">Taiwan</SelectItem>
+                      <SelectItem value="Nepal">Nepal</SelectItem>
+                      <SelectItem value="Sri lanka">Sri Lanka</SelectItem>
+                      <SelectItem value="India">India</SelectItem>
+                      <SelectItem value="Italia">Italia</SelectItem>
+                      <SelectItem value="Kazakhstan">Kazakhstan</SelectItem>
+                      <SelectItem value="Uzbekistan">Uzbekistan</SelectItem>
+                      <SelectItem value="Cambodia">Cambodia</SelectItem>
+                      <SelectItem value="Laos">Laos</SelectItem>
+                      <SelectItem value="Myanmar">Myanmar</SelectItem>
+                      <SelectItem value="Pakistan">Pakistan</SelectItem>
+                      <SelectItem value="Philippines">Philippines</SelectItem>
+                      <SelectItem value="Kyrgyzstan">Kyrgyzstan</SelectItem>
+                      <SelectItem value="Azerbaijan">Azerbaijan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Office Selector */}
+                <div className="space-y-2">
+                  <Label htmlFor={`${id}-office`}>Office</Label>
+                  <Select
+                    value={selectedOffice}
+                    onValueChange={setSelectedOffice}
+                  >
+                    <SelectTrigger id={`${id}-office`} className="w-full">
+                      <SelectValue placeholder="Select office" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* Add office options here */}
+                      <SelectItem value="Head Office">Head Office</SelectItem>
+                      <SelectItem value="Branch Office A">
+                        Branch Office A
+                      </SelectItem>
+                      <SelectItem value="Branch Office B">
+                        Branch Office B
+                      </SelectItem>
+                      {/* Add more offices as needed */}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Position Selector */}
+                <div className="space-y-2">
+                  <Label htmlFor={`${id}-position`}>Position</Label>
+                  <Select
+                    value={selectedPosition}
+                    onValueChange={setSelectedPosition}
+                  >
+                    <SelectTrigger id={`${id}-position`} className="w-full">
+                      <SelectValue placeholder="Select position" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* Add position options here */}
+                      <SelectItem value="Manager">Manager</SelectItem>
+                      <SelectItem value="Team Lead">Team Lead</SelectItem>
+                      <SelectItem value="Senior Staff">Senior Staff</SelectItem>
+                      <SelectItem value="Junior Staff">Junior Staff</SelectItem>
+                      <SelectItem value="Intern">Intern</SelectItem>
+                      {/* Add more positions as needed */}
                     </SelectContent>
                   </Select>
                 </div>
@@ -269,6 +336,9 @@ export function EditProfile({ userData }: EditProfileProps) {
     </div>
   );
 }
+
+// ... rest of the component (ProfileBg, Avatar) remains the same ...
+
 const ProfileBg = ({ defaultImage }: { defaultImage?: string }) => {
   const [hideDefault, setHideDefault] = useState(false);
   const {

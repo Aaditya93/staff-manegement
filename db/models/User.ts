@@ -30,12 +30,22 @@ const userSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    Office: {
+      type: String,
+    },
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    position: {
+      type: String,
+    },
     accounts: [accountSchema],
     travelAgentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "TravelAgentUser",
     },
-    country: String,
+    destination: String,
     provider: String,
     image: String,
     backgroundImage: String,

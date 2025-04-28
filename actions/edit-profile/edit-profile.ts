@@ -8,7 +8,9 @@ import { revalidatePath } from "next/cache";
 export async function updateProfile(
   country?: string, // Assuming country is saved somewhere
   name?: string,
-  accountType?: string
+  accountType?: string,
+  office?: string,
+  position?: string
 ) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -20,8 +22,10 @@ export async function updateProfile(
       session.user.id,
       {
         name: name,
+        office: office,
+        position: position,
 
-        country: country,
+        destination: country,
         role: accountType, // Save the account type
       },
       { new: true } // Return the updated document

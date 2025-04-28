@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, Edit, LogOut } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -21,6 +21,7 @@ import { useSession } from "next-auth/react";
 import { SignOut } from "@/actions/auth/sign-out";
 
 import ModeToggle from "@/components/sidebar/theme-button";
+import Link from "next/link";
 
 const NavUser = () => {
   const { isMobile } = useSidebar();
@@ -85,7 +86,12 @@ const NavUser = () => {
 
             <DropdownMenuSeparator />
             <ModeToggle />
-
+            <DropdownMenuItem asChild>
+              <Link href="/edit-profile">
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Profile
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem className=" text-red-600 " onClick={SignOut}>
               <LogOut />
               Log out

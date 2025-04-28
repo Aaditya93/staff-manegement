@@ -88,12 +88,12 @@ const data = {
   Upload: [
     {
       name: "Dashboard",
-      url: `/dashboard/from=${seven}&to=${to}`,
+      url: `/travel-agent/dashboard/from=${seven}&to=${to}`,
       icon: CiViewTable,
     },
     {
       name: "Employees List",
-      url: `/report/from=${seven}&to=${to}`,
+      url: `/travel-agent/employee-list`,
       icon: CiBoxList,
     },
 
