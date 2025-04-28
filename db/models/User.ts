@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    Office: {
+    office: {
       type: String,
     },
     rating: {

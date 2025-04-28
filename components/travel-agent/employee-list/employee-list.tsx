@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   CommandDialog,
@@ -27,7 +26,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Search, User, Users } from "lucide-react";
+import { Building, Search, Star, Users } from "lucide-react";
 
 interface Employee {
   _id: string;
@@ -35,7 +34,11 @@ interface Employee {
   email: string;
   image: string | null;
   country: string;
+  destination?: string; // New field
   role: string;
+  position?: string; // New field
+  office?: string; // New field
+  rating?: number; // New field (0-10)
   emailVerified: string;
   updatedAt: string;
 }
@@ -44,22 +47,6 @@ interface EmployeeListClientProps {
   employees: Employee[];
 }
 
-const countryFlags: Record<string, string> = {
-  us: "🇺🇸",
-  jp: "🇯🇵",
-  uk: "🇬🇧",
-  ca: "🇨🇦",
-  au: "🇦🇺",
-};
-
-const roleColors: Record<string, string> = {
-  ReservationStaff: "bg-blue-100 text-blue-800",
-  SalesStaff: "bg-green-100 text-green-800",
-  Manager: "bg-purple-100 text-purple-800",
-  Admin: "bg-red-100 text-red-800",
-  // Add more roles as needed
-};
-
 const getInitials = (name: string) => {
   return name
     .split(" ")
@@ -67,6 +54,35 @@ const getInitials = (name: string) => {
     .join("")
     .toUpperCase()
     .substring(0, 2);
+};
+
+// Star Rating Component
+const StarRating = ({ rating }: { rating?: number }) => {
+  if (rating === undefined)
+    return <span className="text-muted-foreground">Not rated</span>;
+
+  // Convert to scale of 5 stars
+  const normalizedRating = rating / 2;
+  const fullStars = Math.floor(normalizedRating);
+  const hasHalfStar = normalizedRating - fullStars >= 0.5;
+
+  return (
+    <div className="flex items-center">
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          className={`h-4 w-4 ${
+            i < fullStars
+              ? "text-yellow-400 fill-yellow-400"
+              : i === fullStars && hasHalfStar
+                ? "text-yellow-400 fill-yellow-400 opacity-50"
+                : "text-gray-300"
+          }`}
+        />
+      ))}
+      <span className="ml-2 text-sm">{normalizedRating.toFixed(1)}/5</span>
+    </div>
+  );
 };
 
 const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
@@ -78,7 +94,13 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
       const query = searchQuery.toLowerCase();
       return (
         employee.name.toLowerCase().includes(query) ||
-        employee.email.toLowerCase().includes(query)
+        employee.email.toLowerCase().includes(query) ||
+        employee.position?.toLowerCase().includes(query) ||
+        false ||
+        employee.destination?.toLowerCase().includes(query) ||
+        false ||
+        employee.office?.toLowerCase().includes(query) ||
+        false
       );
     });
   }, [employees, searchQuery]);
@@ -112,11 +134,13 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
-                  <TableHead className="w-[250px]">Employee</TableHead>
+                  <TableHead className="w-[230px]">Employee</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead className="w-[100px]">Country</TableHead>
-                  <TableHead className="w-[180px]">Role</TableHead>
-                  <TableHead className="w-[150px] text-right">
+                  <TableHead className="w-[130px]">Position</TableHead>
+                  <TableHead className="w-[120px]">Destination</TableHead>
+                  <TableHead className="w-[100px]">Office</TableHead>
+                  <TableHead className="w-[120px]">Rating</TableHead>
+                  <TableHead className="w-[130px] text-right">
                     Last Updated
                   </TableHead>
                 </TableRow>
@@ -125,7 +149,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                 {filteredEmployees.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={8}
                       className="h-24 text-center text-muted-foreground"
                     >
                       No employees found matching your search criteria.
@@ -147,25 +171,36 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                         {employee.email}
                       </TableCell>
                       <TableCell>
-                        <div
-                          className="flex items-center gap-1.5"
-                          title={employee.country.toUpperCase()}
-                        >
-                          <span className="text-lg">
-                            {countryFlags[employee.country] || employee.country}
+                        {employee.position || (
+                          <span className="text-muted-foreground text-sm">
+                            Not assigned
                           </span>
-                          <span className="text-xs text-muted-foreground uppercase">
-                            {employee.country}
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm">
+                            {employee.destination || employee.country}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={`${roleColors[employee.role] || "bg-gray-100 text-gray-800"} px-2 py-0.5`}
-                        >
-                          {employee.role}
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          {employee.office ? (
+                            <>
+                              <Building className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span>{employee.office}</span>
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">
+                              Not assigned
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <StarRating rating={employee.rating} />
                       </TableCell>
                       <TableCell className="text-right text-sm text-muted-foreground">
                         {new Date(employee.updatedAt).toLocaleDateString(
@@ -188,7 +223,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
 
       <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
         <CommandInput
-          placeholder="Search employees by name or email..."
+          placeholder="Search employees by name, email, position or destination..."
           value={searchQuery}
           onValueChange={setSearchQuery}
         />
@@ -213,15 +248,10 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                 <div className="flex-1 overflow-hidden">
                   <p className="truncate">{employee.name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {employee.email}
+                    {employee.position || employee.role}{" "}
+                    {employee.destination ? `• ${employee.destination}` : ""}
                   </p>
                 </div>
-                <Badge
-                  variant="outline"
-                  className={`${roleColors[employee.role] || ""} text-xs`}
-                >
-                  {employee.role}
-                </Badge>
               </CommandItem>
             ))}
           </CommandGroup>
