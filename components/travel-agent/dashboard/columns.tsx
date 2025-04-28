@@ -1,7 +1,6 @@
 "use client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Eye, Edit, Trash2 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   DropdownMenu,
@@ -151,48 +150,19 @@ export const columns: ColumnDef<TravelBooking>[] = [
   },
   {
     accessorKey: "estimateTimeToSendPrice",
-    header: "Estimate time to send price",
-    cell: ({ row }) => <div>{row.getValue("estimateTimeToSendPrice")}</div>,
+    header: "Estimate time ",
+    cell: ({ row }) => {
+      const seconds = row.getValue("estimateTimeToSendPrice") as number;
+      const hours = seconds / 3600; // Convert seconds to hours
+
+      return <div>{hours.toFixed(2)} hrs</div>;
+    },
   },
-  {
-    accessorKey: "waitingTime",
-    header: "Waiting time",
-    cell: ({ row }) => <div>{row.getValue("waitingTime")}</div>,
-  },
+
   {
     accessorKey: "speed",
     header: "Speed",
     cell: ({ row }) => <div>{row.getValue("speed")}</div>,
-  },
-  {
-    accessorKey: "inbox",
-    header: "Inbox",
-    cell: ({ row }) => <div>{row.getValue("inbox")}</div>,
-  },
-  {
-    accessorKey: "sent",
-    header: "Sent",
-    cell: ({ row }) => <div>{row.getValue("sent")}</div>,
-  },
-  {
-    accessorKey: "timeSent",
-    header: "Time sent",
-    cell: ({ row }) => <div>{row.getValue("timeSent")}</div>,
-  },
-  {
-    accessorKey: "lastInbox",
-    header: "Last inbox",
-    cell: ({ row }) => <div>{row.getValue("lastInbox")}</div>,
-  },
-  {
-    accessorKey: "lastSent",
-    header: "Last sent",
-    cell: ({ row }) => <div>{row.getValue("lastSent")}</div>,
-  },
-  {
-    accessorKey: "balance",
-    header: "Balance",
-    cell: ({ row }) => <div>{row.getValue("balance")}</div>,
   },
 
   {
@@ -220,32 +190,11 @@ export const columns: ColumnDef<TravelBooking>[] = [
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel className="font-semibold">
-              Actions
-            </DropdownMenuLabel>
-            <DropdownMenuItem
-              asChild
-              className="flex items-center cursor-pointer hover:bg-slate-100 transition-colors"
-            >
-              <Link
-                href={`/ticket/${row.original.ticket}`}
-                className="flex w-full items-center"
-              >
-                <Eye className="h-4 w-4 mr-2 text-blue-600" />
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link href={`/travel-agent/ticket/${row.original.ticket}`}>
                 View Details
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              asChild
-              className="flex items-center cursor-pointer hover:bg-slate-100 transition-colors"
-            >
-              <Link
-                href={`/ticket-edit/${row.original.ticket}`}
-                className="flex w-full items-center"
-              >
-                <Edit className="h-4 w-4 mr-2 text-amber-600" />
-                Edit Ticket
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -37,14 +37,15 @@ export default async function MessagingPage({
   // Fetch conversation data
   const conversations = await fetchUserConversations();
 
-  // Replace the hardcoded "none" with proper empty state handling
-  if (conversationId === "none") {
+  if (conversationId == "none") {
+    // Process messages with type property
+
     return (
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="flex flex-col h-screen overflow-hidden">
           <ChatDashboard
-            initialConversationId=""
+            initialConversationId={""}
             conversationsData={conversations.cleanConversations}
             initialMessages={[]}
             messageLimit={messageLimit}

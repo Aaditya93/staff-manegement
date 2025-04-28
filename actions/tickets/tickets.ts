@@ -14,11 +14,11 @@ export const getAllTicketsByEmail = async (fromDate?: Date, toDate?: Date) => {
 
     // Search based on role if provided
     if (role) {
-      if (role === "sales") {
+      if (role === "SalesStaff") {
         query = { "salesInCharge.emailId": email, isApproved: true };
-      } else if (role === "reservation") {
+      } else if (role === "ReservationStaff") {
         query = { "reservationInCharge.emailId": email, isApproved: true };
-      } else if (role === "travelAgent") {
+      } else if (role === "TravelAgent") {
         query = { "travelAgent.emailId": email, isApproved: true };
       }
     } else {

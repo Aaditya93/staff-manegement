@@ -17,11 +17,7 @@ import { Conversation, Message, User } from "./chat-types";
 
 // Server Actions
 import { searchUsers, createConversation } from "@/actions/chat/search";
-import {
-  fetchUserConversations,
-  fetchConversationMessages,
-  sendMessage,
-} from "@/actions/chat/conversation";
+import { sendMessage } from "@/actions/chat/conversation";
 
 // Components
 
@@ -32,6 +28,7 @@ import { MessageItem } from "./MessageItem";
 import { ChatHeader } from "./ChatHeader";
 import { ChatInput } from "./ChatInput";
 import { EmptyState } from "./EmptyState";
+import { useRouter } from "next/navigation";
 
 export const ChatDashboard = ({
   initialConversationId,
@@ -56,6 +53,7 @@ export const ChatDashboard = ({
   const [conversations, setConversations] = useState<Conversation[]>(
     Array.isArray(conversationsData) ? conversationsData : []
   );
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const debouncedSearchTerm = useDebounce(searchQuery, 500);
@@ -98,6 +96,7 @@ export const ChatDashboard = ({
   }, [messages]);
 
   // Handle creating a new conversation
+  // Update to properly handle the new conversation
   const handleCreateConversation = async (userId: string) => {
     try {
       setIsCreatingConversation(true);
@@ -105,20 +104,18 @@ export const ChatDashboard = ({
 
       const { conversationId, error } = await createConversation(userId);
 
-      if (conversationId) {
-        const { conversations } = await fetchUserConversations();
-        if (conversations) {
-          setConversations(conversations);
-          setCurrentConversationId(conversationId);
-        }
-        setSearchQuery("");
-      } else if (error) {
+      if (error) {
         console.error("Error creating conversation:", error);
+        return;
       }
 
-      setIsCreatingConversation(false);
+      if (conversationId) {
+        // Navigate to the new conversation
+        router.push(`/chat/${conversationId}`);
+      }
     } catch (err) {
       console.error("Error creating conversation:", err);
+    } finally {
       setIsCreatingConversation(false);
     }
   };
@@ -224,11 +221,7 @@ export const ChatDashboard = ({
             {/* Conversation List */}
             <ScrollArea className="flex-grow h-[calc(100vh-120px)]">
               {isLoading && conversations.length === 0 ? (
-                <div className="">
-                  {[1, 2, 3, 4].map((item) => (
-                    <EmptyState key={item} type="loading" />
-                  ))}
-                </div>
+                <div className=""></div>
               ) : conversations.length === 0 ? (
                 <EmptyState type="noConversations" />
               ) : (

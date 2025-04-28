@@ -154,7 +154,6 @@ const TicketSchema = new Schema<ITicket>(
       lowercase: true,
       index: true,
     },
-
     cost: {
       type: Number,
       default: 0,

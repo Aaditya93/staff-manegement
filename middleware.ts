@@ -62,7 +62,7 @@ export async function middleware(req: NextRequest) {
       // Redirect travel agents to their dashboard
       if (token.role === "TravelAgent") {
         return NextResponse.redirect(
-          new URL("/travel-agent/visa-letter", nextUrl)
+          new URL("/travel-agent/employee-list", nextUrl)
         );
       }
       // Allow regular users

@@ -26,12 +26,6 @@ export const registerTravelAgent = async (
       validatedFields.data;
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const existingUser = await User.findOne({ email: email });
-    if (existingUser) {
-      return {
-        error: "Email already registered",
-      };
-    }
     const existingTravelAgent = await TravelAgentUser.findOne({
       email: email,
     });
@@ -50,23 +44,19 @@ export const registerTravelAgent = async (
         },
         { new: true } // Return the updated document
       );
+      const existingUser = await User.findOneAndUpdate(
+        {
+          email: email,
+        },
+        {
+          name,
+          password: hashedPassword,
+          provider: "credentials",
+        },
+        { new: true } // Return the updated document
+      );
 
-      if (!travelAgent) {
-        return {
-          error: "Failed to update travel agent",
-        };
-      }
-
-      await User.create({
-        name,
-        email,
-        role: "TravelAgent",
-        travelAgentId: travelAgent._id,
-        provider: "credentials",
-        password: hashedPassword,
-        emailVerified: null,
-      });
-      const verificationToken = await generateToken(travelAgent.email);
+      const verificationToken = await generateToken(existingUser.email);
       await sendVarificationEmail(
         verificationToken.email,
         verificationToken.token
