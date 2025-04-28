@@ -57,6 +57,7 @@ interface EmailResponse {
 }
 
 interface EmailShowcaseProps {
+  email: string;
   emailId: string;
   userId: string;
   onEmailFetched?: (emailData: EmailResponse) => void;
@@ -77,7 +78,7 @@ const sanitizeEmailContent = (htmlContent: string): string => {
     .replace(/src="data:;base64,/gi, 'src="data:image/png;base64,')
     // Try to make images responsive, but be less aggressive than replacing width/height entirely
     .replace(/<img([^>]*)>/gi, (match, attributes) => {
-      let style = attributes.match(/style="([^"]*)"/i);
+      const style = attributes.match(/style="([^"]*)"/i);
       let styleAttr = style ? style[1] : "";
       // Add max-width if not present
       if (!styleAttr.includes("max-width")) {
@@ -100,10 +101,12 @@ const sanitizeEmailContent = (htmlContent: string): string => {
   return sanitized;
 };
 const EmailShowcase: React.FC<EmailShowcaseProps> = ({
+  email,
   emailId,
   userId,
   onEmailFetched,
 }) => {
+  console.log("fetchEmailData called with:", { email, emailId, userId });
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [emailDetails, setEmailDetails] = useState<EmailResponse | null>(null);
@@ -133,11 +136,11 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
     setIsLoading(true);
 
     try {
-      console.log("About to call getEmail with:", { emailId, userId });
+      console.log("fetchEmailData called with:", { email, emailId, userId });
 
       // Wrap in a timeout to prevent potential race conditions
       const fetchedEmail = (await Promise.race([
-        getEmail(emailId, userId),
+        await getEmail(email, emailId, userId), // Ensure these match the action's parameter order
         new Promise<null>((_, reject) =>
           setTimeout(() => reject(new Error("Request timed out")), 10000)
         ),

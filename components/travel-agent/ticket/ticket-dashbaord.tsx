@@ -341,6 +341,7 @@ export function TicketDashboard({ ticket }: ITicket) {
                     </p>
                     <div className="flex gap-3 justify-end">
                       <EmailShowcase
+                        email={ticket.createdBy.emailId}
                         emailId={email.id}
                         userId={ticket.createdBy.id}
                       />

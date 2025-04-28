@@ -120,11 +120,7 @@ export default function ReportComplaint({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          {/* Remove the outer border/padding class, DialogContent handles spacing */}
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Removed h3/p description as DialogHeader provides it */}
-
-            {/* Form Fields - Revert to standard {...field} */}
             <FormField
               control={form.control}
               name="title"

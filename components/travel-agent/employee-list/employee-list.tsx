@@ -26,7 +26,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Building, Search, Star, Users } from "lucide-react";
+import { Search, Star, Users } from "lucide-react";
 
 interface Employee {
   _id: string;
@@ -58,8 +58,7 @@ const getInitials = (name: string) => {
 
 // Star Rating Component
 const StarRating = ({ rating }: { rating?: number }) => {
-  if (rating === undefined)
-    return <span className="text-muted-foreground">Not rated</span>;
+  if (rating === undefined) return <span>Not rated</span>;
 
   // Convert to scale of 5 stars
   const normalizedRating = rating / 2;
@@ -165,32 +164,25 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                             {getInitials(employee.name)}
                           </AvatarFallback>
                         </Avatar>
-                        <span>{employee.name}</span>
+                        {employee.name}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {employee.email}
-                      </TableCell>
+                      <TableCell>{employee.email}</TableCell>
                       <TableCell>
                         {employee.position || (
-                          <span className="text-muted-foreground text-sm">
-                            Not assigned
-                          </span>
+                          <span className=" text-sm">Not assigned</span>
                         )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm">
-                            {employee.destination || employee.country}
+                            {employee.destination}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           {employee.office ? (
-                            <>
-                              <Building className="h-3.5 w-3.5 text-muted-foreground" />
-                              <span>{employee.office}</span>
-                            </>
+                            <>{employee.office}</>
                           ) : (
                             <span className="text-muted-foreground text-sm">
                               Not assigned
@@ -202,7 +194,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                       <TableCell>
                         <StarRating rating={employee.rating} />
                       </TableCell>
-                      <TableCell className="text-right text-sm text-muted-foreground">
+                      <TableCell className="text-right text-sm ">
                         {new Date(employee.updatedAt).toLocaleDateString(
                           undefined,
                           {

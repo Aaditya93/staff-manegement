@@ -4,7 +4,6 @@ import {
   Calendar,
   Clock,
   DollarSign,
-  Eye,
   Mail,
   MapPin,
   Pencil,
@@ -27,7 +26,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
 import { ITicket } from "@/db/models/ticket";
-import { getEmail } from "@/actions/tickets/get-email";
+
 import EmailShowcase from "./email-showcase";
 
 export function TicketDashboard({ ticket }: ITicket) {
@@ -368,6 +367,7 @@ export function TicketDashboard({ ticket }: ITicket) {
                         </Button>
                       </a>
                       <EmailShowcase
+                        email={ticket.createdBy.emailId}
                         emailId={email.id}
                         userId={ticket.createdBy.id}
                       />

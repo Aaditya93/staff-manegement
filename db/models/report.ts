@@ -41,6 +41,10 @@ const ReportSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    ChangeStaffId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     complaintType: {
       type: String,
       enum: ["service", "product", "staff", "billing", "other"],
