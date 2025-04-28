@@ -1,19 +1,18 @@
 import { format } from "date-fns";
-import Link from "next/link";
+
 import {
   Calendar,
   Clock,
   DollarSign,
   Mail,
   MapPin,
-  Pencil,
   User,
   Users,
 } from "lucide-react";
 import { CiMap } from "react-icons/ci";
 import { LuMail } from "react-icons/lu";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { FaRegUser } from "react-icons/fa";
 import {
   Card,
@@ -24,10 +23,9 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-
 import { ITicket } from "@/db/models/ticket";
-import { getEmail } from "@/actions/tickets/get-email";
 import EmailShowcase from "./email-showcase";
+import ReportComplaint from "../dashboard/report";
 
 export function TicketDashboard({ ticket }: ITicket) {
   // Helper function to format dates
@@ -69,6 +67,12 @@ export function TicketDashboard({ ticket }: ITicket) {
           >
             {ticket.status.toUpperCase()}
           </Badge>
+          <ReportComplaint
+            ticketId={ticket._id}
+            travelAgent={ticket.travelAgent.id}
+            sales={ticket.salesInCharge.id}
+            reservation={ticket.reservationInCharge.id}
+          />
         </div>
       </div>
 

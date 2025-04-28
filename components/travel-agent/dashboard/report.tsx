@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createReport } from "@/actions/travel-agent/report";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -46,8 +47,20 @@ interface ReportComplaintProps {
   ticketId: string;
 }
 
-export default function ReportComplaint({ ticketId }: ReportComplaintProps) {
-  const [open, setOpen] = useState(false); // Re-enable state for Dialog
+interface ReportComplaintProps {
+  ticketId: string;
+  travelAgent?: string;
+  sales?: string;
+  reservation?: string;
+}
+
+export default function ReportComplaint({
+  ticketId,
+  travelAgent,
+  sales,
+  reservation,
+}: ReportComplaintProps) {
+  const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
@@ -62,9 +75,29 @@ export default function ReportComplaint({ ticketId }: ReportComplaintProps) {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      toast.success("Report submitted");
-      setOpen(false); // Close dialog on successful submit
-      form.reset();
+      // Include the additional props directly in the submission
+      const submissionData = {
+        ...data,
+        ticketId,
+        travelAgent,
+        sales,
+        reservation,
+      };
+
+      // Send the data to our server action
+      const result = await createReport(submissionData);
+
+      if (result.success) {
+        toast.success("Report submitted successfully");
+        setOpen(false); // Close dialog on successful submit
+        form.reset();
+      } else {
+        toast.error(result.message || "Failed to submit report");
+        if (result) {
+          // Handle field-specific errors if needed
+          result.errors.forEach((err) => console.error(err));
+        }
+      }
     } catch (error) {
       toast.error("Failed to submit report. Please try again.");
       console.error("Error submitting report:", error);
@@ -73,17 +106,16 @@ export default function ReportComplaint({ ticketId }: ReportComplaintProps) {
     }
   };
 
-  // Render the form inside the Dialog again
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost">Report Issue</Button>
+        <Button variant="destructive">Report Issue</Button>
       </DialogTrigger>
       <DialogContent className="max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Submit a Report</DialogTitle>
+          <DialogTitle>Report Issue</DialogTitle>
           <DialogDescription>
-            Report any issues related to your ticket. We'll address your
+            Report any issues related to your ticket. We&apos;ll address your
             concerns as soon as possible.
           </DialogDescription>
         </DialogHeader>

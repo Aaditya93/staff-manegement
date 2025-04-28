@@ -24,7 +24,6 @@ export async function updateProfile(
         name: name,
         office: office,
         position: position,
-
         destination: country,
         role: accountType, // Save the account type
       },

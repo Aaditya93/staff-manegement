@@ -4,6 +4,9 @@ export interface IReport extends Document {
   title: string;
   description: string;
   ticketId: mongoose.Types.ObjectId;
+  salesId?: mongoose.Types.ObjectId;
+  reservationId?: mongoose.Types.ObjectId;
+
   travelAgentId?: mongoose.Types.ObjectId;
   createdAt: Date;
   complaintType: "service" | "product" | "staff" | "billing" | "other";
@@ -30,7 +33,11 @@ const ReportSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    userId: {
+    salesId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    reservationId: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
@@ -49,4 +56,7 @@ const ReportSchema: Schema = new Schema(
   }
 );
 
-export default mongoose.model<IReport>("Report", ReportSchema);
+const Report = (mongoose.models?.Report ||
+  mongoose.model("Report", ReportSchema)) as mongoose.Model<IReport>;
+
+export default Report;
