@@ -52,22 +52,21 @@ const ReviewShowcase: React.FC<ReviewShowcaseProps> = ({ review }) => {
   const formattedDate = format(new Date(review.reviewDate), "MMM d, yyyy");
 
   return (
-    <Card className="shadow-sm border-t-2 border-t-amber-400 ">
+    <Card className="shadow-sm border-t-2 ">
       <CardHeader className="bg-primary text-primary-foreground rounded-t-lg mb-4">
         <div className="flex justify-between items-center">
           <div>
             <CardTitle className="flex items-center gap-2 text-lg">
               {" "}
               {/* Increased title size */}
-              <FileText className="h-5 w-5 text-amber-500" />{" "}
-              {/* Slightly larger icon */}
+              <FileText className="h-5 w-5 " /> {/* Slightly larger icon */}
               Ticket Review
             </CardTitle>
             <CardDescription className="text-primary-foreground">
               Submitted on {formattedDate}
             </CardDescription>
           </div>
-          <Badge variant="default" className="px-2.5 py-1 bg-amber-500">
+          <Badge variant="secondary">
             {" "}
             {/* Adjusted padding and text size */}
             {averageRating.toFixed(1)} / 5
