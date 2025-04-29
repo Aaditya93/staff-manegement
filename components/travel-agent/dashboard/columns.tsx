@@ -189,9 +189,6 @@ export const columns: ColumnDef<TravelBooking>[] = [
                 </Link>
               </Button>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <ReportComplaint ticketId={row.original.ticket} />
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

@@ -60,8 +60,21 @@ export interface ITicket extends Document {
   lastMailTimeSent: number;
   balance?: number;
   email: EmailEntry[];
+  review: Review;
   createdAt: Date;
   updatedAt: Date;
+}
+interface Review {
+  attitude: number;
+  knowledge: number;
+  services: number;
+  speed: number;
+  hotel: number;
+  guide: number;
+  transfer: number;
+  meal: number;
+  reviewText?: string;
+  reviewDate: Date;
 }
 
 // Define email sub-schemas to improve structure
@@ -137,6 +150,67 @@ const PersonnelSchema = new Schema(
   },
   { _id: false }
 );
+const ReviewSchema = new Schema(
+  {
+    attitude: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+    knowledge: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+    services: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+    speed: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+    hotel: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+    guide: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+    transfer: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+    meal: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+    reviewText: {
+      type: String,
+      trim: true,
+    },
+    reviewDate: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: true }
+);
 
 // Define the schema for the Ticket model
 const TicketSchema = new Schema<ITicket>(
@@ -208,6 +282,7 @@ const TicketSchema = new Schema<ITicket>(
       default: false,
       index: true,
     },
+    review: ReviewSchema,
     createdBy: {
       type: PersonnelSchema,
     },

@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { ITicket } from "@/db/models/ticket";
 
 import EmailShowcase from "./email-showcase";
+import ReviewShowcase from "../travel-agent/ticket/review-showcase";
 
 export function TicketDashboard({ ticket }: ITicket) {
   // Helper function to format dates
@@ -379,6 +380,7 @@ export function TicketDashboard({ ticket }: ITicket) {
           </ScrollArea>
         </CardContent>
       </Card>
+      {ticket.review && <ReviewShowcase review={ticket.review} />}
     </div>
   );
 }

@@ -26,6 +26,8 @@ import { Separator } from "@/components/ui/separator";
 import { ITicket } from "@/db/models/ticket";
 import EmailShowcase from "./email-showcase";
 import ReportComplaint from "../dashboard/report";
+import ReviewTicket from "./review";
+import ReviewShowcase from "./review-showcase";
 
 export function TicketDashboard({ ticket }: ITicket) {
   // Helper function to format dates
@@ -73,6 +75,7 @@ export function TicketDashboard({ ticket }: ITicket) {
             sales={ticket.salesInCharge.id}
             reservation={ticket.reservationInCharge.id}
           />
+          {!ticket.review && <ReviewTicket ticketId={ticket._id} />}
         </div>
       </div>
 
@@ -353,6 +356,7 @@ export function TicketDashboard({ ticket }: ITicket) {
           </ScrollArea>
         </CardContent>
       </Card>
+      {ticket.review && <ReviewShowcase review={ticket.review} />}
     </div>
   );
 }
