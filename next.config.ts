@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
-
+import path from "path";
 const nextConfig: NextConfig = {
+  webpack: (config) => {
+    // Don't replace the entire resolve object
+    if (!config.resolve) config.resolve = {};
+    if (!config.resolve.alias) config.resolve.alias = {};
+    config.resolve.alias["@"] = path.resolve(__dirname);
+    return config;
+  },
   images: {
     remotePatterns: [
       {
@@ -22,6 +29,13 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+  },
+  experimental: {
+    turbo: {
+      resolveAlias: {
+        "@": path.resolve(__dirname),
+      },
+    },
   },
   reactStrictMode: true,
   env: {
