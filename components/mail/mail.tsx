@@ -177,13 +177,13 @@ export function Mail({
                 variant: currentFolder === "inbox" ? "default" : "ghost",
                 href: `/mail/${inboxNumber}/inbox/read/20`,
               },
-              {
-                title: "Drafts",
-                label: "",
-                icon: File,
-                variant: currentFolder === "drafts" ? "default" : "ghost",
-                href: `/mail/${inboxNumber}/drafts/read/20`,
-              },
+              // {
+              //   title: "Drafts",
+              //   label: "",
+              //   icon: File,
+              //   variant: currentFolder === "drafts" ? "default" : "ghost",
+              //   href: `/mail/${inboxNumber}/drafts/read/20`,
+              // },
               {
                 title: "Sent",
                 label: "",

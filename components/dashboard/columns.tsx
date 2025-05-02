@@ -1,7 +1,7 @@
 "use client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Eye, Edit, Trash2 } from "lucide-react";
+import { Eye, Edit } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   DropdownMenu,
@@ -76,11 +76,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
     ),
     cell: ({ row }) => <div>{row.getValue("companyName")}</div>,
   },
-  {
-    accessorKey: "receivedTime",
-    header: "Received time",
-    cell: ({ row }) => <div>{row.getValue("receivedTime")}</div>,
-  },
+
   {
     accessorKey: "noOfPax",
     header: "Pax",
@@ -127,7 +123,15 @@ export const columns: ColumnDef<TravelBooking>[] = [
   {
     accessorKey: "market",
     header: "Market",
-    cell: ({ row }) => <div>{row.getValue("market")}</div>,
+    cell: ({ row }) => {
+      const market = row.getValue("market") as string;
+      // Capitalize first letter if market exists
+      const capitalizedMarket = market
+        ? market.charAt(0).toUpperCase() + market.slice(1)
+        : "";
+
+      return <div>{capitalizedMarket}</div>;
+    },
   },
   {
     accessorKey: "status",
@@ -151,14 +155,22 @@ export const columns: ColumnDef<TravelBooking>[] = [
   },
   {
     accessorKey: "estimateTimeToSendPrice",
-    header: "Estimate time to send price",
-    cell: ({ row }) => <div>{row.getValue("estimateTimeToSendPrice")}</div>,
+    header: "Estimate time",
+    cell: ({ row }) => {
+      const seconds = row.getValue("estimateTimeToSendPrice") as number;
+
+      // Convert seconds to hours (with 2 decimal places)
+      const hours = seconds ? (seconds / 3600).toFixed(2) : "0";
+
+      return <div>{hours} hrs</div>;
+    },
   },
   {
     accessorKey: "waitingTime",
     header: "Waiting time",
     cell: ({ row }) => <div>{row.getValue("waitingTime")}</div>,
   },
+
   {
     accessorKey: "speed",
     header: "Speed",
@@ -178,6 +190,11 @@ export const columns: ColumnDef<TravelBooking>[] = [
     accessorKey: "timeSent",
     header: "Time sent",
     cell: ({ row }) => <div>{row.getValue("timeSent")}</div>,
+  },
+  {
+    accessorKey: "receivedTime",
+    header: "Received time",
+    cell: ({ row }) => <div>{row.getValue("receivedTime")}</div>,
   },
   {
     accessorKey: "lastInbox",

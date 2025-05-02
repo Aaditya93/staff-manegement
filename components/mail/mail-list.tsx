@@ -8,6 +8,8 @@ import { useMail } from "./use-mails";
 import { EmailMessage } from "./mail-display";
 import { markAsRead } from "@/actions/mail/email-actions";
 import PaginationComponent from "./pagination";
+import { auth } from "@/auth";
+import { useSession } from "next-auth/react";
 
 interface MailListProps {
   items: EmailMessage[];
@@ -103,7 +105,7 @@ export function MailList({
                 <div className="flex items-center">
                   <div className="flex items-center gap-2">
                     <div className="font-semibold">
-                      {item.from.emailAddress.name}
+                      {item.from?.emailAddress.name || user?.name}
                     </div>
                     {!item.isRead && (
                       <span className="flex h-2 w-2 rounded-full bg-blue-600" />

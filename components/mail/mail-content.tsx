@@ -15,9 +15,9 @@ export function MailContent({ mail, currentFolder }: MailContentProps) {
       <div className="flex items-start p-4">
         <div className="flex items-start gap-4 text-sm">
           <Avatar>
-            <AvatarImage alt={mail.from.emailAddress.name} />
+            <AvatarImage alt={mail.from?.emailAddress.name} />
             <AvatarFallback>
-              {mail.from.emailAddress.name
+              {mail.from?.emailAddress.name
                 .split(" ")
                 .map((chunk) => chunk[0])
                 .join("")}
@@ -36,7 +36,7 @@ export function MailContent({ mail, currentFolder }: MailContentProps) {
               </span>{" "}
               {currentFolder === "sent"
                 ? mail.toRecipients?.[0]?.emailAddress.address || "No recipient"
-                : mail.from.emailAddress.address}
+                : mail.from?.emailAddress.address}
             </div>
           </div>
         </div>

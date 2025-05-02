@@ -5,7 +5,7 @@ import { LifeBuoy, Send, SquareTerminal } from "lucide-react";
 import { CiMail } from "react-icons/ci";
 
 import { CiViewTable } from "react-icons/ci";
-
+import { GoReport } from "react-icons/go";
 import { BsListTask } from "react-icons/bs";
 import Image from "next/image";
 import { TfiPieChart } from "react-icons/tfi";
@@ -107,6 +107,11 @@ const data = {
       name: "Messages",
       url: "/chat/10",
       icon: CiChat1,
+    },
+    {
+      name: "Complaints",
+      url: `/report`,
+      icon: GoReport,
     },
 
     {

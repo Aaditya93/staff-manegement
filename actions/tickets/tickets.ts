@@ -1,3 +1,4 @@
+"use server";
 import dbConnect from "@/db/db";
 import Ticket from "@/db/models/ticket";
 import { auth } from "@/auth";
@@ -13,22 +14,39 @@ export const getAllTicketsByEmail = async (fromDate?: Date, toDate?: Date) => {
     const role = session?.user?.role;
 
     // Search based on role if provided
+    // Search based on role if provided
     if (role) {
       if (role === "SalesStaff") {
-        query = { "salesInCharge.emailId": email, isApproved: true };
+        query = {
+          "salesInCharge.emailId": email,
+          isApproved: true,
+        };
       } else if (role === "ReservationStaff") {
-        query = { "reservationInCharge.emailId": email, isApproved: true };
+        query = {
+          "reservationInCharge.emailId": email,
+          isApproved: true,
+        };
       } else if (role === "TravelAgent") {
-        query = { "travelAgent.emailId": email, isApproved: true };
+        query = {
+          "travelAgent.emailId": email,
+          isApproved: true,
+        };
+      } else if (role === "Admin") {
+        // Admin can see all approved tickets
+        query = { isApproved: true };
       }
     } else {
       // If no role specified, search in all staff fields
       query = {
-        isApproved: true,
-        $or: [
-          { "salesInCharge.emailId": email },
-          { "reservationInCharge.emailId": email },
-          { "travelAgent.emailId": email },
+        $and: [
+          { isApproved: true },
+          {
+            $or: [
+              { "salesInCharge.emailId": email },
+              { "reservationInCharge.emailId": email },
+              { "travelAgent.emailId": email },
+            ],
+          },
         ],
       };
     }
