@@ -32,7 +32,7 @@ const LoginPage = () => {
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 lg:p-6">
+          <CardContent>
             <LoginForm />
           </CardContent>
         </Card>

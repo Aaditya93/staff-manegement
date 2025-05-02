@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
     config.resolve.alias["@"] = path.resolve(__dirname);
     return config;
   },
+  async redirects() {
+    return [
+      // Basic redirect
+      {
+        source: "/",
+        destination: "/home",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
@@ -31,6 +41,12 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "i.imgur.com",
         port: "",
         pathname: "/**",
       },

@@ -4,7 +4,7 @@ import dbConnect from "@/db/db";
 import User from "@/db/models/User";
 
 export const SignOut = async () => {
-  await signOut();
+  await signOut({ redirectTo: "/home", redirect: true });
 };
 
 export const MutipleEmailSignIn = async (email: string) => {

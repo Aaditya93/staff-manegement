@@ -1,8 +1,4 @@
-export const publicRoutes = [
-  "/auth/new-verification",
-  "/dashboard/from=2025-04-21&to=2025-04-21",
-  "/mail",
-];
+export const publicRoutes = ["/auth/new-verification", "/home"];
 
 export const authRoutes = [
   "/auth/travel-agent/login",

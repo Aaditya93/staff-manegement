@@ -38,7 +38,7 @@ export async function middleware(req: NextRequest) {
 
   if (isAuthRoute) {
     if (isLoggedIn && token.role === "TravelAgent") {
-      return NextResponse.redirect(new URL("/travel-agent/dashboard", nextUrl));
+      return NextResponse.redirect(new URL("/travel-agent/chat/none", nextUrl));
     }
     if (isLoggedIn) {
       return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));

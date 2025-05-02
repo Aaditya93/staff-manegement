@@ -1,11 +1,13 @@
 import { CarouselDemo } from "@/components/home/carousel-demo";
+import { TestimonialsDemo } from "@/components/home/demo-testimonial";
 import { Hero } from "@/components/home/landing-hero";
 
 export const HomePage = () => {
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center min-h-screen py-2">
       <Hero />
       <CarouselDemo />
+      <TestimonialsDemo />
       {/* <LandingHero />
       <div>
         <div className="min-h-[700px] flex flex-col justify-start border border-dashed rounded-lg space-y-2 my-10">

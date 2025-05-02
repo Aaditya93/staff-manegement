@@ -7,31 +7,23 @@ export const SiteFooter = () => {
   return (
     <footer className="bg-background p-8 text-foreground">
       <div className="container mx-auto space-y-8">
-        {/* Help Section */}
-        <div className="flex justify-between items-center bg-card p-6 rounded-md">
+        <div className="flex justify-between items-center p-6 rounded-md bg-secondary">
           <div>
             <h2 className="text-xl font-bold text-card-foreground">
-              {/* {t("title")} */}
               Victoria Tours
             </h2>
             <p className="text-muted-foreground mt-1">
-              {/* {t("title1")} */}Your trusted travel partner
+              Your trusted travel partner
             </p>
           </div>
-          <Button
-            variant="ghost"
-            className="text-primary hover:text-primary/90"
-          >
+          <Button variant="outline">
             <a href="https://api.whatsapp.com/send/?phone=84915549136&text&type=phone_number&app_absent=0">
-              {/* {t("title2")} */}
               Contact Us
             </a>
           </Button>
         </div>
 
         <Separator className="bg-border" />
-
-        {/* Links Section */}
 
         {/* Contact & Social Media */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0 md:space-x-8">
@@ -41,14 +33,16 @@ export const SiteFooter = () => {
                 className="rounded-lg"
                 width={80}
                 height={80}
-                src="/tours.png"
-                alt="SwiftVisa"
+                src="/logo.png"
+                alt="Victoria Tours "
               />
             </div>
             <div className="text-sm text-muted-foreground">
-              <p>+91 98681 01944</p>
-              <p>support@Vicotria Tours</p>
-              <p>7th Floor</p>
+              <p>+84 974 993 215</p>
+              <p>sale20@victoriatour.com.vn</p>
+              <p>
+                No. 29, Pham Van Bach Street, Yen Hoa Ward, Cau Giay District
+              </p>
             </div>
           </div>
           {/* <div className="flex space-x-4">
@@ -93,10 +87,7 @@ export const SiteFooter = () => {
             &copy; {new Date().getFullYear()} Victoria Tours. All rights
             reserved.
           </p>
-          <p>
-            {/* {t("title3")} */}
-            Terms of Service | Privacy Policy
-          </p>
+          <p>Terms of Service | Privacy Policy</p>
         </div>
       </div>
     </footer>

@@ -6,7 +6,7 @@ import Image from "next/image";
 
 interface SlideData {
   title: string;
-  button: string;
+
   src: string;
 }
 

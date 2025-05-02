@@ -11,7 +11,7 @@ export const MainNav = () => {
   const session = useSession();
   return (
     <div className="mr-4 hidden md:flex">
-      <div className="relative w-12 h-12  pl-2">
+      <div className="relative w-12 h-12  pl-2 ">
         <Image
           src="/logo.png"
           alt="Victoria Tours Logo"
@@ -21,7 +21,7 @@ export const MainNav = () => {
         />
       </div>
       <Link href="/home" className="mr-4 flex items-center gap-2 lg:mr-6">
-        <span className="hidden font-bold lg:inline-block text-foreground">
+        <span className="hidden mr-4 font-bold lg:inline-block text-foreground">
           Victoria Tours
         </span>
       </Link>

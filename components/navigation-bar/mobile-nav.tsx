@@ -4,8 +4,10 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "../../lib/utils";
+import { useSession } from "next-auth/react";
 export const MonbileNav = () => {
   const pathname = usePathname();
+  const session = useSession();
 
   return (
     <Drawer>
@@ -36,17 +38,21 @@ export const MonbileNav = () => {
           <div className="flex flex-col space-y-3">
             <nav className="flex flex-col space-y-4">
               <Link
-                href="/visa"
+                href={
+                  session.data?.user.role == "TravelAgent"
+                    ? "/travel-agent/dashboard"
+                    : "/dashboard"
+                }
                 className={cn(
                   "transition-colors hover:text-primary",
-                  pathname === "/visa"
+                  pathname === "/dashboard"
                     ? "text-primary font-medium"
                     : "text-muted-foreground"
                 )}
               >
-                Visa
+                Dashboard
               </Link>
-              <Link
+              {/* <Link
                 href="/contact-us"
                 className={cn(
                   "transition-colors hover:text-primary",
@@ -56,8 +62,8 @@ export const MonbileNav = () => {
                 )}
               >
                 Contact Us
-              </Link>
-              <Link
+              </Link> */}
+              {/* <Link
                 href="/about-us"
                 className={cn(
                   "transition-colors hover:text-primary",
@@ -67,9 +73,9 @@ export const MonbileNav = () => {
                 )}
               >
                 About Us
-              </Link>
+              </Link> */}
               <Link
-                href="/charts"
+                href="/auth/travel-agent/register"
                 className={cn(
                   "transition-colors hover:text-primary",
                   pathname?.startsWith("/charts")

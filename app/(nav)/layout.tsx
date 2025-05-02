@@ -17,10 +17,6 @@ export default async function RootLayout({
         </div>
       </div>
 
-      <button
-        className="fixed bottom-4 right-4   p-4 rounded-full shadow-lg bg-background focus:outline-none "
-        aria-label="Contact Us"
-      ></button>
       <SiteFooter />
     </div>
   );
