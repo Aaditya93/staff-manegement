@@ -77,11 +77,25 @@ export const ChatDashboard = ({
         c.participants.every((p) => p._id !== message.senderId._id)
     );
   };
+  // Add this consolidated effect
   useEffect(() => {
-    if (initialMessages && initialMessages.length > 0) {
+    // Set loading to false when we have either conversations or messages
+    if (
+      (initialConversationId &&
+        initialMessages &&
+        initialMessages.length > 0) ||
+      conversations.length > 0
+    ) {
       setIsLoading(false);
     }
-  }, [initialMessages]);
+
+    // Update current conversation and messages when initialConversationId changes
+    if (initialConversationId) {
+      setCurrentConversationId(initialConversationId);
+      setMessages(initialMessages);
+    }
+  }, [initialConversationId, initialMessages, conversations]);
+
   // Scroll to bottom when messages change
   useEffect(() => {
     // Use a small timeout to ensure the DOM has updated
@@ -111,7 +125,7 @@ export const ChatDashboard = ({
 
       if (conversationId) {
         // Navigate to the new conversation
-        router.push(`/chat/${conversationId}`);
+        router.replace(`/chat/${conversationId}`);
       }
     } catch (err) {
       console.error("Error creating conversation:", err);
@@ -120,39 +134,58 @@ export const ChatDashboard = ({
     }
   };
 
+  // ...existing code...
   const handleSendMessage = async () => {
     if (!message.trim() || !currentConversationId || isSending) return;
 
-    // Store message content and clear input
+    // Store message content and clear input immediately
     const messageContent = message.trim();
     setMessage("");
+
+    // Create a temporary message with pending status and local ID
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage = {
+      _id: tempId,
+      content: [messageContent],
+      senderId: { _id: "current-user" }, // Will be replaced with actual data
+      conversationId: currentConversationId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: "pending" as const,
+    };
+
+    // Add the optimistic message
+    setMessages((prev) => [...prev, optimisticMessage]);
+
+    // Send the actual message
     setIsSending(true);
-
     try {
-      // Send the message to the server
       const response = await sendMessage(currentConversationId, messageContent);
-
-      // Get the message from the response
       const serverMessage = response.message || response;
 
       if (serverMessage && serverMessage._id) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...serverMessage,
-            status: "sent",
-          },
-        ]);
+        // Replace the temporary message with the server response
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === tempId ? { ...serverMessage, status: "sent" } : msg
+          )
+        );
       } else {
         throw new Error("Failed to send message");
       }
     } catch (err) {
       console.error("Error sending message:", err);
-      // Show error notification or handle error appropriately
+      // Mark the message as failed
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === tempId ? { ...msg, status: "failed" } : msg
+        )
+      );
     } finally {
       setIsSending(false);
     }
   };
+  // ...existing code...
   // Handle click outside search dropdown
   const handleClickOutside = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest("[data-search-result]")) {
@@ -183,11 +216,6 @@ export const ChatDashboard = ({
 
     performSearch();
   }, [debouncedSearchTerm]);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   return (
     <SidebarInset>
@@ -249,7 +277,6 @@ export const ChatDashboard = ({
               <>
                 {/* Chat Header */}
                 <ChatHeader conversation={currentChat} isMainHeader={true} />
-
                 {/* Messages Area */}
                 <ScrollArea className="flex-grow p-4 h-[calc(100vh-10rem)] min-h-[400px]">
                   {isLoading ? (
@@ -261,51 +288,81 @@ export const ChatDashboard = ({
                   ) : (
                     <div className="space-y-4 mb-4 pb-2">
                       <AnimatePresence mode="popLayout">
-                        {isLoading ? (
-                          <div className="flex flex-col items-center justify-center">
-                            <Loader2 className="animate-spin text-muted" />
-                          </div>
-                        ) : messages.length === 0 ? (
-                          <EmptyState type="noMessages" />
-                        ) : (
-                          <div className="space-y-4 mb-4 pb-2">
-                            <AnimatePresence mode="popLayout">
-                              {messages.map((msg, index) => {
-                                const isNewestMessage =
-                                  index === messages.length - 1;
+                        {messages.map((msg, index) => {
+                          const isNewestMessage = index === messages.length - 1;
+                          const isPending = msg.status === "pending";
+                          const isFailed = msg.status === "failed";
 
-                                return (
-                                  <motion.div
-                                    key={msg._id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    transition={{
-                                      type: "spring",
-                                      stiffness: isNewestMessage ? 600 : 500,
-                                      damping: isNewestMessage ? 25 : 30,
-                                      // No delay for newest message, small delay for others
-                                      delay: isNewestMessage ? 0 : 0.1,
+                          return (
+                            <motion.div
+                              key={msg._id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{
+                                opacity: 1,
+                                y: 0,
+                                scale: 1,
+                                x: 0,
+                              }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              transition={{
+                                type: "spring",
+                                stiffness: isNewestMessage ? 700 : 500,
+                                damping: isNewestMessage ? 22 : 30,
+                                mass: isNewestMessage ? 0.8 : 1,
+                                delay: isNewestMessage ? 0 : 0.1,
+                              }}
+                              className={
+                                isPending || isFailed ? "relative" : ""
+                              }
+                              layout
+                            >
+                              <MessageItem
+                                message={msg}
+                                isCurrentUser={isCurrentUserMessage(msg)}
+                                formatTime={formatMessageTime}
+                                isFirstMessage={index === 0}
+                                status={msg.status}
+                              />
+
+                              {isPending && (
+                                <motion.div
+                                  className="absolute bottom-1 right-1 text-xs text-muted-foreground"
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  transition={{
+                                    repeat: Infinity,
+                                    duration: 1.5,
+                                    ease: "easeInOut",
+                                  }}
+                                ></motion.div>
+                              )}
+
+                              {isFailed && (
+                                <div className="absolute bottom-1 right-1 text-xs text-destructive flex items-center gap-1">
+                                  <span>Failed</span>
+                                  <button
+                                    onClick={() => {
+                                      const failedContent = msg.content[0];
+                                      // Remove failed message
+                                      setMessages((prev) =>
+                                        prev.filter((m) => m._id !== msg._id)
+                                      );
+                                      // Try sending again
+                                      setMessage(failedContent);
+                                      setTimeout(
+                                        () => handleSendMessage(),
+                                        100
+                                      );
                                     }}
-                                    layout
+                                    className="text-xs underline hover:text-destructive/80"
                                   >
-                                    <MessageItem
-                                      message={msg}
-                                      isCurrentUser={isCurrentUserMessage(msg)}
-                                      formatTime={formatMessageTime}
-                                      isFirstMessage={index === 0} // Add this line to make first message true
-                                    />
-                                  </motion.div>
-                                );
-                              })}
-                            </AnimatePresence>
-                            <div
-                              ref={messagesEndRef}
-                              className="h-1"
-                              aria-hidden="true"
-                            />
-                          </div>
-                        )}
+                                    Retry
+                                  </button>
+                                </div>
+                              )}
+                            </motion.div>
+                          );
+                        })}
                       </AnimatePresence>
                       <div
                         ref={messagesEndRef}
@@ -315,7 +372,6 @@ export const ChatDashboard = ({
                     </div>
                   )}
                 </ScrollArea>
-
                 {/* Chat Input */}
                 <ChatInput
                   message={message}

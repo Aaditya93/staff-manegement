@@ -68,8 +68,6 @@ export function MessageItem({
                 ? "animate-slide-in-up opacity-90"
                 : "animate-fade-in"
             }
-            ${message.status === "sending" ? "opacity-80" : ""}
-            ${message.status === "failed" ? "border-red-500" : ""}
           `}
           style={{
             animationDuration: "0.3s",

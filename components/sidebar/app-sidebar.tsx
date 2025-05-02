@@ -105,7 +105,7 @@ const data = {
     },
     {
       name: "Messages",
-      url: "/chat/10",
+      url: "/chat/none",
       icon: CiChat1,
     },
     {
