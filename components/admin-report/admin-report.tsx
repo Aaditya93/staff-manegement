@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { TbPresentationAnalytics } from "react-icons/tb";
 import { convertTicketsToChartData } from "./data/line-chart-data";
 import { MainLineChart } from "./line-chart";
+import EmployeePerformanceTables from "./employee-table";
+import { convertTicketsToDestinationChartData } from "./data/destination-chart-data";
+import { DestinationBarChart } from "./market-bar-chart";
 // Define the props interface for the component
 interface ReportPageProps {
   tickets: ITicket[]; // Replace 'any' with your actual ticket type if available
@@ -10,6 +13,8 @@ interface ReportPageProps {
 
 const AdminReport = async ({ tickets }: ReportPageProps) => {
   const LineChartData = convertTicketsToChartData(tickets, "receivedDateTime");
+  const destinationData = convertTicketsToDestinationChartData(tickets);
+  console.log(destinationData);
 
   return (
     <div className="container mx-auto  ">
@@ -22,11 +27,12 @@ const AdminReport = async ({ tickets }: ReportPageProps) => {
             </CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 ">
           <MainLineChart data={LineChartData} />
-          <div className=" flex-col grid grid-cols-2   pt-0">
-            {/* You can use tickets data here */}
-          </div>
+
+          <DestinationBarChart data={destinationData} />
+          <EmployeePerformanceTables tickets={tickets} />
+
           <div className=" flex-col grid grid-cols-2   pt-0">
             {/* More ticket data display */}
           </div>

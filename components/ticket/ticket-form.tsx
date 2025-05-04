@@ -408,7 +408,7 @@ export default function EditTicketForm({
                             <SelectItem value="negotiating">
                               Negotiating
                             </SelectItem>
-                            <SelectItem value="confirmed">Confirmed</SelectItem>
+
                             <SelectItem value="in_progress">
                               In Progress
                             </SelectItem>

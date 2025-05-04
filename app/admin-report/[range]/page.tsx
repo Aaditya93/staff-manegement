@@ -51,12 +51,13 @@ const AdminReportPage = async ({
   const dateRange = extractDateRange(range);
   const { from, to } = dateRange;
   const tickets = await getAllTickets(from, to);
+  console.log("Tickets:", tickets);
 
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
           <AdminReport tickets={tickets} />
         </div>
       </SidebarInset>
