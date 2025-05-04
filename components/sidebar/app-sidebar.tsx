@@ -116,7 +116,7 @@ const data = {
 
     {
       name: "Report",
-      url: `/report/from=${seven}&to=${to}`,
+      url: `/admin-report/from=${seven}&to=${to}`,
       icon: TfiPieChart,
     },
   ],

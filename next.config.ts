@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "passport-2.s3.ap-southeast-1.amazonaws.com",
+        hostname: "staff-management-1234.s3.ap-southeast-1.amazonaws.com",
         port: "",
         pathname: "/**",
       },
@@ -84,7 +84,7 @@ const nextConfig: NextConfig = {
               "font-src 'self'; " +
               "object-src 'none'; " +
               "frame-ancestors 'none'; " +
-              "connect-src 'self' https://passport-2.s3.ap-southeast-1.amazonaws.com; ",
+              "connect-src 'self' https://staff-management-1234.s3.ap-southeast-1.amazonaws.com; ",
           },
         ],
       },

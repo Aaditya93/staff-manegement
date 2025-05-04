@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 
 export const getAllReports = async () => {
   try {
+    await dbConnect();
     const session = await auth();
     const userRole = session?.user?.role;
     const userId = session?.user?.id;

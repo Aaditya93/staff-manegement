@@ -8,6 +8,15 @@ import { useSession } from "next-auth/react";
 export const MonbileNav = () => {
   const pathname = usePathname();
   const session = useSession();
+  const today = new Date();
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+  const sevendaysAgo = new Date(today);
+  sevendaysAgo.setDate(today.getDate() - 7);
+
+  const seven = sevendaysAgo.toISOString().split("T")[0];
+
+  const to = today.toISOString().split("T")[0];
 
   return (
     <Drawer>
@@ -40,8 +49,8 @@ export const MonbileNav = () => {
               <Link
                 href={
                   session.data?.user.role == "TravelAgent"
-                    ? "/travel-agent/dashboard"
-                    : "/dashboard"
+                    ? `/travel-agent/dashboard/from=${seven}&to=${to}`
+                    : `/dashboard/from=${seven}&to=${to}`
                 }
                 className={cn(
                   "transition-colors hover:text-primary",

@@ -59,7 +59,7 @@ export async function sendConfirmationEmail({
       <div style="font-family: 'Helvetica Neue', Arial, sans-serif; padding: 30px; max-width: 650px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #003366; font-size: 28px; margin-bottom: 5px;">Victoria Tours</h1>
-          <p style="color: #666; font-style: italic; margin-top: 0;">Creating unforgettable travel experiences since 1995</p>
+          <p style="color: #666; font-style: italic; margin-top: 0;">Creating unforgettable travel experiences since 2012</p>
           <div style="height: 3px; background: linear-gradient(to right, #003366, #66a3cc); margin: 20px 0;"></div>
         </div>
         

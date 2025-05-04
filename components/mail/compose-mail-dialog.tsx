@@ -597,20 +597,23 @@ export function ComposeMailDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogContent
         className={`${
           isMinimized ? "max-h-14" : "max-h-[80vh]"
-        } bottom-4 right-0 top-auto 
-  sm:max-w-[500px] p-0 rounded-t-lg rounded-b-none border shadow-lg gap-0 overflow-hidden transition-all duration-200`}
+        } p-0 rounded-lg border shadow-lg gap-0 overflow-hidden transition-all duration-200 !fixed !bottom-6 !right-6 !top-auto !translate-x-0 !translate-y-0`}
         style={{
           position: "fixed",
-          transform: "translateX(0) translateY(0)",
+          bottom: "24px",
+          right: "24px",
+          top: "auto",
+          left: "auto",
+          transform: "none",
           height: isMinimized ? "auto" : "500px",
-          zIndex: 50,
+          width: "500px",
+          maxWidth: "95vw",
+          zIndex: 9999,
           margin: 0,
-          bottom: 4,
-          right: "2rem",
         }}
       >
         {renderDialogContent()}

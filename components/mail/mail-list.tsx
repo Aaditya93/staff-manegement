@@ -8,8 +8,6 @@ import { useMail } from "./use-mails";
 import { EmailMessage } from "./mail-display";
 import { markAsRead } from "@/actions/mail/email-actions";
 import PaginationComponent from "./pagination";
-import { auth } from "@/auth";
-import { useSession } from "next-auth/react";
 
 interface MailListProps {
   items: EmailMessage[];
@@ -137,11 +135,11 @@ export function MailList({
         {totalPages > 1 && (
           <div className="sticky bottom-2 w-full  p-4 bg-background">
             <PaginationComponent
-              currentValue={range}
+              currentValue={range || "0"}
               folder={folder}
               status={status}
               inboxNumber={inboxNumber}
-              hasMore={true}
+              hasMore={currentPage < totalPages}
             />
           </div>
         )}
