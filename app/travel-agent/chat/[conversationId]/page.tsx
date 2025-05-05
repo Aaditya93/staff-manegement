@@ -1,10 +1,11 @@
-import { ChatDashboard } from "@/components/chat/chat-dashboard";
-import AppSidebar from "@/components/sidebar/app-sidebar";
+import { ChatDashboard } from "@/components/travel-agent/chat/chat-dashboard";
+
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   fetchConversationMessages,
   fetchUserConversations,
 } from "@/actions/chat/conversation";
+import AppSidebar from "@/components/travel-agent/app-sidebar";
 
 // Define message limit options
 const MESSAGE_LIMITS = {

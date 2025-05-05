@@ -99,7 +99,7 @@ const data = {
 
     {
       name: "Messages",
-      url: "/travel-agent/chat/10",
+      url: "/travel-agent/chat/none",
       icon: CiChat1,
     },
 
