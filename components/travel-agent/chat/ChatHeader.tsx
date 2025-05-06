@@ -108,6 +108,7 @@ export function ChatHeader({
           <p className="font-medium text-sm">
             {getConversationName(conversation)}
           </p>
+
           {(getStatus() === "online" || isMainHeader) && (
             <p className="text-xs text-muted-foreground">
               {getStatus() === "online" ? (

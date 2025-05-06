@@ -125,7 +125,7 @@ export const ChatDashboard = ({
 
       if (conversationId) {
         // Navigate to the new conversation
-        router.replace(`/chat/${conversationId}`);
+        router.replace(`/travel-agent/chat/${conversationId}`);
       }
     } catch (err) {
       console.error("Error creating conversation:", err);
