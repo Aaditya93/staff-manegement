@@ -6,7 +6,7 @@ export const sendVarificationEmail = async (email: string, token: string) => {
   const ConfirmationLink = `${Domain}/auth/travel-agent/new-verification?token=${token}`;
 
   await resend.emails.send({
-    from: "Victoria Tours <noreply@bukxe.net>",
+    from: "Victoria Tours <noreply@victoriatour.vn>",
     to: email,
     subject: "Verify Your Email - Victoria Tours",
     html: `
@@ -140,7 +140,7 @@ export const PasswordResetEmail = async (email: string, token: string) => {
   const ConfirmationLink = `${Domain}/auth/travel-agent/new-password?token=${token}`;
 
   await resend.emails.send({
-    from: "Victoria Tours <noreply@victoriatour.com>",
+    from: "Victoria Tours <noreply@victoriatour.vn>",
     to: email,
     subject: "Reset Your Password - Victoria Tours",
     html: `<!DOCTYPE html>

@@ -36,7 +36,7 @@ const PasswordResetPage = () => {
             variant="link"
             className="text-sm text-muted-foreground"
           >
-            <Link href="/auth/login">Back to Login</Link>
+            <Link href="/auth/travel-agent/login">Back to Login</Link>
           </Button>
         </CardFooter>
       </Card>
