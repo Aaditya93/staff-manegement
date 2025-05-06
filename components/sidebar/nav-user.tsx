@@ -86,12 +86,14 @@ const NavUser = () => {
 
             <DropdownMenuSeparator />
             <ModeToggle />
-            <DropdownMenuItem asChild>
-              <Link href="/edit-profile">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Profile
-              </Link>
-            </DropdownMenuItem>
+            {session.data?.user.role !== "TravelAgent" && (
+              <DropdownMenuItem asChild>
+                <Link href="/edit-profile">
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Profile
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem className=" text-red-600 " onClick={SignOut}>
               <LogOut />
               Log out

@@ -209,7 +209,7 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" position="center">
           <DialogHeader>
             <DialogTitle>Email Information</DialogTitle>
           </DialogHeader>
@@ -235,9 +235,9 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
                   <p className="text-sm font-medium">
                     {emailDetails.email.subject}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  {/* <p className="text-sm text-muted-foreground mt-1">
                     {emailDetails.email.bodyPreview}
-                  </p>
+                  </p> */}
                 </div>
 
                 <Separator />

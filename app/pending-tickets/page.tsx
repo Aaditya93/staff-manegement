@@ -88,10 +88,8 @@ export default async function PendingTicketsPage() {
       <AppSidebar />
 
       <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-        <header className="sticky top-0 z-10 bg-primary flex h-16 shrink-0 items-center px-4 border-b">
-          <h1 className="text-2xl text-primary-foreground font-semibold">
-            Pending Approval
-          </h1>
+        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center px-4 border-b">
+          <h1 className="text-2xl  font-semibold">Pending Approval</h1>
           <div className="flex items-center gap-2"></div>
         </header>
 
@@ -108,7 +106,7 @@ export default async function PendingTicketsPage() {
                     <TableHead>Pax</TableHead>
                     <TableHead>Received Time</TableHead>
                     <TableHead>Sales Staff</TableHead>
-                    <TableHead>Reservation Staff</TableHead>
+                    {/* <TableHead>Reservation Staff</TableHead> */}
                     <TableHead>Estimated Time</TableHead>
 
                     <TableHead>Actions</TableHead>
@@ -135,12 +133,12 @@ export default async function PendingTicketsPage() {
                             default={ticket.salesInCharge}
                           />
                         </TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           <SelectReservationStaff
                             staffList={reservationStaff}
                             default={ticket.reservationInCharge}
                           />
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell>
                           <SelectEstimatedTime defaultTime={"1H"} />
                         </TableCell>

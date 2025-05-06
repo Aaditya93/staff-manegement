@@ -14,16 +14,10 @@ interface ApproveControlProps {
 
 export function ApproveControl({ ticketId }: ApproveControlProps) {
   const [isPending, startTransition] = useTransition();
-  const { selectedReservationStaff, selectedSalesStaff, estimatedTime } =
-    useTicketContext();
+  const { selectedSalesStaff, estimatedTime } = useTicketContext();
   const router = useRouter();
 
   const handleApprove = () => {
-    if (!selectedReservationStaff) {
-      toast("Please select a reservation staff");
-      return;
-    }
-
     if (!selectedSalesStaff) {
       toast("Please select a sales staff");
       return;
@@ -32,11 +26,6 @@ export function ApproveControl({ ticketId }: ApproveControlProps) {
     startTransition(async () => {
       try {
         // Use simple objects to avoid potential circular references
-        const reservationInChargeData = {
-          id: selectedReservationStaff.id,
-          name: selectedReservationStaff.name,
-          emailId: selectedReservationStaff.email,
-        };
 
         const salesInChargeData = {
           id: selectedSalesStaff.id,
@@ -46,7 +35,6 @@ export function ApproveControl({ ticketId }: ApproveControlProps) {
 
         const result = await approveTicket(
           ticketId,
-          reservationInChargeData,
           salesInChargeData,
           estimatedTime
         );
@@ -69,7 +57,7 @@ export function ApproveControl({ ticketId }: ApproveControlProps) {
     <Button
       onClick={handleApprove}
       size="sm"
-      disabled={isPending || !selectedReservationStaff || !selectedSalesStaff}
+      disabled={isPending || !selectedSalesStaff}
     >
       {isPending ? (
         <>

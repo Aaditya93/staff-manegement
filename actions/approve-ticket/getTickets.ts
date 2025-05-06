@@ -57,11 +57,7 @@ export const getAllUnApprovedTickets = async () => {
 
 export async function approveTicket(
   ticketId: string,
-  reservationInCharge: {
-    id: string;
-    name: string;
-    emailId: string;
-  },
+
   salesInCharge: {
     id: string;
     name: string;
@@ -74,19 +70,13 @@ export async function approveTicket(
     const session = await auth();
 
     // Basic validation
-    if (!ticketId || !reservationInCharge || !salesInCharge || !estimatedTime) {
+    if (!ticketId || !salesInCharge || !estimatedTime) {
       return {
         success: false,
         error: "Missing required information",
       };
     }
     const estimatedTimeInSeconds = convertTimeToSeconds(estimatedTime);
-
-    const cleanReservation = {
-      id: reservationInCharge.id,
-      name: reservationInCharge.name,
-      emailId: reservationInCharge.emailId,
-    };
 
     const cleanSales = {
       id: salesInCharge.id,
@@ -100,19 +90,20 @@ export async function approveTicket(
     };
 
     // Use updateOne instead of findByIdAndUpdate for simplicity
-    const result = await Ticket.updateOne(
+    const updatedTicket = await Ticket.findOneAndUpdate(
       { _id: ticketId },
       {
         $set: {
           isApproved: true,
-          reservationInCharge: cleanReservation,
           salesInCharge: cleanSales,
           approvedBy: approver,
           estimateTimeToSendPrice: estimatedTimeInSeconds,
         },
-      }
+      },
+      { new: true } // This option returns the document after update
     );
-    if (result.modifiedCount === 0) {
+    console.log("Update result:", updatedTicket);
+    if (!updatedTicket) {
       return {
         success: false,
         error: "Ticket not found or no changes made",
@@ -120,7 +111,7 @@ export async function approveTicket(
     }
     await sendConfirmationEmail({
       ticketId,
-      reservationStaff: reservationInCharge,
+      reservationStaff: updatedTicket.reservationInCharge,
       salesStaff: salesInCharge,
       estimatedTimeInSeconds,
     });

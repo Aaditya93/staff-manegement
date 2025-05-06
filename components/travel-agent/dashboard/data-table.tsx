@@ -133,6 +133,12 @@ const DataTable = <TData, TValue>({
               Company Name
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
+              checked={searchSelections === "ticket"}
+              onCheckedChange={() => setSearchSelections("ticket")}
+            >
+              Ticket ID
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
               checked={searchSelections === "destination"}
               onCheckedChange={() => setSearchSelections("destination")}
             >

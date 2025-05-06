@@ -74,7 +74,15 @@ export const columns: ColumnDef<TravelBooking>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div>{row.getValue("companyName")}</div>,
+    cell: ({ row }) => {
+      const companyName = row.getValue("companyName") as string;
+      // Capitalize first letter if companyName exists
+      const capitalizedCompanyName = companyName
+        ? companyName.charAt(0).toUpperCase() + companyName.slice(1)
+        : "";
+
+      return <div>{capitalizedCompanyName}</div>;
+    },
   },
 
   {
@@ -138,6 +146,11 @@ export const columns: ColumnDef<TravelBooking>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
+      // Capitalize first letter if status exists
+      const capitalizedStatus = status
+        ? status.charAt(0).toUpperCase() + status.slice(1)
+        : "";
+
       return (
         <div
           className={`rounded-full px-2 py-1 text-xs font-medium ${
@@ -148,7 +161,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
                 : "bg-red-100 text-red-800"
           }`}
         >
-          {status}
+          {capitalizedStatus}
         </div>
       );
     },
@@ -174,7 +187,15 @@ export const columns: ColumnDef<TravelBooking>[] = [
   {
     accessorKey: "speed",
     header: "Speed",
-    cell: ({ row }) => <div>{row.getValue("speed")}</div>,
+    cell: ({ row }) => {
+      const speed = row.getValue("speed") as string;
+      // Capitalize first letter if speed exists
+      const capitalizedSpeed = speed
+        ? speed.charAt(0).toUpperCase() + speed.slice(1)
+        : "";
+
+      return <div>{capitalizedSpeed}</div>;
+    },
   },
   {
     accessorKey: "inbox",

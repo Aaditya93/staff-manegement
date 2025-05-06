@@ -19,8 +19,7 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ tickets = [] }: DashboardProps) => {
-  const [searchSelections, setSearchSelections] =
-    useState<string>("companyName");
+  const [searchSelections, setSearchSelections] = useState<string>("ticket");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   // Use the mapped ticket data if available, otherwise fall back to sample data

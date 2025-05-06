@@ -170,7 +170,10 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
           Add Review
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
+        position="center"
+      >
         <DialogHeader>
           <DialogTitle className="text-xl">Submit Ticket Review</DialogTitle>
           <DialogDescription>

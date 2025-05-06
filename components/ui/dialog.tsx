@@ -49,15 +49,40 @@ function DialogOverlay({
 function DialogContent({
   className,
   children,
+  position = "bottom-right", // Default position
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content>) {
+}: React.ComponentProps<typeof DialogPrimitive.Content> & {
+  position?:
+    | "bottom-right"
+    | "center"
+    | "top-right"
+    | "top-left"
+    | "bottom-left"
+    | string;
+}) {
+  // Map positions to corresponding CSS classes
+  const positionClasses = {
+    "bottom-right": "fixed bottom-6 right-6",
+    center: "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+    "top-right": "fixed top-6 right-6",
+    "top-left": "fixed top-6 left-6",
+    "bottom-left": "fixed bottom-6 left-6",
+    // Add more positions as needed
+  };
+
+  // Get the position class or use custom position string
+  const positionClass =
+    positionClasses[position as keyof typeof positionClasses] || position;
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed bottom-6 right-6 z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          positionClass, // Apply position class
+          "z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
           className
         )}
         {...props}

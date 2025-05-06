@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import ReportComplaint from "./report";
 
 // Define the TravelBooking type to match our data structure
 export type TravelBooking = {
@@ -116,13 +115,26 @@ export const columns: ColumnDef<TravelBooking>[] = [
   {
     accessorKey: "market",
     header: "Market",
-    cell: ({ row }) => <div>{row.getValue("market")}</div>,
+    cell: ({ row }) => {
+      const market = row.getValue("market") as string;
+      // Capitalize first letter if market exists
+      const capitalizedMarket = market
+        ? market.charAt(0).toUpperCase() + market.slice(1)
+        : "";
+
+      return <div>{capitalizedMarket}</div>;
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
+      // Capitalize first letter if status exists
+      const capitalizedStatus = status
+        ? status.charAt(0).toUpperCase() + status.slice(1)
+        : "";
+
       return (
         <div
           className={`rounded-full px-2 py-1 text-xs font-medium ${
@@ -133,7 +145,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
                 : "bg-red-100 text-red-800"
           }`}
         >
-          {status}
+          {capitalizedStatus}
         </div>
       );
     },
@@ -152,7 +164,15 @@ export const columns: ColumnDef<TravelBooking>[] = [
   {
     accessorKey: "speed",
     header: "Speed",
-    cell: ({ row }) => <div>{row.getValue("speed")}</div>,
+    cell: ({ row }) => {
+      const speed = row.getValue("speed") as string;
+      // Capitalize first letter if speed exists
+      const capitalizedSpeed = speed
+        ? speed.charAt(0).toUpperCase() + speed.slice(1)
+        : "";
+
+      return <div>{capitalizedSpeed}</div>;
+    },
   },
 
   {
