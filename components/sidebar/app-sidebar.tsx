@@ -3,7 +3,7 @@
 import * as React from "react";
 import { LifeBuoy, Send, SquareTerminal } from "lucide-react";
 import { CiMail } from "react-icons/ci";
-
+import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import { CiViewTable } from "react-icons/ci";
 import { GoReport } from "react-icons/go";
 import { BsListTask } from "react-icons/bs";
@@ -112,6 +112,11 @@ const data = {
       name: "Complaints",
       url: `/report`,
       icon: GoReport,
+    },
+    {
+      name: "Admin Panel",
+      url: `/admin-panel`,
+      icon: MdOutlineAdminPanelSettings,
     },
 
     {

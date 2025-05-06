@@ -47,9 +47,13 @@ interface EditProfileProps {
 export function EditProfile({ userData }: EditProfileProps) {
   const id = useId();
 
-  const [selectedCountry, setSelectedCountry] = useState(
-    userData.destination || "Vietnam"
-  ); // Default or from userData
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(
+    userData.destination && Array.isArray(userData.destination)
+      ? userData.destination
+      : userData.destination
+        ? [userData.destination]
+        : []
+  );
   const [name, setName] = useState(userData.name || "");
   const [accountType, setAccountType] = useState(userData.role || ""); // Default or from userData
   const [selectedOffice, setSelectedOffice] = useState(userData.office || ""); // Initialize office state
@@ -110,7 +114,7 @@ export function EditProfile({ userData }: EditProfileProps) {
       // Pass accountType, office, and position to the updateProfile action
       // Note: You might need to update the `updateProfile` action signature
       const result = await updateProfile(
-        selectedCountry,
+        selectedCountries, // Pass array of destinations
         name,
         accountType,
         selectedOffice, // Pass office
@@ -243,40 +247,6 @@ export function EditProfile({ userData }: EditProfileProps) {
                 </div>
 
                 {/* Destination Selector */}
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-Destination`}>Destination</Label>
-                  <Select
-                    value={selectedCountry}
-                    onValueChange={setSelectedCountry}
-                  >
-                    <SelectTrigger id={`${id}-Destination`} className="w-full">
-                      <SelectValue placeholder="Select Destination" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {/* Add more countries as needed */}
-                      <SelectItem value="Vietnam">Vietnam</SelectItem>
-                      <SelectItem value="Singapore">Singapore</SelectItem>
-                      <SelectItem value="Thailand">Thailand</SelectItem>
-                      <SelectItem value="Malaysia">Malaysia</SelectItem>
-                      <SelectItem value="Indonesia">Indonesia</SelectItem>
-                      <SelectItem value="China">China</SelectItem>
-                      <SelectItem value="Taiwan">Taiwan</SelectItem>
-                      <SelectItem value="Nepal">Nepal</SelectItem>
-                      <SelectItem value="Sri lanka">Sri Lanka</SelectItem>
-                      <SelectItem value="India">India</SelectItem>
-                      <SelectItem value="Italia">Italia</SelectItem>
-                      <SelectItem value="Kazakhstan">Kazakhstan</SelectItem>
-                      <SelectItem value="Uzbekistan">Uzbekistan</SelectItem>
-                      <SelectItem value="Cambodia">Cambodia</SelectItem>
-                      <SelectItem value="Laos">Laos</SelectItem>
-                      <SelectItem value="Myanmar">Myanmar</SelectItem>
-                      <SelectItem value="Pakistan">Pakistan</SelectItem>
-                      <SelectItem value="Philippines">Philippines</SelectItem>
-                      <SelectItem value="Kyrgyzstan">Kyrgyzstan</SelectItem>
-                      <SelectItem value="Azerbaijan">Azerbaijan</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 {/* Office Selector */}
                 <div className="space-y-2">
@@ -322,6 +292,69 @@ export function EditProfile({ userData }: EditProfileProps) {
                       {/* Add more positions as needed */}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`${id}-Destination`}>Destinations</Label>
+                  <div className="flex flex-col ">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {selectedCountries?.map((country) => (
+                        <div
+                          key={country}
+                          className="flex items-center bg-primary/10 text-sm rounded-md px-2 "
+                        >
+                          <span>{country}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedCountries(
+                                selectedCountries.filter((c) => c !== country)
+                              );
+                            }}
+                            className="ml-1 text-muted-foreground hover:text-destructive"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value && !selectedCountries?.includes(value)) {
+                          setSelectedCountries([...selectedCountries, value]);
+                        }
+                      }}
+                    >
+                      <SelectTrigger
+                        id={`${id}-Destination`}
+                        className="w-full"
+                      >
+                        <SelectValue placeholder="Add destination" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {/* Add more countries as needed */}
+                        <SelectItem value="Vietnam">Vietnam</SelectItem>
+                        <SelectItem value="Singapore">Singapore</SelectItem>
+                        <SelectItem value="Thailand">Thailand</SelectItem>
+                        <SelectItem value="Malaysia">Malaysia</SelectItem>
+                        <SelectItem value="Indonesia">Indonesia</SelectItem>
+                        <SelectItem value="China">China</SelectItem>
+                        <SelectItem value="Taiwan">Taiwan</SelectItem>
+                        <SelectItem value="Nepal">Nepal</SelectItem>
+                        <SelectItem value="Sri Lanka">Sri Lanka</SelectItem>
+                        <SelectItem value="India">India</SelectItem>
+                        <SelectItem value="Italia">Italia</SelectItem>
+                        <SelectItem value="Kazakhstan">Kazakhstan</SelectItem>
+                        <SelectItem value="Uzbekistan">Uzbekistan</SelectItem>
+                        <SelectItem value="Cambodia">Cambodia</SelectItem>
+                        <SelectItem value="Laos">Laos</SelectItem>
+                        <SelectItem value="Myanmar">Myanmar</SelectItem>
+                        <SelectItem value="Pakistan">Pakistan</SelectItem>
+                        <SelectItem value="Philippines">Philippines</SelectItem>
+                        <SelectItem value="Kyrgyzstan">Kyrgyzstan</SelectItem>
+                        <SelectItem value="Azerbaijan">Azerbaijan</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </form>

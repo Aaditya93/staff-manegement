@@ -24,6 +24,7 @@ import { registerTravelAgent } from "@/actions/auth/travel-agent-register";
 import { useTransition, useState } from "react";
 import { FormError } from "./form-error";
 import { FormSuccess } from "./form-success";
+import { useRouter } from "next/navigation";
 
 const TravelAgentRegisterSchema = z.object({
   name: z.string().min(3, {
@@ -52,6 +53,7 @@ export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const onSubmit = async (
     values: z.infer<typeof TravelAgentRegisterSchema>
@@ -67,8 +69,11 @@ export const RegisterForm = () => {
           setError(result.error);
           return;
         }
+        router.push("/");
 
         setSuccess(result.success);
+        router.push("/home");
+
         form.reset();
       } catch (error) {
         console.error(error);

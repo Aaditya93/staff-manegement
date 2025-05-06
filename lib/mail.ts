@@ -8,7 +8,7 @@ export const sendVarificationEmail = async (email: string, token: string) => {
   await resend.emails.send({
     from: "Victoria Tours <noreply@victoriatour.vn>",
     to: email,
-    subject: "Verify Your Email - Victoria Tours",
+    subject: "Account Approved - Victoria Tours",
     html: `
   <!DOCTYPE html>
   <html lang="en">
@@ -117,9 +117,9 @@ export const sendVarificationEmail = async (email: string, token: string) => {
         <!-- You can add your logo img here if you have one -->
         <h1>Victoria Tours</h1>
       </div>
-      <h1 class="title">Verify Your Email Address</h1>
+      <h1 class="title">Account Approved!</h1>
       <p class="verification-text">
-        Welcome to Victoria Tours! Please click the button below to verify your email address and complete your account setup. This helps us keep your account secure.
+        Good news! Our team has reviewed and approved your account details. To complete your account setup and login, please verify your email address by clicking the button below.
       </p>
       <div class="button-container">
         <a href="${ConfirmationLink}" class="verify-button">Verify Email Address</a>
@@ -135,7 +135,6 @@ export const sendVarificationEmail = async (email: string, token: string) => {
     `,
   });
 };
-
 export const PasswordResetEmail = async (email: string, token: string) => {
   const ConfirmationLink = `${Domain}/auth/travel-agent/new-password?token=${token}`;
 

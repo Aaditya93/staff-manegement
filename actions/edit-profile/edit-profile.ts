@@ -6,7 +6,7 @@ import User from "@/db/models/User";
 import { revalidatePath } from "next/cache";
 
 export async function updateProfile(
-  country?: string, // Assuming country is saved somewhere
+  countries?: string[], // Changed to array of countries
   name?: string,
   accountType?: string,
   office?: string,
@@ -24,7 +24,7 @@ export async function updateProfile(
         name: name,
         office: office,
         position: position,
-        destination: country,
+        destination: countries, // Now storing array of destinations
         role: accountType, // Save the account type
       },
       { new: true } // Return the updated document

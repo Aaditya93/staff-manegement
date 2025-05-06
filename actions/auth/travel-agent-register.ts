@@ -6,9 +6,6 @@ import dbConnect from "@/db/db";
 import { TravelAgentRegisterSchema } from "@/app/schemas";
 import User from "@/db/models/User";
 import bcrypt from "bcryptjs";
-
-import { sendVarificationEmail } from "@/lib/mail";
-import { generateToken } from "@/lib/token";
 export const registerTravelAgent = async (
   values: z.infer<typeof TravelAgentRegisterSchema>
 ) => {
@@ -30,7 +27,7 @@ export const registerTravelAgent = async (
       email: email,
     });
     if (existingTravelAgent) {
-      const travelAgent = await TravelAgentUser.findOneAndUpdate(
+      await TravelAgentUser.findOneAndUpdate(
         {
           email: email,
         },
@@ -41,10 +38,11 @@ export const registerTravelAgent = async (
           address,
           phoneNumber,
           country,
+          accountApproved: false,
         },
         { new: true } // Return the updated document
       );
-      const existingUser = await User.findOneAndUpdate(
+      await User.findOneAndUpdate(
         {
           email: email,
         },
@@ -56,13 +54,13 @@ export const registerTravelAgent = async (
         { new: true } // Return the updated document
       );
 
-      const verificationToken = await generateToken(existingUser.email);
-      await sendVarificationEmail(
-        verificationToken.email,
-        verificationToken.token
-      );
+      // const verificationToken = await generateToken(existingUser.email);
+      // await sendVarificationEmail(
+      //   verificationToken.email,
+      //   verificationToken.token
+      // );
       return {
-        success: "Confirmation email sent",
+        success: "Verification pending. Our team will review your details.",
       };
     }
 
@@ -74,6 +72,7 @@ export const registerTravelAgent = async (
       address,
       phoneNumber,
       country,
+      accountApproved: false,
     });
     await User.create({
       name,
@@ -83,14 +82,14 @@ export const registerTravelAgent = async (
       provider: "credentials",
       password: hashedPassword,
     });
-    const verificationToken = await generateToken(travelAgent.email);
-    await sendVarificationEmail(
-      verificationToken.email,
-      verificationToken.token
-    );
+    // const verificationToken = await generateToken(travelAgent.email);
+    // await sendVarificationEmail(
+    //   verificationToken.email,
+    //   verificationToken.token
+    // );
 
     return {
-      success: "Confirmation email sent",
+      success: "Verification pending. Our team will review your details.",
     };
   } catch (error) {
     console.error("Error during registration:", error);
