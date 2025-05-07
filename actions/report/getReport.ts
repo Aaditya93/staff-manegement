@@ -34,7 +34,7 @@ export const getAllReports = async () => {
 
     const reports = await Report.find({
       resolvedAt: { $exists: false }, // Only include reports where resolvedAt field does not exist
-      where: whereClause, // Use the dynamically constructed where clause
+      // where: whereClause, // Use the dynamically constructed where clause
     })
       .lean()
       .populate([

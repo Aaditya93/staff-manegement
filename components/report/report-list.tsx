@@ -155,7 +155,7 @@ const ReportList = ({ reports }: ReportListProps) => {
                     <Users className="w-5 h-5 flex-shrink-0 sm:w-4 sm:h-4" />
                     <div>
                       <p className="text-xs">Assigned Staff</p>
-                      <p className="text-sm">{report.reservationId.name}</p>
+                      <p className="text-sm">{report.reservationId?.name}</p>
                     </div>
                   </div>
                 </div>
@@ -203,7 +203,10 @@ const ReportList = ({ reports }: ReportListProps) => {
 
       {/* Dialog for showing report details */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] md:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogContent
+          className="sm:max-w-[600px] md:max-w-[700px] max-h-[90vh] overflow-y-auto"
+          position="center"
+        >
           {selectedReport && (
             <>
               <DialogHeader className="space-y-1">
@@ -252,10 +255,10 @@ const ReportList = ({ reports }: ReportListProps) => {
                     </h4>
                     <div>
                       <p className="text-sm font-medium">
-                        {selectedReport.travelAgentId.name}
+                        {selectedReport.travelAgentId?.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {selectedReport.travelAgentId.email}
+                        {selectedReport.travelAgentId?.email}
                       </p>
                     </div>
                   </div>
@@ -271,16 +274,14 @@ const ReportList = ({ reports }: ReportListProps) => {
                       <p className="text-xs text-muted-foreground">
                         {selectedReport.salesId.email}
                       </p>
-                      {selectedReport.reservationId.position && (
-                        <p className="text-xs text-muted-foreground">
-                          {selectedReport.salesId.position}
-                        </p>
-                      )}
-                      {selectedReport.reservationId.office && (
-                        <p className="text-xs text-muted-foreground">
-                          {selectedReport.salesId.office}
-                        </p>
-                      )}
+
+                      <p className="text-xs text-muted-foreground">
+                        {selectedReport.salesId?.position}
+                      </p>
+
+                      <p className="text-xs text-muted-foreground">
+                        {selectedReport.salesId?.office}
+                      </p>
                     </div>
                   </div>
 
@@ -290,21 +291,19 @@ const ReportList = ({ reports }: ReportListProps) => {
                     </h4>
                     <div>
                       <p className="text-sm font-medium">
-                        {selectedReport.reservationId.name}
+                        {selectedReport.reservationId?.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {selectedReport.reservationId.email}
+                        {selectedReport.reservationId?.email}
                       </p>
-                      {selectedReport.reservationId.position && (
-                        <p className="text-xs text-muted-foreground">
-                          {selectedReport.reservationId.position}
-                        </p>
-                      )}
-                      {selectedReport.reservationId.office && (
-                        <p className="text-xs text-muted-foreground">
-                          {selectedReport.reservationId.office}
-                        </p>
-                      )}
+
+                      <p className="text-xs text-muted-foreground">
+                        {selectedReport.reservationId?.position}
+                      </p>
+
+                      <p className="text-xs text-muted-foreground">
+                        {selectedReport.reservationId?.office}
+                      </p>
                     </div>
                   </div>
                 </div>
