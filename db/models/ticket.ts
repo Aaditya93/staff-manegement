@@ -35,7 +35,6 @@ interface PersonnelInfo {
 export interface ITicket extends Document {
   companyName: string;
   _id: string;
-
   receivedDateTime: string;
   sentDateTime?: string;
   pax: number;

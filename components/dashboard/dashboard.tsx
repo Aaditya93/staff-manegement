@@ -5,14 +5,8 @@ import AppSidebar from "../sidebar/app-sidebar";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DataTable from "./data-table";
-import { columns, TravelBooking } from "./columns";
+import { columns } from "./columns";
 import { mapTicketsToTableData } from "@/utils/ticket-data";
-// Sample data as fallback
-const sampleData: TravelBooking[] = [
-  // ...existing sample data...
-];
-
-// Convert ticket data to the format expected by the data table
 
 interface DashboardProps {
   tickets?: any[];

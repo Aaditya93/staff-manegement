@@ -1,15 +1,8 @@
 "use client";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Eye, Edit } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -42,28 +35,6 @@ export type TravelBooking = {
 
 export const columns: ColumnDef<TravelBooking>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "companyName",
     header: ({ column }) => (
       <Button
@@ -82,6 +53,46 @@ export const columns: ColumnDef<TravelBooking>[] = [
         : "";
 
       return <div>{capitalizedCompanyName}</div>;
+    },
+  },
+  {
+    id: "view",
+    header: "View",
+    enableHiding: false,
+    cell: ({ row }) => {
+      return (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center text-blue-600 hover:bg-blue-50"
+          asChild
+        >
+          <Link href={`/ticket/${row.original.ticket}`}>
+            <Eye className="h-2 w-2 mr-12" />
+            View
+          </Link>
+        </Button>
+      );
+    },
+  },
+  {
+    id: "edit",
+    header: "Edit",
+    enableHiding: false,
+    cell: ({ row }) => {
+      return (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center text-amber-600 hover:bg-amber-50"
+          asChild
+        >
+          <Link href={`/ticket-edit/${row.original.ticket}`}>
+            <Edit className="h-2 w-2 mr-12" />
+            Edit
+          </Link>
+        </Button>
+      );
     },
   },
 
@@ -210,22 +221,122 @@ export const columns: ColumnDef<TravelBooking>[] = [
   {
     accessorKey: "timeSent",
     header: "Time sent",
-    cell: ({ row }) => <div>{row.getValue("timeSent")}</div>,
+    cell: ({ row }) => {
+      const timestamp = row.getValue("timeSent");
+
+      // Check if timestamp exists and is valid
+      if (!timestamp) return <div>-</div>;
+
+      try {
+        // Convert string timestamp to Date object
+        const date = new Date(timestamp);
+
+        // Format the date to local timezone with readable format
+        const localDate = date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+
+        return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
+      } catch (error) {
+        // Fallback if date parsing fails
+        return <div>{String(timestamp)}</div>;
+      }
+    },
   },
   {
     accessorKey: "receivedTime",
     header: "Received time",
-    cell: ({ row }) => <div>{row.getValue("receivedTime")}</div>,
+    cell: ({ row }) => {
+      const timestamp = row.getValue("receivedTime");
+
+      // Check if timestamp exists and is valid
+      if (!timestamp) return <div>-</div>;
+
+      try {
+        // Convert string timestamp to Date object
+        const date = new Date(timestamp);
+
+        // Format the date to local timezone with readable format
+        const localDate = date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+
+        return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
+      } catch (error) {
+        // Fallback if date parsing fails
+        return <div>{String(timestamp)}</div>;
+      }
+    },
   },
   {
     accessorKey: "lastInbox",
     header: "Last inbox",
-    cell: ({ row }) => <div>{row.getValue("lastInbox")}</div>,
+    cell: ({ row }) => {
+      const timestamp = row.getValue("lastInbox");
+
+      // Check if timestamp exists and is valid
+      if (!timestamp) return <div>-</div>;
+
+      try {
+        // Convert string timestamp to Date object
+        const date = new Date(timestamp as string);
+
+        // Format the date to local timezone with readable format
+        const localDate = date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+
+        return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
+      } catch (error) {
+        // Fallback if date parsing fails
+        return <div>{String(timestamp)}</div>;
+      }
+    },
   },
   {
     accessorKey: "lastSent",
     header: "Last sent",
-    cell: ({ row }) => <div>{row.getValue("lastSent")}</div>,
+    cell: ({ row }) => {
+      const timestamp = row.getValue("lastSent");
+
+      // Check if timestamp exists and is valid
+      if (!timestamp) return <div>-</div>;
+
+      try {
+        // Convert string timestamp to Date object
+        const date = new Date(timestamp as string);
+
+        // Format the date to local timezone with readable format
+        const localDate = date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+
+        return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
+      } catch (error) {
+        // Fallback if date parsing fails
+        return <div>{String(timestamp)}</div>;
+      }
+    },
   },
   {
     accessorKey: "balance",
@@ -245,50 +356,5 @@ export const columns: ColumnDef<TravelBooking>[] = [
       </Button>
     ),
     cell: ({ row }) => <div>${row.getValue("costOfPackage")}</div>,
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel className="font-semibold">
-              Actions
-            </DropdownMenuLabel>
-            <DropdownMenuItem
-              asChild
-              className="flex items-center cursor-pointer hover:bg-slate-100 transition-colors"
-            >
-              <Link
-                href={`/ticket/${row.original.ticket}`}
-                className="flex w-full items-center"
-              >
-                <Eye className="h-4 w-4 mr-2 text-blue-600" />
-                View Details
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              asChild
-              className="flex items-center cursor-pointer hover:bg-slate-100 transition-colors"
-            >
-              <Link
-                href={`/ticket-edit/${row.original.ticket}`}
-                className="flex w-full items-center"
-              >
-                <Edit className="h-4 w-4 mr-2 text-amber-600" />
-                Edit Ticket
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
   },
 ];

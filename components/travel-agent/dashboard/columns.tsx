@@ -71,7 +71,32 @@ export const columns: ColumnDef<TravelBooking>[] = [
   {
     accessorKey: "receivedTime",
     header: "Received time",
-    cell: ({ row }) => <div>{row.getValue("receivedTime")}</div>,
+    cell: ({ row }) => {
+      const timestamp = row.getValue("receivedTime");
+
+      // Check if timestamp exists and is valid
+      if (!timestamp) return <div>-</div>;
+
+      try {
+        // Convert string timestamp to Date object
+        const date = new Date(timestamp);
+
+        // Format the date to local timezone with readable format
+        const localDate = date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+
+        return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
+      } catch (error) {
+        // Fallback if date parsing fails
+        return <div>{String(timestamp)}</div>;
+      }
+    },
   },
 
   {
