@@ -60,43 +60,45 @@ interface EmailShowcaseProps {
   email: string;
   emailId: string;
   userId: string;
+  emailNo: string;
   onEmailFetched?: (emailData: EmailResponse) => void;
 }
 
 const sanitizeEmailContent = (htmlContent: string): string => {
   if (!htmlContent) return "";
 
-  // Basic sanitization using a more robust library like DOMPurify is recommended for production
+  // Basic sanitization
   let sanitized = htmlContent
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "") // Remove script tags
-    .replace(/on\w+="[^"]*"/g, "") // Remove inline event handlers (double quotes)
-    .replace(/on\w+='[^']*'/g, ""); // Remove inline event handlers (single quotes)
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/on\w+="[^"]*"/g, "")
+    .replace(/on\w+='[^']*'/g, "");
 
-  // Attempt to fix common image issues
+  // Force all tables to be responsive
   sanitized = sanitized
-    // Ensure base64 images have a MIME type (default to png if missing, though imperfect)
+    .replace(
+      /<table([^>]*)>/gi,
+      '<table style="width:100%; max-width:100%; table-layout:fixed;" $1>'
+    )
+    // Fix base64 images
     .replace(/src="data:;base64,/gi, 'src="data:image/png;base64,')
-    // Try to make images responsive, but be less aggressive than replacing width/height entirely
+    // Make all images responsive
     .replace(/<img([^>]*)>/gi, (match, attributes) => {
-      const style = attributes.match(/style="([^"]*)"/i);
-      let styleAttr = style ? style[1] : "";
-      // Add max-width if not present
-      if (!styleAttr.includes("max-width")) {
-        styleAttr += ";max-width: 100%;";
-      }
-      // Ensure height is auto if max-width is set
-      if (styleAttr.includes("max-width") && !styleAttr.includes("height")) {
-        styleAttr += ";height: auto;";
-      }
-      // Remove existing style attribute if present
-      attributes = attributes.replace(/style="[^"]*"/i, "");
-      // Add the modified style attribute
-      return `<img${attributes} style="${styleAttr.replace(/^;+|;+$/g, "")}" />`;
-    });
+      // Remove fixed width/height attributes that could break layout
+      const cleanedAttrs = attributes
+        .replace(/width="[^"]*"/gi, "")
+        .replace(/height="[^"]*"/gi, "")
+        .replace(/style="[^"]*"/gi, "");
 
-  // Note: Rendering cid: images requires fetching attachments and replacing
-  // src="cid:..." with data URLs. This function doesn't handle that.
-  // Note: Rendering x-gmail-data images is generally not possible outside Gmail.
+      return `<img${cleanedAttrs} style="max-width:100%; height:auto; display:block;" />`;
+    })
+    // Force wide divs to fit container
+    .replace(
+      /<div([^>]*)style="([^"]*)width:([^"]*);/gi,
+      '<div$1style="$2max-width:100%;width:$3;'
+    );
+
+  // Add global wrapper to force overflow control for any element
+  sanitized = `<div style="max-width:100%; overflow-x:hidden;">${sanitized}</div>`;
 
   return sanitized;
 };
@@ -104,6 +106,7 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
   email,
   emailId,
   userId,
+  emailNo,
   onEmailFetched,
 }) => {
   console.log("fetchEmailData called with:", { email, emailId, userId });
@@ -211,7 +214,10 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[500px]" position="center">
           <DialogHeader>
-            <DialogTitle>Email Information</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <span>Email Information</span>
+              <Badge className="ml-2">Email #{emailNo}</Badge>
+            </DialogTitle>
           </DialogHeader>
 
           <div className="py-2">
@@ -235,9 +241,9 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
                   <p className="text-sm font-medium">
                     {emailDetails.email.subject}
                   </p>
-                  {/* <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     {emailDetails.email.bodyPreview}
-                  </p> */}
+                  </p>
                 </div>
 
                 <Separator />

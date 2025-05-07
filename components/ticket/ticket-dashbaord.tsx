@@ -100,7 +100,9 @@ export function TicketDashboard({ ticket }: ITicket) {
                 <User className="h-4 w-4 text-primary" />
                 Company
               </span>
-              <span className="font-semibold">{ticket.companyName}</span>
+              <span className="font-semibold capitalize">
+                {ticket.companyName}
+              </span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -138,7 +140,7 @@ export function TicketDashboard({ ticket }: ITicket) {
                 <CiMap className="h-4 w-4 text-primary" />
                 Market
               </span>
-              <span className="font-semibold">{ticket.market}</span>
+              <span className="font-semibold capitalize">{ticket.market}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -251,11 +253,11 @@ export function TicketDashboard({ ticket }: ITicket) {
               <div className="space-y-2">
                 <p className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary" />
-                  Received Date/Time
+                  Last Received Date/Time
                 </p>
                 <p className="bg-secondary/30 p-2 rounded-md">
-                  {ticket.receivedDateTime
-                    ? format(new Date(ticket.receivedDateTime), "PPpp")
+                  {ticket.lastMailTimeReceived
+                    ? format(new Date(ticket.lastMailTimeReceived), "PPpp")
                     : "N/A"}
                 </p>
               </div>
@@ -263,11 +265,11 @@ export function TicketDashboard({ ticket }: ITicket) {
               <div className="space-y-2">
                 <p className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary" />
-                  Sent Date/Time
+                  Last Sent Date/Time
                 </p>
                 <p className="bg-secondary/30 p-2 rounded-md">
-                  {ticket.sentDateTime
-                    ? format(new Date(ticket.sentDateTime), "PPpp")
+                  {ticket.lastMailTimeSent
+                    ? format(new Date(ticket.lastMailTimeSent), "PPpp")
                     : "N/A"}
                 </p>
               </div>
@@ -371,6 +373,7 @@ export function TicketDashboard({ ticket }: ITicket) {
                         email={ticket.createdBy.emailId}
                         emailId={email.id}
                         userId={ticket.createdBy.id}
+                        emailNo={index + 1}
                       />
                     </div>
                   </CardContent>

@@ -95,7 +95,6 @@ export default function EditTicketForm({
       id: employee._id.toString(),
       name: employee.name,
       emailId: employee.email,
-      country: employee.country,
     }));
 
   const reservationPersonnel = employeeArray
@@ -104,7 +103,6 @@ export default function EditTicketForm({
       id: employee._id.toString(),
       name: employee.name,
       emailId: employee.email,
-      country: employee.country,
     }));
 
   // For travel agents - if we don't have any, we'll use all employees
@@ -114,7 +112,6 @@ export default function EditTicketForm({
       id: employee._id.toString(),
       name: employee.name,
       emailId: employee.email,
-      country: employee.country,
     }));
 
   // Initialize the form with fallbacks if no personnel data is available
@@ -343,7 +340,7 @@ export default function EditTicketForm({
                             placeholder="Enter cost"
                             {...field}
                             onChange={(e) =>
-                              field.onChange(e.target.valueAsNumber || 0)
+                              field.onChange(e.target.valueAsNumber)
                             }
                             className="bg-background"
                           />
@@ -717,18 +714,22 @@ export default function EditTicketForm({
                         <Card className="overflow-hidden hover:shadow-md transition-shadow">
                           <CardHeader className="p-3 pb-1 bg-secondary/5 border-b">
                             <CardTitle className="text-sm font-medium flex items-center justify-center w-full">
-                              Reservation
+                              Travel Agent
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="pt-0 px-4 pb-4">
-                            <div className="flex flex-col items-center justify-center mt-2 ">
-                              {reservationPersonnel.map(
-                                (reservationPersonnel) => (
-                                  <div key={reservationPersonnel.id}>
-                                    {reservationPersonnel.name}
-                                  </div>
+                            <div className="flex flex-col items-center justify-center mt-2">
+                              {reservationPersonnel
+                                .filter(
+                                  (agent) =>
+                                    agent.id ===
+                                    form.watch("reservationInCharge")
                                 )
-                              )}
+                                .map((reservation) => (
+                                  <div key={reservation.id}>
+                                    {reservation.name}
+                                  </div>
+                                ))}
                             </div>
                           </CardContent>
                         </Card>
