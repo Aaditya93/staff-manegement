@@ -5,12 +5,14 @@ import Message from "@/db/models/Message";
 import mongoose from "mongoose";
 import { auth } from "@/auth";
 import { serializeData } from "@/utils/serialize";
+import dbConnect from "@/db/db";
 
 /**
  * Fetch conversations for the current user
  */
 export async function fetchUserConversations() {
   try {
+    await dbConnect;
     const session = await auth();
     if (!session?.user?.id) {
       return { error: "Unauthorized" };

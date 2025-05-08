@@ -6,7 +6,7 @@ export const getAllEmployees = async () => {
   try {
     await dbConnect();
     const Employees = await User.find({
-      role: ["SalesStaff", "ReservationStaff"],
+      role: ["SalesStaff", "ReservationStaff", "Admin"],
     }).lean();
     const serailizedEmployees = await serializeData(Employees);
     return serailizedEmployees;

@@ -193,7 +193,7 @@ function DataTable({ data }: { data: EmployeePerformance[] }) {
           />
         </div>
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border max-h-[300px] overflow-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
