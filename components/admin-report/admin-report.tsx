@@ -6,6 +6,7 @@ import { MainLineChart } from "./line-chart";
 import EmployeePerformanceTables from "./employee-table";
 import { convertTicketsToDestinationChartData } from "./data/destination-chart-data";
 import { DestinationBarChart } from "./market-bar-chart";
+import DatePickerWithRange from "./date-range";
 // Define the props interface for the component
 interface ReportPageProps {
   tickets: ITicket[]; // Replace 'any' with your actual ticket type if available
@@ -25,6 +26,7 @@ const AdminReport = async ({ tickets }: ReportPageProps) => {
               <TbPresentationAnalytics className="mr-2 w-8 h-8 text-primary-foreground" />
               Admin Report
             </CardTitle>
+            <DatePickerWithRange />
           </div>
         </CardHeader>
         <CardContent className="p-0 ">

@@ -1,13 +1,11 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, Legend } from "recharts";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -44,13 +42,16 @@ export function DestinationBarChart({
   data = defaultChartData,
 }: DestinationChartProps) {
   return (
-    <Card>
+    <Card className="rounded-none">
       <CardHeader>
         <CardTitle>Destination Statistics</CardTitle>
         <CardDescription>Tickets and Revenue by Destination</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[300px] w-full"
+        >
           <BarChart accessibilityLayer data={data}>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -80,11 +81,6 @@ export function DestinationBarChart({
           </BarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="leading-none text-muted-foreground">
-          Showing ticket counts and revenue by destination
-        </div>
-      </CardFooter>
     </Card>
   );
 }

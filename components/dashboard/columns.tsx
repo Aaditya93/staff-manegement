@@ -42,7 +42,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Company
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => {
@@ -52,19 +52,19 @@ export const columns: ColumnDef<TravelBooking>[] = [
         ? companyName.charAt(0).toUpperCase() + companyName.slice(1)
         : "";
 
-      return <div>{capitalizedCompanyName}</div>;
+      return <div className="text-center">{capitalizedCompanyName}</div>;
     },
   },
   {
     id: "view",
-    header: "View",
+    header: () => <div className="text-center">View</div>,
     enableHiding: false,
     cell: ({ row }) => {
       return (
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center text-blue-600    hover:bg-blue-50"
+          className="flex items-center text-blue-600 hover:bg-blue-50 mx-auto"
           asChild
         >
           <Link href={`/ticket/${row.original.ticket}`}>
@@ -77,25 +77,24 @@ export const columns: ColumnDef<TravelBooking>[] = [
   },
   {
     id: "edit",
-    header: "Edit",
+    header: () => <div className="text-center">Edit</div>,
     enableHiding: false,
     cell: ({ row }) => {
       return (
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center text-amber-600 hover:bg-amber-50"
+          className="flex items-center text-amber-600 hover:bg-amber-50 mx-auto"
           asChild
         >
           <Link href={`/ticket-edit/${row.original.ticket}`}>
-            <Edit className="h-2 w-2" />
+            <Edit className="h-2 w-2 " />
             Edit
           </Link>
         </Button>
       );
     },
   },
-
   {
     accessorKey: "noOfPax",
     header: "Pax",
@@ -117,27 +116,37 @@ export const columns: ColumnDef<TravelBooking>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div>{row.getValue("destination")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("destination")}</div>
+    ),
   },
   {
     accessorKey: "arrival",
     header: "Arrival",
-    cell: ({ row }) => <div>{row.getValue("arrival")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("arrival")}</div>
+    ),
   },
   {
     accessorKey: "departure",
     header: "Departure",
-    cell: ({ row }) => <div>{row.getValue("departure")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("departure")}</div>
+    ),
   },
   {
     accessorKey: "reservationInCharge",
     header: "Reservation in Charge",
-    cell: ({ row }) => <div>{row.getValue("reservationInCharge")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("reservationInCharge")}</div>
+    ),
   },
   {
     accessorKey: "salesInCharge",
     header: "Sales in Charge",
-    cell: ({ row }) => <div>{row.getValue("salesInCharge")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("salesInCharge")}</div>
+    ),
   },
   {
     accessorKey: "market",
@@ -149,7 +158,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
         ? market.charAt(0).toUpperCase() + market.slice(1)
         : "";
 
-      return <div>{capitalizedMarket}</div>;
+      return <div className="text-center">{capitalizedMarket}</div>;
     },
   },
   {
@@ -164,7 +173,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
 
       return (
         <div
-          className={`rounded-full px-2 py-1 text-xs font-medium ${
+          className={`rounded-full px-2 py-1 text-xs font-medium text-center ${
             status === "done" || status === "Done"
               ? "bg-green-100 text-green-800"
               : status === "new" || status === "In Progress"
@@ -186,13 +195,15 @@ export const columns: ColumnDef<TravelBooking>[] = [
       // Convert seconds to hours (with 2 decimal places)
       const hours = seconds ? (seconds / 3600).toFixed(2) : "0";
 
-      return <div>{hours} hrs</div>;
+      return <div className="text-center">{hours} hrs</div>;
     },
   },
   {
     accessorKey: "waitingTime",
     header: "Waiting time",
-    cell: ({ row }) => <div>{row.getValue("waitingTime")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("waitingTime")}</div>
+    ),
   },
 
   {
@@ -205,18 +216,22 @@ export const columns: ColumnDef<TravelBooking>[] = [
         ? speed.charAt(0).toUpperCase() + speed.slice(1)
         : "";
 
-      return <div>{capitalizedSpeed}</div>;
+      return <div className="text-center">{capitalizedSpeed}</div>;
     },
   },
   {
     accessorKey: "inbox",
     header: "Inbox",
-    cell: ({ row }) => <div>{row.getValue("inbox")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("inbox")}</div>
+    ),
   },
   {
     accessorKey: "sent",
     header: "Sent",
-    cell: ({ row }) => <div>{row.getValue("sent")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("sent")}</div>
+    ),
   },
   {
     accessorKey: "timeSent",
@@ -229,7 +244,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
 
       try {
         // Convert string timestamp to Date object
-        const date = new Date(timestamp);
+        const date = new Date(timestamp as string | number | Date);
 
         // Format the date to local timezone with readable format
         const localDate = date.toLocaleString(undefined, {
@@ -243,8 +258,9 @@ export const columns: ColumnDef<TravelBooking>[] = [
 
         return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
       } catch (error) {
+        console.error("Error parsing date:", error);
         // Fallback if date parsing fails
-        return <div>{String(timestamp)}</div>;
+        return <div className="text-center">{String(timestamp)}</div>;
       }
     },
   },
@@ -259,7 +275,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
 
       try {
         // Convert string timestamp to Date object
-        const date = new Date(timestamp);
+        const date = new Date(timestamp as string | number | Date);
 
         // Format the date to local timezone with readable format
         const localDate = date.toLocaleString(undefined, {
@@ -273,8 +289,9 @@ export const columns: ColumnDef<TravelBooking>[] = [
 
         return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
       } catch (error) {
+        console.error("Error parsing date:", error);
         // Fallback if date parsing fails
-        return <div>{String(timestamp)}</div>;
+        return <div className="text-center">{String(timestamp)}</div>;
       }
     },
   },
@@ -303,8 +320,9 @@ export const columns: ColumnDef<TravelBooking>[] = [
 
         return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
       } catch (error) {
+        console.error("Error parsing date:", error);
         // Fallback if date parsing fails
-        return <div>{String(timestamp)}</div>;
+        return <div className="text-center">{String(timestamp)}</div>;
       }
     },
   },
@@ -333,15 +351,18 @@ export const columns: ColumnDef<TravelBooking>[] = [
 
         return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
       } catch (error) {
+        console.error("Error parsing date:", error);
         // Fallback if date parsing fails
-        return <div>{String(timestamp)}</div>;
+        return <div className="text-center">{String(timestamp)}</div>;
       }
     },
   },
   {
     accessorKey: "balance",
     header: "Balance",
-    cell: ({ row }) => <div>{row.getValue("balance")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("balance")}</div>
+    ),
   },
 
   {
@@ -355,6 +376,8 @@ export const columns: ColumnDef<TravelBooking>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div>${row.getValue("costOfPackage")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">${row.getValue("costOfPackage")}</div>
+    ),
   },
 ];

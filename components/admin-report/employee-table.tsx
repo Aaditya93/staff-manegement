@@ -1,6 +1,8 @@
 "use client";
 import { ITicket } from "@/db/models/ticket";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -24,7 +26,6 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
-import { Search } from "lucide-react";
 
 interface EmployeePerformanceTablesProps {
   tickets: ITicket[];
@@ -43,55 +44,112 @@ interface EmployeePerformance {
 const columns: ColumnDef<EmployeePerformance>[] = [
   {
     accessorKey: "employeeName",
-    header: "Employee Name",
-    cell: ({ row }) => <div>{row.getValue("employeeName")}</div>,
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Employee Name
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("employeeName")}</div>
+    ),
   },
   {
     accessorKey: "totalTickets",
-    header: "Total Tickets",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Total Tickets
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("totalTickets")}</div>
+    ),
   },
   {
     accessorKey: "completedTickets",
-    header: "Completed",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Completed
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("completedTickets")}</div>
+    ),
   },
   {
     accessorKey: "completionRate",
-    header: "Completion Rate",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Completion Rate
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => {
       const completedTickets = row.original.completedTickets;
       const totalTickets = row.original.totalTickets;
-      const rate = completedTickets / totalTickets;
+      const rate = totalTickets > 0 ? completedTickets / totalTickets : 0;
 
       return (
-        <Badge variant={rate >= 0.7 ? "success" : "destructive"}>
-          {(rate * 100).toFixed(1)}%
-        </Badge>
+        <div className="text-center">
+          <Badge>{(rate * 100).toFixed(1)}%</Badge>
+        </div>
       );
     },
   },
   {
     accessorKey: "avgWaitingTime",
-    header: "Avg. Waiting Time",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Avg. Waiting Time
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => {
       const waitingTime = row.original.avgWaitingTime;
       return (
-        <Badge variant={waitingTime < 30 ? "success" : "warning"}>
-          {formatTime(waitingTime)}
-        </Badge>
+        <div className="text-center">
+          <Badge variant="secondary">{formatTime(waitingTime)}</Badge>
+        </div>
       );
     },
   },
   {
     accessorKey: "totalRevenue",
-    header: "Total Revenue",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Total Revenue
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => (
-      <Badge variant="outline" className="font-mono">
-        ${row.original.totalRevenue.toLocaleString()}
-      </Badge>
+      <div className="text-center">
+        <Badge variant="outline" className="font-mono">
+          ${row.original.totalRevenue.toLocaleString()}
+        </Badge>
+      </div>
     ),
   },
 ];
-
 // Data Table component for employee performance
 function DataTable({ data }: { data: EmployeePerformance[] }) {
   const [sorting, setSorting] = useState<SortingState>([
@@ -228,31 +286,41 @@ const EmployeePerformanceTables = ({
     "reservation"
   );
 
+  // ...existing code...
+
   return (
-    <div className="w-full  ">
+    <div className="w-full ">
       {/* Sales Team Performance */}
-      <Card className="rounded-none  ">
-        <CardHeader className=" border-b bg-primary text-primary-foreground  ">
-          <CardTitle className="flex items-center text-lg font-medium ">
-            Sales Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0">
+      <div className="rounded-none border shadow-sm">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <FaUserTie className="h-5 w-5" />
+              Sales Performance
+            </h3>
+            <Badge variant="outline" className="text-xs font-medium">
+              {salesPerformance.length} Employees
+            </Badge>
+          </div>
           <DataTable data={salesPerformance} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Reservation Team Performance */}
-      <Card className="rounded-none">
-        <CardHeader className=" border-b bg-primary text-primary-foreground  ">
-          <CardTitle className="flex items-center text-lg font-medium ">
-            Reservation Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0">
+      <div className="rounded-none border shadow-sm">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <FaConciergeBell className="h-5 w-5" />
+              Reservation Performance
+            </h3>
+            <Badge variant="outline" className="text-xs font-medium">
+              {reservationPerformance.length} Employees
+            </Badge>
+          </div>
           <DataTable data={reservationPerformance} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
