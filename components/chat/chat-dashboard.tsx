@@ -77,6 +77,24 @@ export const ChatDashboard = ({
         c.participants.every((p) => p._id !== message.senderId._id)
     );
   };
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | undefined;
+
+    if (currentConversationId) {
+      // Start polling when a conversation is active
+      intervalId = setInterval(() => {
+        console.log("Refreshing chat data..."); // Optional: for debugging
+        router.refresh();
+      }, 2000); // Refresh every 2 seconds
+    }
+
+    // Cleanup function to clear the interval
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [currentConversationId, router]);
   // Add this consolidated effect
   useEffect(() => {
     // Set loading to false when we have either conversations or messages
