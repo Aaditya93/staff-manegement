@@ -1,3 +1,4 @@
+"use client";
 import { format } from "date-fns";
 import Link from "next/link";
 import {
@@ -253,25 +254,59 @@ export function TicketDashboard({ ticket }: ITicket) {
               <div className="space-y-2">
                 <p className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary" />
-                  Last Received Date/Time
+                  Last Received
                 </p>
                 <p className="bg-secondary/30 p-2 rounded-md">
                   {ticket.lastMailTimeReceived
-                    ? format(new Date(ticket.lastMailTimeReceived), "PPpp")
+                    ? new Date(ticket.lastMailTimeReceived).toLocaleString(
+                        undefined,
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: true,
+                          timeZoneName: "short",
+                        }
+                      )
                     : "N/A"}
                 </p>
+                {ticket.lastMailTimeReceived && (
+                  <p className="text-xs text-muted-foreground">
+                    (Your local timezone)
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <p className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary" />
-                  Last Sent Date/Time
+                  Last Sent
                 </p>
                 <p className="bg-secondary/30 p-2 rounded-md">
                   {ticket.lastMailTimeSent
-                    ? format(new Date(ticket.lastMailTimeSent), "PPpp")
+                    ? new Date(ticket.lastMailTimeSent).toLocaleString(
+                        undefined,
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: true,
+                          timeZoneName: "short",
+                        }
+                      )
                     : "N/A"}
                 </p>
+                {ticket.lastMailTimeSent && (
+                  <p className="text-xs text-muted-foreground">
+                    (Your local timezone)
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">

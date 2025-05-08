@@ -64,11 +64,11 @@ export const columns: ColumnDef<TravelBooking>[] = [
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center text-blue-600 hover:bg-blue-50"
+          className="flex items-center text-blue-600    hover:bg-blue-50"
           asChild
         >
           <Link href={`/ticket/${row.original.ticket}`}>
-            <Eye className="h-2 w-2 mr-12" />
+            <Eye className="h-2 w-2 " />
             View
           </Link>
         </Button>
@@ -88,7 +88,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
           asChild
         >
           <Link href={`/ticket-edit/${row.original.ticket}`}>
-            <Edit className="h-2 w-2 mr-12" />
+            <Edit className="h-2 w-2" />
             Edit
           </Link>
         </Button>
