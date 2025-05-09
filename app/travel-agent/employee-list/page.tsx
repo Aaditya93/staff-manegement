@@ -20,3 +20,4 @@ const EmployeesListPage = async () => {
 };
 
 export default EmployeesListPage;
+export const dynamic = "force-dynamic";

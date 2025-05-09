@@ -20,12 +20,12 @@ import { login } from "@/actions/auth/login";
 import { useTransition, useState } from "react";
 import { FormError } from "./form-error";
 import { FormSuccess } from "./form-success";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-
 // Separate component for login form content
 const LoginFormContent = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const urlError =
     searchParams.get("error") === "OAuthAccountNotLinked"
       ? "This email is already registered with a different Provider"

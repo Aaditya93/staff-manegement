@@ -22,3 +22,4 @@ const TicketPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   );
 };
 export default TicketPage;
+export const dynamic = "force-dynamic";
