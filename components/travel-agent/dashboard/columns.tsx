@@ -55,7 +55,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
 
       try {
         // Convert string timestamp to Date object
-        const date = new Date(timestamp);
+        const date = new Date(String(timestamp));
 
         // Format the date to local timezone with readable format
         const localDate = date.toLocaleString(undefined, {
@@ -69,6 +69,7 @@ export const columns: ColumnDef<TravelBooking>[] = [
 
         return <div title={`UTC: ${timestamp}`}>{localDate}</div>;
       } catch (error) {
+        console.error("Error parsing date:", error);
         // Fallback if date parsing fails
         return <div>{String(timestamp)}</div>;
       }
@@ -83,10 +84,12 @@ export const columns: ColumnDef<TravelBooking>[] = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Destination
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <ArrowUpDown className=" h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div>{row.getValue("destination")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center w-full">{row.getValue("destination")}</div>
+    ),
   },
   {
     accessorKey: "arrival",
@@ -128,25 +131,28 @@ export const columns: ColumnDef<TravelBooking>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: () => <div className="text-center w-full">Status</div>,
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
-      // Capitalize first letter if status exists
-      const capitalizedStatus = status
-        ? status.charAt(0).toUpperCase() + status.slice(1)
+
+      // Capitalize first letter and remove underscores if they exist
+      const formattedStatus = status
+        ? status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")
         : "";
 
       return (
-        <div
-          className={`rounded-full px-2 py-1 text-xs font-medium ${
-            status === "done" || status === "Done"
-              ? "bg-green-100 text-green-800"
-              : status === "new" || status === "In Progress"
-                ? "bg-blue-100 text-blue-800"
-                : "bg-red-100 text-red-800"
-          }`}
-        >
-          {capitalizedStatus}
+        <div className="flex justify-center w-full">
+          <div
+            className={`rounded-full px-2 py-1 text-xs font-medium text-center ${
+              status === "done" || status === "Done"
+                ? "bg-green-100 text-green-800"
+                : status === "new" || status === "In Progress"
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-red-100 text-red-800"
+            }`}
+          >
+            {formattedStatus}
+          </div>
         </div>
       );
     },
@@ -187,7 +193,9 @@ export const columns: ColumnDef<TravelBooking>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div>${row.getValue("costOfPackage")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center w-full">${row.getValue("costOfPackage")}</div>
+    ),
   },
   {
     id: "actions",

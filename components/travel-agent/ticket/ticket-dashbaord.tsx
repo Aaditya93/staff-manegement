@@ -30,7 +30,7 @@ import ReportComplaint from "../dashboard/report";
 import ReviewTicket from "./review";
 import ReviewShowcase from "./review-showcase";
 
-export function TicketDashboard({ ticket }: ITicket) {
+export function TicketDashboard({ ticket }: { ticket: ITicket }) {
   // Helper function to format dates
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return "N/A";
@@ -257,16 +257,10 @@ export function TicketDashboard({ ticket }: ITicket) {
                           minute: "2-digit",
                           second: "2-digit",
                           hour12: true,
-                          timeZoneName: "short",
                         }
                       )
                     : "N/A"}
                 </p>
-                {ticket.lastMailTimeReceived && (
-                  <p className="text-xs text-muted-foreground">
-                    (Your local timezone)
-                  </p>
-                )}
               </div>
 
               <div className="space-y-2">
@@ -286,16 +280,10 @@ export function TicketDashboard({ ticket }: ITicket) {
                           minute: "2-digit",
                           second: "2-digit",
                           hour12: true,
-                          timeZoneName: "short",
                         }
                       )
                     : "N/A"}
                 </p>
-                {ticket.lastMailTimeSent && (
-                  <p className="text-xs text-muted-foreground">
-                    (Your local timezone)
-                  </p>
-                )}
               </div>
             </div>
           </CardContent>
@@ -316,7 +304,7 @@ export function TicketDashboard({ ticket }: ITicket) {
         <CardContent className="pt-4">
           <ScrollArea className="h-[500px] pr-4">
             <div className="space-y-5">
-              {ticket.email.map((email, index) => (
+              {ticket.email.map((email) => (
                 <Card
                   key={email.id}
                   className={`border-l-4 ${
@@ -381,7 +369,7 @@ export function TicketDashboard({ ticket }: ITicket) {
                       <EmailShowcase
                         email={ticket.createdBy.emailId}
                         emailId={email.id}
-                        userId={ticket.createdBy.id}
+                        userId={ticket.createdBy.id || ""}
                       />
                     </div>
                   </CardContent>

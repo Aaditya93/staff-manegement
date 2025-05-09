@@ -12,7 +12,7 @@ import dbConnect from "@/db/db";
  */
 export async function fetchUserConversations() {
   try {
-    await dbConnect;
+    await dbConnect();
     const session = await auth();
     if (!session?.user?.id) {
       return { error: "Unauthorized" };
@@ -121,6 +121,7 @@ export async function fetchUserConversations() {
  */
 export async function sendMessage(conversationId: string, content: string) {
   try {
+    await dbConnect();
     const session = await auth();
     if (!session?.user?.id) {
       return { error: "Unauthorized" };
@@ -181,6 +182,7 @@ export async function fetchConversationMessages(
   conversationId: string,
   limit: number = 50
 ) {
+  await dbConnect();
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -227,6 +229,7 @@ export async function fetchConversationMessages(
 
 export async function fetchConversationById(conversationId: string) {
   try {
+    await dbConnect();
     const session = await auth();
     if (!session?.user?.id) {
       return { error: "Unauthorized" };

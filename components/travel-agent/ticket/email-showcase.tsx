@@ -213,7 +213,7 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" position="center">
           <DialogHeader>
             <DialogTitle>Email Information</DialogTitle>
           </DialogHeader>

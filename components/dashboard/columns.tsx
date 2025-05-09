@@ -163,25 +163,28 @@ export const columns: ColumnDef<TravelBooking>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: () => <div className="text-center w-full">Status</div>,
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
-      // Capitalize first letter if status exists
-      const capitalizedStatus = status
-        ? status.charAt(0).toUpperCase() + status.slice(1)
+
+      // Capitalize first letter and remove underscores if they exist
+      const formattedStatus = status
+        ? status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")
         : "";
 
       return (
-        <div
-          className={`rounded-full px-2 py-1 text-xs font-medium text-center ${
-            status === "done" || status === "Done"
-              ? "bg-green-100 text-green-800"
-              : status === "new" || status === "In Progress"
-                ? "bg-blue-100 text-blue-800"
-                : "bg-red-100 text-red-800"
-          }`}
-        >
-          {capitalizedStatus}
+        <div className="flex justify-center w-full">
+          <div
+            className={`rounded-full px-2 py-1 text-xs font-medium text-center ${
+              status === "done" || status === "Done"
+                ? "bg-green-100 text-green-800"
+                : status === "new" || status === "In Progress"
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-red-100 text-red-800"
+            }`}
+          >
+            {formattedStatus}
+          </div>
         </div>
       );
     },
