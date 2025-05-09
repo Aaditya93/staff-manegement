@@ -37,12 +37,13 @@ interface TravelAgentPerformance {
   totalRevenue: number;
 }
 
-// Column definitions for the travel agent table
 const columns: ColumnDef<TravelAgentPerformance>[] = [
   {
     accessorKey: "agentName",
     header: "Agent Name",
-    cell: ({ row }) => <div>{row.getValue("agentName")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center w-full">{row.getValue("agentName")}</div>
+    ),
   },
   {
     accessorKey: "totalTickets",
@@ -66,7 +67,7 @@ const columns: ColumnDef<TravelAgentPerformance>[] = [
       const count = destinations.length;
 
       return (
-        <div>
+        <div className="text-center w-full">
           <div className="text-xs text-muted-foreground mt-1">
             {destinations.slice(0, 2).join(", ")}
             {count > 2 ? ` +${count - 2} more` : ""}
@@ -87,9 +88,6 @@ const columns: ColumnDef<TravelAgentPerformance>[] = [
     ),
   },
 ];
-
-// ...existing code...
-
 // Data Table component for travel agent performance
 function DataTable({ data }: { data: TravelAgentPerformance[] }) {
   const [sorting, setSorting] = useState<SortingState>([
@@ -133,11 +131,11 @@ function DataTable({ data }: { data: TravelAgentPerformance[] }) {
           {" "}
           {/* Increased height for scrolling */}
           <Table>
-            <TableHeader className="sticky top-0 bg-background z-10">
+            <TableHeader className="sticky top-0 bg-background">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-center">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -154,7 +152,7 @@ function DataTable({ data }: { data: TravelAgentPerformance[] }) {
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell key={cell.id} className="text-center">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

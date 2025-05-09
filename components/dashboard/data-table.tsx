@@ -33,6 +33,7 @@ import {
 import { Dispatch, SetStateAction } from "react";
 import { DataTablePagination } from "./data-table-pagination";
 import DateRangePicker from "./date-range";
+import { useSession } from "next-auth/react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -52,6 +53,8 @@ const DataTable = <TData, TValue>({
   setSearchSelections,
 }: DataTableProps<TData, TValue>) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const session = useSession();
+  const role = session.data?.user.role;
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
@@ -151,6 +154,24 @@ const DataTable = <TData, TValue>({
             >
               Status
             </DropdownMenuCheckboxItem>
+            {role === "Admin" && (
+              <DropdownMenuCheckboxItem
+                checked={searchSelections === "reservationInCharge"}
+                onCheckedChange={() =>
+                  setSearchSelections("reservationInCharge")
+                }
+              >
+                Reservation In Charge
+              </DropdownMenuCheckboxItem>
+            )}
+            {role === "Admin" && (
+              <DropdownMenuCheckboxItem
+                checked={searchSelections === "salesInCharge"}
+                onCheckedChange={() => setSearchSelections("salesInCharge")}
+              >
+                Sales In Charge
+              </DropdownMenuCheckboxItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>

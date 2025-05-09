@@ -31,7 +31,7 @@ import { ITicket } from "@/db/models/ticket";
 import EmailShowcase from "./email-showcase";
 import ReviewShowcase from "../travel-agent/ticket/review-showcase";
 
-export function TicketDashboard({ ticket }: ITicket) {
+export function TicketDashboard({ ticket }: { ticket: ITicket }) {
   // Helper function to format dates
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return "N/A";
@@ -101,8 +101,13 @@ export function TicketDashboard({ ticket }: ITicket) {
                 <User className="h-4 w-4 text-primary" />
                 Company
               </span>
-              <span className="font-semibold capitalize">
-                {ticket.companyName}
+              <span
+                className="font-semibold capitalize truncate max-w-[180px] text-right"
+                title={ticket.companyName}
+              >
+                {ticket.companyName.length > 25
+                  ? ticket.companyName.substring(0, 15) + "..."
+                  : ticket.companyName}
               </span>
             </div>
 
@@ -267,17 +272,10 @@ export function TicketDashboard({ ticket }: ITicket) {
                           hour: "2-digit",
                           minute: "2-digit",
                           second: "2-digit",
-                          hour12: true,
-                          timeZoneName: "short",
                         }
                       )
                     : "N/A"}
                 </p>
-                {ticket.lastMailTimeReceived && (
-                  <p className="text-xs text-muted-foreground">
-                    (Your local timezone)
-                  </p>
-                )}
               </div>
 
               <div className="space-y-2">
@@ -296,17 +294,10 @@ export function TicketDashboard({ ticket }: ITicket) {
                           hour: "2-digit",
                           minute: "2-digit",
                           second: "2-digit",
-                          hour12: true,
-                          timeZoneName: "short",
                         }
                       )
                     : "N/A"}
                 </p>
-                {ticket.lastMailTimeSent && (
-                  <p className="text-xs text-muted-foreground">
-                    (Your local timezone)
-                  </p>
-                )}
               </div>
 
               <div className="space-y-2">

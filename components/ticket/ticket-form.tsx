@@ -436,6 +436,36 @@ export default function EditTicketForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
+                            <SelectItem value="Vietnam">Vietnam</SelectItem>
+                            <SelectItem value="Singapore">Singapore</SelectItem>
+                            <SelectItem value="Thailand">Thailand</SelectItem>
+                            <SelectItem value="Malaysia">Malaysia</SelectItem>
+                            <SelectItem value="Indonesia">Indonesia</SelectItem>
+                            <SelectItem value="China">China</SelectItem>
+                            <SelectItem value="Taiwan">Taiwan</SelectItem>
+                            <SelectItem value="Nepal">Nepal</SelectItem>
+                            <SelectItem value="Sri Lanka">Sri Lanka</SelectItem>
+                            <SelectItem value="India">India</SelectItem>
+                            <SelectItem value="Italia">Italia</SelectItem>
+                            <SelectItem value="Kazakhstan">
+                              Kazakhstan
+                            </SelectItem>
+                            <SelectItem value="Uzbekistan">
+                              Uzbekistan
+                            </SelectItem>
+                            <SelectItem value="Cambodia">Cambodia</SelectItem>
+                            <SelectItem value="Laos">Laos</SelectItem>
+                            <SelectItem value="Myanmar">Myanmar</SelectItem>
+                            <SelectItem value="Pakistan">Pakistan</SelectItem>
+                            <SelectItem value="Philippines">
+                              Philippines
+                            </SelectItem>
+                            <SelectItem value="Kyrgyzstan">
+                              Kyrgyzstan
+                            </SelectItem>
+                            <SelectItem value="Azerbaijan">
+                              Azerbaijan
+                            </SelectItem>
                             <SelectItem value="india">India</SelectItem>
                             <SelectItem value="japan">Japan</SelectItem>
                             <SelectItem value="china">China</SelectItem>

@@ -16,7 +16,6 @@ interface ReportPageProps {
 const AdminReport = async ({ tickets }: ReportPageProps) => {
   const LineChartData = convertTicketsToChartData(tickets, "receivedDateTime");
   const destinationData = convertTicketsToDestinationChartData(tickets);
-  console.log(destinationData);
 
   return (
     <div className="container mx-auto  ">

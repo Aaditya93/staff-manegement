@@ -27,3 +27,4 @@ const EditTicketPage = async ({
   );
 };
 export default EditTicketPage;
+export const dynamic = "force-dynamic";
