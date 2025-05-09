@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { Search, Star, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Employee {
   _id: string;
@@ -34,7 +35,7 @@ interface Employee {
   email: string;
   image: string | null;
   country: string;
-  destination?: string; // New field
+  destination?: string[] | string; // Array of strings or a single string
   role: string;
   position?: string; // New field
   office?: string; // New field
@@ -157,14 +158,16 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                 ) : (
                   filteredEmployees.map((employee) => (
                     <TableRow key={employee._id} className="hover:bg-muted/50">
-                      <TableCell className="font-medium flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={employee.image || undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {getInitials(employee.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        {employee.name}
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar>
+                            <AvatarImage src={employee.image || undefined} />
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {getInitials(employee.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          {employee.name}
+                        </div>
                       </TableCell>
                       <TableCell>{employee.email}</TableCell>
                       <TableCell>
@@ -172,11 +175,31 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                           <span className=" text-sm">Not assigned</span>
                         )}
                       </TableCell>
+
                       <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm">
-                            {employee.destination}
-                          </span>
+                        <div className="flex flex-col gap-1">
+                          {employee.destination ? (
+                            Array.isArray(employee.destination) ? (
+                              employee.destination.map(
+                                (dest: string, index: number) => (
+                                  <Badge
+                                    key={index}
+                                    className="text-xs text-center px-2 py-0.5 bg-primary/10 text-primary rounded-full inline-block"
+                                  >
+                                    {dest}
+                                  </Badge>
+                                )
+                              )
+                            ) : (
+                              <Badge className="text-xs text-center px-2 py-0.5 bg-primary/10 text-primary rounded-full inline-block">
+                                {employee.destination}
+                              </Badge>
+                            )
+                          ) : (
+                            <span className="text-muted-foreground text-sm">
+                              Not assigned
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -190,7 +213,6 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                           )}
                         </div>
                       </TableCell>
-
                       <TableCell>
                         <StarRating rating={employee.rating} />
                       </TableCell>

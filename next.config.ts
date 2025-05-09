@@ -78,7 +78,9 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value:
               "default-src 'self'; " +
-              "img-src 'self' data: https://*.googleusercontent.com https://docs.google.com https://passport-2.s3.ap-southeast-1.amazonaws.com; " +
+              "img-src 'self' data: https://*.googleusercontent.com https://docs.google.com " +
+              "https://passport-2.s3.ap-southeast-1.amazonaws.com " +
+              "https://staff-management-1234.s3.ap-southeast-1.amazonaws.com; " +
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'; " +
               "style-src 'self' 'unsafe-inline'; " +
               "font-src 'self'; " +
