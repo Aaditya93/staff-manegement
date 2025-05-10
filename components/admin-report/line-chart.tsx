@@ -1,14 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  CartesianGrid,
-  LabelList,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import {
   Card,
@@ -25,63 +18,75 @@ import {
 } from "@/components/ui/chart";
 
 const chartConfig = {
-  totalApplication: {
-    label: "Total Tickets",
-    color: "hsl(var(--chart-1))",
+  totalApplications: {
+    label: "Total Applications",
+    color: "hsl(212, 95%, 68%)",
+  },
+  revenue: {
+    label: "Revenue",
+    color: "hsl(221.2, 83.2%, 53.3%)",
   },
 } satisfies ChartConfig;
 
 interface ChartData {
   date: string;
   totalApplication: number;
+  revenue: number;
 }
 
 export const MainLineChart = ({ data }: { data: ChartData[] }) => {
+  const [activeChart, setActiveChart] =
+    React.useState<keyof typeof chartConfig>("totalApplications");
+
   const total = React.useMemo(
     () => ({
-      total: data?.reduce((acc, curr) => acc + curr.totalApplication, 0) || 0,
+      totalApplications:
+        data?.reduce((acc, curr) => acc + curr.totalApplication, 0) || 0,
+      revenue: data?.reduce((acc, curr) => acc + (curr.revenue || 0), 0) || 0,
     }),
     [data]
   );
 
-  // Calculate trend percentage (comparing last two data points)
-  const trend = React.useMemo(() => {
-    if (data.length < 2) return { percentage: 0, isUp: true };
-
-    const lastValue = data[data.length - 1].totalApplication;
-    const previousValue = data[data.length - 2].totalApplication;
-
-    // Avoid division by zero
-    if (previousValue === 0) {
-      return {
-        percentage: lastValue > 0 ? 100 : 0,
-        isUp: lastValue > 0,
-      };
-    }
-
-    const percentage = ((lastValue - previousValue) / previousValue) * 100;
-    return {
-      percentage: Math.abs(percentage).toFixed(1),
-      isUp: percentage >= 0,
-    };
-  }, [data]);
+  // Format currency for displaying revenue
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
-    <Card className="rounded-none  p-0  pt-0">
-      <CardHeader className="flex flex-col items-stretch border-b -mb-4  sm:flex-row p-0 ">
-        <div className="flex flex-1 flex-col justify-center -mb-4 gap-1 px-6 pb-0 ">
-          <CardTitle>Total Applications</CardTitle>
+    <Card className="rounded-none">
+      <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
+        <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
+          <CardTitle>Performance Overview</CardTitle>
           <CardDescription>
-            Applications from {data[0]?.date} to {data[data.length - 1]?.date}
+            Data from {data[0]?.date} to {data[data.length - 1]?.date}
           </CardDescription>
         </div>
-        <div className="flex mb-0 pb-0 ">
-          <button className="flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
+        <div className="flex">
+          <button
+            data-active={activeChart === "totalApplications"}
+            className="flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
+            onClick={() => setActiveChart("totalApplications")}
+          >
             <span className="text-xs text-muted-foreground">
               Total Applications
             </span>
-            <span className="text-lg font-bold leading-none sm:text-3xl pb-0">
-              {total.total}
+            <span className="text-lg font-bold leading-none sm:text-3xl">
+              {total.totalApplications.toLocaleString()}
+            </span>
+          </button>
+          <button
+            data-active={activeChart === "revenue"}
+            className="flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
+            onClick={() => setActiveChart("revenue")}
+          >
+            <span className="text-xs text-muted-foreground">Total Revenue</span>
+            <span className="text-lg font-bold leading-none sm:text-3xl">
+              {formatCurrency(total.revenue)}
             </span>
           </button>
         </div>
@@ -93,9 +98,12 @@ export const MainLineChart = ({ data }: { data: ChartData[] }) => {
         >
           <LineChart
             accessibilityLayer
-            data={data}
+            data={data.map((item) => ({
+              ...item,
+              totalApplications: item.totalApplication,
+            }))}
             margin={{
-              top: 30,
+              top: 20,
               left: 12,
               right: 12,
               bottom: 10,
@@ -123,11 +131,23 @@ export const MainLineChart = ({ data }: { data: ChartData[] }) => {
               axisLine={false}
               tickMargin={8}
               width={30}
+              hide={activeChart === "revenue"}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              domain={[0, "auto"]}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              width={60}
+              tickFormatter={(value) => `$${value}`}
+              hide={activeChart === "totalApplications"}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className="w-[150px]"
+                  className="w-[170px]"
                   labelFormatter={(value) => {
                     return new Date(value).toLocaleDateString("en-US", {
                       month: "short",
@@ -135,34 +155,45 @@ export const MainLineChart = ({ data }: { data: ChartData[] }) => {
                       year: "numeric",
                     });
                   }}
+                  formatter={(value, name) => {
+                    if (name === "revenue") {
+                      return [`$${value}`, "Revenue"];
+                    }
+                    return [value, "Applications"];
+                  }}
                 />
               }
             />
-            <Line
-              dataKey="totalApplication"
-              type="monotone"
-              stroke="hsl(221.2, 83.2%, 53.3%)"
-              strokeWidth={2}
-              dot={{
-                fill: "hsl(221.2, 83.2%, 53.3%)",
-                r: 4,
-              }}
-              activeDot={{
-                r: 6,
-                fill: "hsl(221.2, 83.2%, 53.3%)",
-                stroke: "hsl(var(--background))",
-                strokeWidth: 2,
-              }}
-            >
-              <LabelList
-                dataKey="totalApplication"
-                position="top"
-                offset={10}
-                className="fill-foreground"
-                fontSize={12}
-                formatter={(value: number) => (value > 0 ? value : "")}
+            {activeChart === "totalApplications" && (
+              <Line
+                dataKey="totalApplications"
+                type="monotone"
+                stroke="hsl(212, 95%, 68%)"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{
+                  r: 6,
+                  fill: "hsl(212, 95%, 68%)",
+                  stroke: "hsl(var(--background))",
+                  strokeWidth: 2,
+                }}
               />
-            </Line>
+            )}
+            {activeChart === "revenue" && (
+              <Line
+                dataKey="revenue"
+                type="monotone"
+                stroke="hsl(221.2, 83.2%, 53.3%)"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{
+                  r: 6,
+                  fill: "hsl(221.2, 83.2%, 53.3%)",
+                  stroke: "hsl(var(--background))",
+                  strokeWidth: 2,
+                }}
+              />
+            )}
           </LineChart>
         </ChartContainer>
       </CardContent>

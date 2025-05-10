@@ -1,7 +1,7 @@
 import { getTicketsForEmployee } from "@/actions/employee-report/getTickets";
 import EmployeeReport from "@/components/employee-report/report";
 
-import AppSidebar from "@/components/travel-agent/app-sidebar";
+import AppSidebar from "@/components/sidebar/app-sidebar";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
@@ -51,17 +51,14 @@ const PaymentPage = async ({
     userId: id,
     startDate: dateRange.from,
     endDate: dateRange.to,
-    path: `/employee-report/${id}/${range}`,
   });
-  console.log("Tickets", data.tickets);
-  console.log("User", data.user);
 
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <EmployeeReport />
+          <EmployeeReport tickets={data.tickets} user={data.user} />
         </div>
       </SidebarInset>
     </SidebarProvider>

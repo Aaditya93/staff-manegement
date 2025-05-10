@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import Ticket, { ITicket } from "../../db/models/ticket";
 import dbConnect from "@/db/db";
 import User from "@/db/models/User";
@@ -20,7 +19,6 @@ export async function getTicketsForEmployee({
   userId,
   startDate,
   endDate,
-  path,
 }: TicketFilterParams): Promise<{ tickets: ITicket[]; user: any }> {
   try {
     // Connect to database
@@ -58,11 +56,6 @@ export async function getTicketsForEmployee({
         },
       ],
     }).sort({ createdAt: -1 });
-
-    // If path is provided, revalidate it to update UI
-    if (path) {
-      revalidatePath(path);
-    }
 
     // Return both tickets and user information
     return {

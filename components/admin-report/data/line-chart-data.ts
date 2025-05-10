@@ -3,13 +3,14 @@ import { ITicket } from "@/db/models/ticket";
 interface ChartData {
   date: string;
   totalApplication: number;
+  revenue: number;
 }
 
 /**
  * Converts an array of tickets into daily aggregated data for the line chart
  * @param tickets Array of ticket objects
  * @param dateField Which date field to use for grouping ('receivedDateTime' or 'createdAt')
- * @returns Array of chart data points with date and totalApplication count
+ * @returns Array of chart data points with date, totalApplication count, and revenue
  */
 export function convertTicketsToChartData(
   tickets: ITicket[],
@@ -20,8 +21,9 @@ export function convertTicketsToChartData(
     return [];
   }
 
-  // Create a map to group tickets by date
+  // Create maps to group tickets by date
   const ticketsByDate: Record<string, number> = {};
+  const revenueByDate: Record<string, number> = {};
 
   // Process each ticket and group by date
   tickets.forEach((ticket) => {
@@ -36,13 +38,21 @@ export function convertTicketsToChartData(
 
     // Increment the count for this date
     ticketsByDate[formattedDate] = (ticketsByDate[formattedDate] || 0) + 1;
+
+    // Add revenue if ticket status is complete and has cost property
+    if (ticket.status === "complete" && ticket.cost) {
+      revenueByDate[formattedDate] =
+        (revenueByDate[formattedDate] || 0) +
+        (typeof ticket.cost === "number" ? ticket.cost : 0);
+    }
   });
 
-  // Convert the map to an array of ChartData objects
+  // Convert the maps to an array of ChartData objects
   let chartData: ChartData[] = Object.entries(ticketsByDate).map(
     ([date, count]) => ({
       date,
       totalApplication: count,
+      revenue: revenueByDate[date] || 0,
     })
   );
 
@@ -73,6 +83,7 @@ export function convertTicketsToChartData(
         filledChartData.push({
           date: currentDateStr,
           totalApplication: 0,
+          revenue: 0,
         });
       }
 

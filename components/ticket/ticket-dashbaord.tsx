@@ -74,7 +74,7 @@ export function TicketDashboard({ ticket }: { ticket: ITicket }) {
               ticket.status
             )} text-white px-3 py-1 text-sm font-medium`}
           >
-            {ticket.status.toUpperCase()}
+            {ticket.status.toUpperCase().replace(/_/g, " ")}
           </Badge>
         </div>
       </div>
