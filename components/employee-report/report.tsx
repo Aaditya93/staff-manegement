@@ -105,13 +105,13 @@ const EmployeeReport = async ({ tickets, user }: ReportPageProps) => {
                     >
                       {user.name}
                     </h2>
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                    <div className="flex items-center gap-2 text-primary-foreground">
                       <Badge className="text-sm font-medium">
                         {formatRole(user.role)}
                       </Badge>
                       {user.position && (
                         <>
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-primary-foreground">
                             •
                           </span>
                           <span className="text-sm font-medium">

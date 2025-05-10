@@ -21,6 +21,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useSession } from "next-auth/react";
 const today = new Date();
 const thirtyDaysAgo = new Date(today);
 thirtyDaysAgo.setDate(today.getDate() - 30);
@@ -30,8 +31,7 @@ sevendaysAgo.setDate(today.getDate() - 7);
 const seven = sevendaysAgo.toISOString().split("T")[0];
 
 const to = today.toISOString().split("T")[0];
-
-const data = {
+const Admindata = {
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -128,6 +128,102 @@ const data = {
 };
 
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
+  const user = useSession();
+  const data = {
+    user: {
+      name: "shadcn",
+      email: "m@example.com",
+      avatar: "/avatars/shadcn.jpg",
+    },
+    navMain: [
+      {
+        title: "Agent Platform",
+        url: "#",
+        icon: SquareTerminal,
+        isActive: true,
+        items: [
+          {
+            title: "Admin Panel",
+            url: "/agent-platform/admin-panel",
+          },
+          {
+            title: "Visa Letter Prices",
+            url: "/agent-platform/visa-letter-price/10",
+          },
+          {
+            title: "Immgration Prices",
+            url: `/agent-platform/immigration-price/10`,
+          },
+          {
+            title: "A-Payment",
+            url: `/agent-platform/payment/6777bb039da64c84fb251323/from=${seven}&to=${to}`,
+          },
+          {
+            title: "I-Payment",
+            url: `/agent-platform/payment/immigration/Hanoi/from=${seven}&to=${to}`,
+          },
+          {
+            title: "Billing",
+            url: `/agent-platform/billing/677b88cc3c6259f5025f6645/from=${seven}&to=${to}`,
+          },
+          {
+            title: "Upload Excel",
+            url: "/agent-platform/upload-excel",
+          },
+        ],
+      },
+    ],
+    navSecondary: [
+      {
+        title: "Support",
+        url: "#",
+        icon: LifeBuoy,
+      },
+      {
+        title: "Feedback",
+        url: "#",
+        icon: Send,
+      },
+    ],
+    Upload: [
+      {
+        name: "Mail",
+        url: "/mail/0/inbox/all/10",
+        icon: CiMail,
+      },
+      {
+        name: "Dashboard",
+        url: `/dashboard/from=${seven}&to=${to}`,
+        icon: CiViewTable,
+      },
+      {
+        name: "Ticket",
+        url: "/pending-tickets",
+        icon: BsListTask,
+      },
+      {
+        name: "Messages",
+        url: "/chat/none",
+        icon: CiChat1,
+      },
+      {
+        name: "Complaints",
+        url: `/report`,
+        icon: GoReport,
+      },
+      {
+        name: "Admin Panel",
+        url: `/admin-panel`,
+        icon: MdOutlineAdminPanelSettings,
+      },
+
+      {
+        name: "Report",
+        url: `/employee-report/${user.data?.user.id}/from=${seven}&to=${to}`,
+        icon: TfiPieChart,
+      },
+    ],
+  };
   return (
     <Sidebar variant="sidebar" {...props}>
       <SidebarHeader>
@@ -154,7 +250,12 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.Upload} />
+        {user.data?.user.role === "Admin" ? (
+          <NavProjects projects={Admindata.Upload} />
+        ) : (
+          <NavProjects projects={data.Upload} />
+        )}
+
         {/* <NavMain items={data.navMain} /> */}
       </SidebarContent>
       <SidebarFooter>

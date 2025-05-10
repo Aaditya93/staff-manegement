@@ -5,7 +5,6 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const ReportListPage = async () => {
   const reports = await getAllReports();
-  console.log(reports);
 
   return (
     <SidebarProvider>

@@ -26,6 +26,7 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
+import Link from "next/link";
 
 interface EmployeePerformanceTablesProps {
   tickets: ITicket[];
@@ -39,6 +40,15 @@ interface EmployeePerformance {
   avgWaitingTime: number; // in minutes
   totalRevenue: number;
 }
+const today = new Date();
+const thirtyDaysAgo = new Date(today);
+thirtyDaysAgo.setDate(today.getDate() - 30);
+const sevendaysAgo = new Date(today);
+sevendaysAgo.setDate(today.getDate() - 7);
+
+const seven = sevendaysAgo.toISOString().split("T")[0];
+
+const to = today.toISOString().split("T")[0];
 
 // Column definitions for the data table
 const columns: ColumnDef<EmployeePerformance>[] = [
@@ -148,6 +158,20 @@ const columns: ColumnDef<EmployeePerformance>[] = [
         </Badge>
       </div>
     ),
+  },
+  {
+    id: "view",
+    header: "View Details",
+    cell: ({ row }) => {
+      const employeeId = row.original.employeeId;
+      return (
+        <Button variant="link" className="text-primary" asChild>
+          <Link href={`/employee-report/${employeeId}/from=${seven}&to=${to}`}>
+            View Profile
+          </Link>
+        </Button>
+      );
+    },
   },
 ];
 // Data Table component for employee performance

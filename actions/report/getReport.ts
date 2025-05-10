@@ -13,45 +13,41 @@ export const getAllReports = async () => {
     const userId = session?.user?.id;
 
     if (!userId) {
-      // Handle case where user is not logged in or ID is missing
-      return []; // Or throw an error, depending on desired behavior
+      return [];
     }
 
-    let whereClause = {};
+    // Create the base query with proper type
+    const baseQuery: {
+      resolvedAt: { $exists: boolean };
+      travelAgentId?: string;
+      salesId?: string;
+      reservationId?: string;
+    } = { resolvedAt: { $exists: false } };
 
-    if (userRole === "Admin") {
-      // Admins get all reports, no specific where clause needed based on user ID
-    } else if (userRole === "TravelAgent") {
-      whereClause = { travelAgentId: userId };
+    // Add role-specific filters directly to the base query
+    if (userRole === "TravelAgent") {
+      baseQuery.travelAgentId = userId;
     } else if (userRole === "SalesStaff") {
-      whereClause = { salesId: userId };
+      baseQuery.salesId = userId;
     } else if (userRole === "ReservationStaff") {
-      whereClause = { reservationId: userId };
-    } else {
-      // Handle other roles or unexpected roles if necessary
-      return []; // Or throw an error
+      baseQuery.reservationId = userId;
     }
-
-    const reports = await Report.find({
-      resolvedAt: { $exists: false }, // Only include reports where resolvedAt field does not exist
-      // where: whereClause, // Use the dynamically constructed where clause
-    })
+    // Execute the query with the proper filter structure
+    const reports = await Report.find(baseQuery)
       .lean()
       .populate([
-        { path: "travelAgentId" },
-        { path: "salesId" },
-        { path: "reservationId" },
+        { path: "travelAgentId", select: "name email" }, // Add select to limit fields
+        { path: "salesId", select: "name email" },
+        { path: "reservationId", select: "name email" },
       ])
-      .sort({ createdAt: -1 }); // This replaces the order: [["createdAt", "DESC"]] syntax
-    const serializedReports = serializeData(reports);
+      .sort({ createdAt: -1 });
 
-    return serializedReports;
+    return serializeData(reports);
   } catch (error) {
     console.error("Error fetching reports:", error);
-    throw error; // Re-throw the error after logging
+    throw error;
   }
 };
-
 export async function resolveReport(reportId: string): Promise<{
   success: boolean;
   message: string;

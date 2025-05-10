@@ -1,10 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Button } from "../ui/button";
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Badge } from "../ui/badge";
-import { Separator } from "../ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { format, parseISO } from "date-fns";
 import { Mail, Loader2, AlertCircle, Calendar, Clock } from "lucide-react";
 import { getEmail } from "@/actions/tickets/get-email";
@@ -59,46 +63,45 @@ interface EmailResponse {
 interface EmailShowcaseProps {
   email: string;
   emailId: string;
+  emailNo: number;
   userId: string;
-  emailNo: string;
   onEmailFetched?: (emailData: EmailResponse) => void;
 }
 
 const sanitizeEmailContent = (htmlContent: string): string => {
   if (!htmlContent) return "";
 
-  // Basic sanitization
+  // Basic sanitization using a more robust library like DOMPurify is recommended for production
   let sanitized = htmlContent
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/on\w+="[^"]*"/g, "")
-    .replace(/on\w+='[^']*'/g, "");
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "") // Remove script tags
+    .replace(/on\w+="[^"]*"/g, "") // Remove inline event handlers (double quotes)
+    .replace(/on\w+='[^']*'/g, ""); // Remove inline event handlers (single quotes)
 
-  // Force all tables to be responsive
+  // Attempt to fix common image issues
   sanitized = sanitized
-    .replace(
-      /<table([^>]*)>/gi,
-      '<table style="width:100%; max-width:100%; table-layout:fixed;" $1>'
-    )
-    // Fix base64 images
+    // Ensure base64 images have a MIME type (default to png if missing, though imperfect)
     .replace(/src="data:;base64,/gi, 'src="data:image/png;base64,')
-    // Make all images responsive
+    // Try to make images responsive, but be less aggressive than replacing width/height entirely
     .replace(/<img([^>]*)>/gi, (match, attributes) => {
-      // Remove fixed width/height attributes that could break layout
-      const cleanedAttrs = attributes
-        .replace(/width="[^"]*"/gi, "")
-        .replace(/height="[^"]*"/gi, "")
-        .replace(/style="[^"]*"/gi, "");
+      const style = attributes.match(/style="([^"]*)"/i);
+      let styleAttr = style ? style[1] : "";
+      // Add max-width if not present
+      if (!styleAttr.includes("max-width")) {
+        styleAttr += ";max-width: 100%;";
+      }
+      // Ensure height is auto if max-width is set
+      if (styleAttr.includes("max-width") && !styleAttr.includes("height")) {
+        styleAttr += ";height: auto;";
+      }
+      // Remove existing style attribute if present
+      attributes = attributes.replace(/style="[^"]*"/i, "");
+      // Add the modified style attribute
+      return `<img${attributes} style="${styleAttr.replace(/^;+|;+$/g, "")}" />`;
+    });
 
-      return `<img${cleanedAttrs} style="max-width:100%; height:auto; display:block;" />`;
-    })
-    // Force wide divs to fit container
-    .replace(
-      /<div([^>]*)style="([^"]*)width:([^"]*);/gi,
-      '<div$1style="$2max-width:100%;width:$3;'
-    );
-
-  // Add global wrapper to force overflow control for any element
-  sanitized = `<div style="max-width:100%; overflow-x:hidden;">${sanitized}</div>`;
+  // Note: Rendering cid: images requires fetching attachments and replacing
+  // src="cid:..." with data URLs. This function doesn't handle that.
+  // Note: Rendering x-gmail-data images is generally not possible outside Gmail.
 
   return sanitized;
 };
