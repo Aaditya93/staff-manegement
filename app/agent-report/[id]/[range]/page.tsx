@@ -1,8 +1,7 @@
-import { getTicketsForEmployee } from "@/actions/employee-report/getTickets";
-import EmployeeReport from "@/components/employee-report/report";
+import { getTicketsForTravelAgent } from "@/actions/travel-agent/travel-agent-report";
 
 import AppSidebar from "@/components/sidebar/app-sidebar";
-
+import TravelAgentReport from "@/components/travel-agent/travel-agent-report/report";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 function extractDateRange(dateString: string) {
@@ -40,14 +39,14 @@ function extractDateRange(dateString: string) {
   }
 }
 
-const EmployeeReportPage = async ({
+const TravelAgentReportPage = async ({
   params,
 }: {
   params: Promise<{ id: string; range: string }>;
 }) => {
   const { id, range } = await params;
   const dateRange = extractDateRange(range);
-  const data = await getTicketsForEmployee({
+  const data = await getTicketsForTravelAgent({
     userId: id,
     startDate: dateRange.from,
     endDate: dateRange.to,
@@ -58,13 +57,13 @@ const EmployeeReportPage = async ({
       <AppSidebar />
       <SidebarInset>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <EmployeeReport tickets={data.tickets} user={data.user} />
+          <TravelAgentReport tickets={data.tickets} user={data.user} />
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
 };
 
-export default EmployeeReportPage;
+export default TravelAgentReportPage;
 
 export const dynamic = "force-dynamic";

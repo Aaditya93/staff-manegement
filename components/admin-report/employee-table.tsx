@@ -165,11 +165,9 @@ const columns: ColumnDef<EmployeePerformance>[] = [
     cell: ({ row }) => {
       const employeeId = row.original.employeeId;
       return (
-        <Button variant="link" className="text-primary" asChild>
-          <Link href={`/employee-report/${employeeId}/from=${seven}&to=${to}`}>
-            View Profile
-          </Link>
-        </Button>
+        <Link href={`/employee-report/${employeeId}/from=${seven}&to=${to}`}>
+          View Profile
+        </Link>
       );
     },
   },

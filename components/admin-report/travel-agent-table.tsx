@@ -23,6 +23,7 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { Search } from "lucide-react";
+import Link from "next/link";
 
 interface TravelAgentTableProps {
   tickets: ITicket[];
@@ -36,7 +37,15 @@ interface TravelAgentPerformance {
   destinationsCovered: string[];
   totalRevenue: number;
 }
+const today = new Date();
+const thirtyDaysAgo = new Date(today);
+thirtyDaysAgo.setDate(today.getDate() - 30);
+const sevendaysAgo = new Date(today);
+sevendaysAgo.setDate(today.getDate() - 7);
 
+const seven = sevendaysAgo.toISOString().split("T")[0];
+
+const to = today.toISOString().split("T")[0];
 const columns: ColumnDef<TravelAgentPerformance>[] = [
   {
     accessorKey: "agentName",
@@ -86,6 +95,20 @@ const columns: ColumnDef<TravelAgentPerformance>[] = [
         </Badge>
       </div>
     ),
+  },
+  {
+    id: "actions",
+    header: "View",
+    cell: ({ row }) => {
+      const agentId = row.original.agentId;
+      return (
+        <div className="text-center w-full">
+          <Link href={`/employee-report/${agentId}/from=${seven}&to=${to}`}>
+            View Profile
+          </Link>
+        </div>
+      );
+    },
   },
 ];
 // Data Table component for travel agent performance

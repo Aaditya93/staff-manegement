@@ -70,8 +70,8 @@ export function StageBarChart({ chartData, metrics }: StageBarChartProps) {
   return (
     <Card className="flex flex-col rounded-none">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Inquiry Status</CardTitle>
-        <CardDescription>Current Status Distribution</CardDescription>
+        <CardTitle>Ticket Status</CardTitle>
+        <CardDescription>Current Ticket Distribution</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -128,7 +128,7 @@ export function StageBarChart({ chartData, metrics }: StageBarChartProps) {
         <div className="flex items-center text-sm text-muted-foreground">
           <TrendingUp className="mr-1 h-4 w-4 text-muted-foreground" />
           <span>
-            Pending inquiries:{" "}
+            Pending Ticket:{" "}
             {chartData.find((item) => item.status === "pending")
               ?.totalTickets || 0}
           </span>
