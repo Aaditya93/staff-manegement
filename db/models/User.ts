@@ -33,10 +33,23 @@ const userSchema = new mongoose.Schema(
     office: {
       type: String,
     },
-    rating: {
+    attitude: {
+      type: Number,
+    },
+    knowledge: {
+      type: Number,
+    },
+    services: {
+      type: Number,
+    },
+    speed: {
+      type: Number,
+    },
+    reviewcount: {
       type: Number,
       default: 0,
     },
+
     position: {
       type: String,
     },
