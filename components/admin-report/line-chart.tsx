@@ -19,7 +19,7 @@ import {
 
 const chartConfig = {
   totalApplications: {
-    label: "Total Applications",
+    label: "Total Tickets",
     color: "hsl(212, 95%, 68%)",
   },
   revenue: {
@@ -72,9 +72,7 @@ export const MainLineChart = ({ data }: { data: ChartData[] }) => {
             className="flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
             onClick={() => setActiveChart("totalApplications")}
           >
-            <span className="text-xs text-muted-foreground">
-              Total Applications
-            </span>
+            <span className="text-xs text-muted-foreground">Total Tickets</span>
             <span className="text-lg font-bold leading-none sm:text-3xl">
               {total.totalApplications.toLocaleString()}
             </span>
@@ -144,10 +142,16 @@ export const MainLineChart = ({ data }: { data: ChartData[] }) => {
               tickFormatter={(value) => `$${value}`}
               hide={activeChart === "totalApplications"}
             />
+
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className="w-[170px]"
+                  className="w-[150px]"
+                  nameFormatter={(name) => {
+                    if (name === "totalApplications") return "Total Tickets";
+                    if (name === "revenue") return "Revenue";
+                    return name;
+                  }}
                   labelFormatter={(value) => {
                     return new Date(value).toLocaleDateString("en-US", {
                       month: "short",
@@ -155,15 +159,10 @@ export const MainLineChart = ({ data }: { data: ChartData[] }) => {
                       year: "numeric",
                     });
                   }}
-                  formatter={(value, name) => {
-                    if (name === "revenue") {
-                      return [`$${value}`, "Revenue"];
-                    }
-                    return [value, "Applications"];
-                  }}
                 />
               }
             />
+
             {activeChart === "totalApplications" && (
               <Line
                 dataKey="totalApplications"

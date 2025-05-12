@@ -83,6 +83,7 @@ export function StageBarChart({ chartData, metrics }: StageBarChartProps) {
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
+
             <Pie
               data={chartData}
               dataKey="totalTickets"
@@ -90,6 +91,21 @@ export function StageBarChart({ chartData, metrics }: StageBarChartProps) {
               innerRadius={60}
               strokeWidth={5}
               fill="#8884d8"
+              labelLine={false}
+              label={({ cx, cy, x, y, name, value, textAnchor, ...props }) => {
+                return (
+                  <text
+                    x={x}
+                    y={y}
+                    fill="hsla(var(--foreground))"
+                    textAnchor={textAnchor}
+                    dominantBaseline="central"
+                    className="text-xs font-medium"
+                  >
+                    {value}
+                  </text>
+                );
+              }}
             >
               <Label
                 content={({ viewBox }) => {
