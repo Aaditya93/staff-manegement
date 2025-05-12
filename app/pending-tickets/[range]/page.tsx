@@ -7,7 +7,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { PendingTicketsTable } from "@/components/pending-ticket/pending-table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TbTicket } from "react-icons/tb";
-
+import DatePickerWithRange from "@/components/pending-ticket/date-range";
 interface Employee {
   _id: string;
   name: string;
@@ -29,6 +29,40 @@ interface Ticket {
   reservationInCharge?: string;
   [key: string]: any;
 }
+function extractDateRange(dateString: string) {
+  try {
+    if (!dateString) {
+      throw new Error("No date string provided");
+    }
+
+    // Decode URL parameters if needed
+    const decodedString = decodeURIComponent(dateString);
+
+    // Extract dates using regex for better reliability
+    const fromMatch = decodedString.match(/from=([^&]+)/);
+    const toMatch = decodedString.match(/to=([^&]+)/);
+
+    if (!fromMatch?.[1] || !toMatch?.[1]) {
+      throw new Error("Date parameters not found");
+    }
+
+    const from = new Date(fromMatch[1]);
+    const to = new Date(toMatch[1]);
+
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      throw new Error("Invalid date values");
+    }
+
+    return { from, to };
+  } catch (error) {
+    console.error("Error parsing date range:", error);
+    const today = new Date();
+    return {
+      from: today,
+      to: new Date(today.setDate(today.getDate() + 7)),
+    };
+  }
+}
 
 export function serializeData(data: any) {
   // Use replacer function to handle circular references
@@ -46,8 +80,16 @@ export function serializeData(data: any) {
   );
 }
 
-export default async function PendingTicketsPage() {
-  const pendingTickets = await getAllUnApprovedTickets();
+export const PendingTicketsPage = async ({
+  params,
+}: {
+  params: Promise<{ range: string }>;
+}) => {
+  const { range } = await params;
+  const dateRange = extractDateRange(range);
+  const { from, to } = dateRange;
+
+  const pendingTickets = await getAllUnApprovedTickets(from, to);
   const employees = await getAllEmployees();
 
   const serializedTickets = serializeData(pendingTickets);
@@ -69,6 +111,7 @@ export default async function PendingTicketsPage() {
                   <TbTicket className="mr-2 w-8 h-8 text-primary-foreground" />
                   Pending Tickets
                 </CardTitle>
+                <DatePickerWithRange />
                 {/* You could add additional controls here if needed */}
               </div>
             </CardHeader>
@@ -89,6 +132,7 @@ export default async function PendingTicketsPage() {
       </SidebarInset>
     </SidebarProvider>
   );
-}
+};
 
+export default PendingTicketsPage;
 export const dynamic = "force-dynamic";

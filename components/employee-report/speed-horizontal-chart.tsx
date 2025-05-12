@@ -87,25 +87,7 @@ export function SpeedHorizontalChart({
               }
             />
             <XAxis dataKey="totalTickets" type="number" hide />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  className="w-[150px]"
-                  nameFormatter={(name) => {
-                    if (name === "totalTickets") return "Total Tickets";
-
-                    return name;
-                  }}
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    });
-                  }}
-                />
-              }
-            />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <Bar
               dataKey="totalTickets"
               layout="vertical"

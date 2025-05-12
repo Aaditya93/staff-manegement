@@ -129,7 +129,7 @@ export function StageBarChart({ chartData, metrics }: StageBarChartProps) {
                           y={(viewBox.cy || 0) + 24}
                           className="fill-muted-foreground"
                         >
-                          Inquiries
+                          Tickets
                         </tspan>
                       </text>
                     );

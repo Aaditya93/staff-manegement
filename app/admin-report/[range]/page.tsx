@@ -1,11 +1,7 @@
 import { getAllTickets } from "@/actions/admin-report/getAllTickets";
 import AdminReport from "@/components/admin-report/admin-report";
 import AppSidebar from "@/components/sidebar/app-sidebar";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 function extractDateRange(dateString: string) {
   try {

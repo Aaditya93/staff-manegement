@@ -8,43 +8,53 @@ import User from "@/db/models/User";
 import { sendConfirmationEmail } from "./send-approval-mail";
 import { convertTimeToSeconds } from "@/lib/utils";
 import { serializeData } from "@/utils/serialize";
-export const getAllUnApprovedTickets = async () => {
+export const getAllUnApprovedTickets = async (
+  fromDate?: Date,
+  toDate?: Date
+) => {
   try {
     await dbConnect();
 
-    let query: any = {};
+    let query: any = { isApproved: false };
     const session = await auth();
     const email = session?.user?.email;
     const role = session?.user?.role;
 
-    // Search based on role if provided
+    // Add date filtering if provided
+    if (fromDate instanceof Date || toDate instanceof Date) {
+      query.createdAt = {};
+
+      if (fromDate instanceof Date) {
+        // Set start of day for fromDate
+        const startDate = new Date(fromDate);
+        startDate.setHours(0, 0, 0, 0);
+        query.createdAt.$gte = startDate;
+      }
+
+      if (toDate instanceof Date) {
+        // Set end of day for toDate
+        const endDate = new Date(toDate);
+        endDate.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = endDate;
+      }
+    }
+
+    // Add role-based filtering
     if (role) {
       if (role === "SalesStaff") {
-        query = {
-          isApproved: false,
-          "salesInCharge.emailId": email,
-        };
+        query["salesInCharge.emailId"] = email;
       } else if (role === "ReservationStaff") {
-        query = {
-          isApproved: false,
-          "reservationInCharge.emailId": email,
-        };
+        query["reservationInCharge.emailId"] = email;
       } else if (role === "TravelAgent") {
-        query = {
-          isApproved: false,
-          "travelAgent.emailId": email,
-        };
+        query["travelAgent.emailId"] = email;
       }
     } else {
       // If no role specified, search in all staff fields
-      query = {
-        isApproved: false,
-        $or: [
-          { "salesInCharge.emailId": email },
-          { "reservationInCharge.emailId": email },
-          { "travelAgent.emailId": email },
-        ],
-      };
+      query.$or = [
+        { "salesInCharge.emailId": email },
+        { "reservationInCharge.emailId": email },
+        { "travelAgent.emailId": email },
+      ];
     }
 
     const tickets = await Ticket.find(query).lean();

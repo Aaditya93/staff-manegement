@@ -32,11 +32,6 @@ const seven = sevendaysAgo.toISOString().split("T")[0];
 
 const to = today.toISOString().split("T")[0];
 const Admindata = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Agent Platform",
@@ -100,7 +95,7 @@ const Admindata = {
     },
     {
       name: "Ticket",
-      url: "/pending-tickets",
+      url: `/pending-tickets/from=${seven}&to=${to}`,
       icon: BsListTask,
     },
     {
@@ -198,7 +193,7 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
       },
       {
         name: "Ticket",
-        url: "/pending-tickets",
+        url: `/pending-tickets/from=${seven}&to=${to}`,
         icon: BsListTask,
       },
       {
