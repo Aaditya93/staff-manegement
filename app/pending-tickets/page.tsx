@@ -3,31 +3,33 @@ import {
   getAllUnApprovedTickets,
 } from "@/actions/approve-ticket/getTickets";
 import AppSidebar from "@/components/sidebar/app-sidebar";
-import { TicketProvider } from "@/components/pending-ticket/context";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ApproveControl } from "@/components/pending-ticket/approve";
+import { PendingTicketsTable } from "@/components/pending-ticket/pending-table";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { TbTicket } from "react-icons/tb";
 
-import { SelectSalesStaff } from "@/components/pending-ticket/select-sales";
-import { SelectReservationStaff } from "@/components/pending-ticket/select-reservation";
-import { DeleteControl } from "@/components/pending-ticket/delete";
-import { SelectEstimatedTime } from "@/components/pending-ticket/select-estimated-time";
 interface Employee {
-  _id: string | unknown;
+  _id: string;
   name: string;
   email: string;
   role: string;
   country?: string;
   __v?: number;
-  // Add other fields as needed
 }
+
+interface Ticket {
+  _id: { toString: () => string };
+  companyName: string;
+  destination: string;
+  arrivalDate: string | Date;
+  departureDate: string | Date;
+  pax: number;
+  receivedDateTime: string | Date;
+  salesInCharge?: string;
+  reservationInCharge?: string;
+  [key: string]: any;
+}
+
 export function serializeData(data: any) {
   // Use replacer function to handle circular references
   const seen = new WeakSet();
@@ -45,119 +47,48 @@ export function serializeData(data: any) {
 }
 
 export default async function PendingTicketsPage() {
-  // Get raw data first
   const pendingTickets = await getAllUnApprovedTickets();
   const employees = await getAllEmployees();
 
-  // Safely serialize data
   const serializedTickets = serializeData(pendingTickets);
   const serializedEmployee = serializeData(employees);
 
-  // Filter employees by role
   const salesStaff = serializedEmployee.filter(
     (emp) => emp.role === "SalesStaff"
   ) as Employee[];
 
-  const reservationStaff = serializedEmployee.filter(
-    (emp) => emp.role === "ReservationStaff"
-  ) as Employee[];
-
-  const formatDate = (date: Date | string | undefined) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-  const formatDateTime = (date: Date | string | undefined) => {
-    if (!date) return "N/A";
-    // Use toLocaleString to get both date and time
-    return new Date(date).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit", // Add hour
-      minute: "2-digit", // Add minute
-      hour12: true, // Use AM/PM format
-    });
-  };
-
   return (
     <SidebarProvider>
       <AppSidebar />
-
       <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center px-4 border-b">
-          <h1 className="text-2xl  font-semibold">Pending Approval</h1>
-          <div className="flex items-center gap-2"></div>
-        </header>
-
         <main className="flex-1 p-4 md:p-6">
-          {pendingTickets.length > 0 ? (
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Agent</TableHead>
-                    <TableHead>Destination</TableHead>
-                    <TableHead>Arrival</TableHead>
-                    <TableHead>Departure</TableHead>
-                    <TableHead>Pax</TableHead>
-                    <TableHead>Received Time</TableHead>
-                    <TableHead>Sales Staff</TableHead>
-                    {/* <TableHead>Reservation Staff</TableHead> */}
-                    <TableHead>Estimated Time</TableHead>
-
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {serializedTickets.map((ticket) => (
-                    <TableRow key={ticket._id.toString()}>
-                      <TicketProvider ticketId={ticket._id.toString()}>
-                        <TableCell>{ticket.companyName}</TableCell>
-                        <TableCell>{ticket.destination}</TableCell>
-                        <TableCell>{formatDate(ticket.arrivalDate)}</TableCell>
-                        <TableCell>
-                          {formatDate(ticket.departureDate)}
-                        </TableCell>
-                        <TableCell>{ticket.pax}</TableCell>
-                        <TableCell>
-                          {formatDateTime(ticket.receivedDateTime)}
-                        </TableCell>
-
-                        <TableCell>
-                          <SelectSalesStaff
-                            staffList={salesStaff}
-                            default={ticket.salesInCharge}
-                          />
-                        </TableCell>
-                        {/* <TableCell>
-                          <SelectReservationStaff
-                            staffList={reservationStaff}
-                            default={ticket.reservationInCharge}
-                          />
-                        </TableCell> */}
-                        <TableCell>
-                          <SelectEstimatedTime defaultTime={"1H"} />
-                        </TableCell>
-                        <TableCell>
-                          <ApproveControl ticketId={ticket._id.toString()} />
-                          <DeleteControl ticketId={ticket._id.toString()} />
-                        </TableCell>
-                      </TicketProvider>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <p className="text-muted-foreground">No pending tickets found.</p>
-          )}
+          <Card className="w-full">
+            <CardHeader className="border-b p-4 sm:p-3 bg-primary rounded-t-lg">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                <CardTitle className="flex items-center text-xl font-bold text-center sm:text-left text-primary-foreground">
+                  <TbTicket className="mr-2 w-8 h-8 text-primary-foreground" />
+                  Pending Tickets
+                </CardTitle>
+                {/* You could add additional controls here if needed */}
+              </div>
+            </CardHeader>
+            <CardContent className="p-4">
+              {serializedTickets.length > 0 ? (
+                <PendingTicketsTable
+                  tickets={serializedTickets}
+                  salesStaff={salesStaff}
+                />
+              ) : (
+                <p className="text-muted-foreground">
+                  No pending tickets found.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </main>
       </SidebarInset>
     </SidebarProvider>
   );
 }
+
 export const dynamic = "force-dynamic";

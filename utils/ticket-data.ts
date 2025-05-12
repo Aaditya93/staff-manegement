@@ -25,7 +25,9 @@ export const mapTicketsToTableData = (tickets: any[]): TravelBooking[] => {
     timeSent: ticket.sentDateTime
       ? new Date(ticket.sentDateTime).toLocaleString()
       : "",
-    lastInbox: new Date(ticket.lastMailTimeReceived).toLocaleString() || "",
+    lastInbox: ticket.lastMailTimeReceived
+      ? new Date(ticket.lastMailTimeReceived).toLocaleString()
+      : "",
     lastSent: ticket.lastMailTimeSent
       ? new Date(ticket.lastMailTimeSent).toLocaleString()
       : "",

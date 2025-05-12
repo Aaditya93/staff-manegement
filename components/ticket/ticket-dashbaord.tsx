@@ -306,7 +306,9 @@ export function TicketDashboard({ ticket }: { ticket: ITicket }) {
                   Waiting Time
                 </p>
                 <p className="bg-secondary/30 p-2 rounded-md font-medium">
-                  {ticket.waitingTime} minutes
+                  {ticket.waitingTime
+                    ? `${(ticket.waitingTime / 60).toFixed(2)} hrs`
+                    : "0 hrs"}
                 </p>
               </div>
             </div>

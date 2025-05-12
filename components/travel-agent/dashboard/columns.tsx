@@ -1,13 +1,7 @@
 "use client";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, Eye } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -43,6 +37,26 @@ export const columns: ColumnDef<TravelBooking>[] = [
     accessorKey: "ticket",
     header: "Ticket",
     cell: ({ row }) => <div>{row.getValue("ticket")}</div>,
+  },
+  {
+    id: "view",
+    header: () => <div className="text-center">View</div>,
+    enableHiding: false,
+    cell: ({ row }) => {
+      return (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center text-blue-600 hover:bg-blue-50 mx-auto"
+          asChild
+        >
+          <Link href={`/travel-agent/ticket/${row.original.ticket}`}>
+            <Eye className="h-2 w-2 " />
+            View
+          </Link>
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "receivedTime",
@@ -196,31 +210,5 @@ export const columns: ColumnDef<TravelBooking>[] = [
     cell: ({ row }) => (
       <div className="text-center w-full">${row.getValue("costOfPackage")}</div>
     ),
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Button variant="ghost" asChild>
-                <Link href={`/travel-agent/ticket/${row.original.ticket}`}>
-                  View Details
-                </Link>
-              </Button>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
   },
 ];

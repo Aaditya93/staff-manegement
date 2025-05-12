@@ -44,6 +44,7 @@ const DashboardPage = async ({
   const dateRange = extractDateRange(range);
 
   const tickets = await getAllTicketsByEmail(dateRange.from, dateRange.to);
+  console.log("Tickets:", tickets);
   const serializedTickets = await serializeData(tickets);
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mt-4 border-b">
