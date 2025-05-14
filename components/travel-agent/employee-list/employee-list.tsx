@@ -28,6 +28,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Search, Star, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Employee {
   _id: string;
@@ -39,9 +45,12 @@ interface Employee {
   role: string;
   position?: string; // New field
   office?: string; // New field
-  rating?: number; // New field (0-10)
   emailVerified: string;
   updatedAt: string;
+  attitude?: number;
+  knowledge?: number;
+  speed?: number;
+  reviewcount?: number;
 }
 
 interface EmployeeListClientProps {
@@ -58,20 +67,28 @@ const getInitials = (name: string) => {
 };
 
 // Star Rating Component
-const StarRating = ({ rating }: { rating?: number }) => {
-  if (rating === undefined) return <span>Not rated</span>;
+const StarRating = ({
+  rating,
+  mini = false,
+}: {
+  rating?: number;
+  mini?: boolean;
+}) => {
+  if (rating === undefined)
+    return <span className={mini ? "text-xs" : ""}>Not rated</span>;
 
   // Convert to scale of 5 stars
   const normalizedRating = rating / 2;
   const fullStars = Math.floor(normalizedRating);
   const hasHalfStar = normalizedRating - fullStars >= 0.5;
+  const starSize = mini ? "h-3 w-3" : "h-4 w-4";
 
   return (
     <div className="flex items-center">
       {[...Array(5)].map((_, i) => (
         <Star
           key={i}
-          className={`h-4 w-4 ${
+          className={`${starSize} ${
             i < fullStars
               ? "text-yellow-400 fill-yellow-400"
               : i === fullStars && hasHalfStar
@@ -80,7 +97,9 @@ const StarRating = ({ rating }: { rating?: number }) => {
           }`}
         />
       ))}
-      <span className="ml-2 text-sm">{normalizedRating.toFixed(1)}/5</span>
+      {!mini && (
+        <span className="ml-2 text-sm">{normalizedRating.toFixed(1)}/5</span>
+      )}
     </div>
   );
 };
@@ -89,21 +108,55 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [commandOpen, setCommandOpen] = useState(false);
 
+  // Calculate the overall rating for each employee
+  const employeesWithRating = useMemo(() => {
+    return employees.map((employee) => {
+      let rating;
+      if (employee.attitude || employee.knowledge || employee.speed) {
+        let sum = 0;
+        let count = 0;
+
+        if (employee.attitude) {
+          sum += employee.attitude;
+          count++;
+        }
+
+        if (employee.knowledge) {
+          sum += employee.knowledge;
+          count++;
+        }
+
+        if (employee.speed) {
+          sum += employee.speed;
+          count++;
+        }
+
+        rating = count > 0 ? (sum / count) * 2 : undefined; // Multiply by 2 to match the 10-point scale
+      }
+
+      return {
+        ...employee,
+        rating,
+      };
+    });
+  }, [employees]);
+
   const filteredEmployees = useMemo(() => {
-    return employees.filter((employee) => {
+    return employeesWithRating.filter((employee) => {
       const query = searchQuery.toLowerCase();
       return (
         employee.name.toLowerCase().includes(query) ||
         employee.email.toLowerCase().includes(query) ||
         employee.position?.toLowerCase().includes(query) ||
         false ||
-        employee.destination?.toLowerCase().includes(query) ||
+        (typeof employee.destination === "string" &&
+          employee.destination.toLowerCase().includes(query)) ||
         false ||
         employee.office?.toLowerCase().includes(query) ||
         false
       );
     });
-  }, [employees, searchQuery]);
+  }, [employeesWithRating, searchQuery]);
 
   return (
     <>
@@ -139,7 +192,9 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                   <TableHead className="w-[130px]">Position</TableHead>
                   <TableHead className="w-[120px]">Destination</TableHead>
                   <TableHead className="w-[100px]">Office</TableHead>
-                  <TableHead className="w-[120px]">Rating</TableHead>
+                  <TableHead className="w-[80px]">Attitude</TableHead>
+                  <TableHead className="w-[80px]">Knowledge</TableHead>
+                  <TableHead className="w-[80px]">Speed</TableHead>
                   <TableHead className="w-[130px] text-right">
                     Last Updated
                   </TableHead>
@@ -149,7 +204,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                 {filteredEmployees.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       className="h-24 text-center text-muted-foreground"
                     >
                       No employees found matching your search criteria.
@@ -172,7 +227,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                       <TableCell>{employee.email}</TableCell>
                       <TableCell>
                         {employee.position || (
-                          <span className=" text-sm">Not assigned</span>
+                          <span className="text-sm">Not assigned</span>
                         )}
                       </TableCell>
 
@@ -214,7 +269,47 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <StarRating rating={employee.rating} />
+                        <StarRating
+                          rating={
+                            employee.attitude
+                              ? employee.attitude * 2
+                              : undefined
+                          }
+                          mini
+                        />
+                        {employee.attitude && (
+                          <span className="text-xs text-center text-muted-foreground">
+                            {employee.attitude.toFixed(1)}/5
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <StarRating
+                          rating={
+                            employee.knowledge
+                              ? employee.knowledge * 2
+                              : undefined
+                          }
+                          mini
+                        />
+                        {employee.knowledge && (
+                          <span className="text-xs text-center text-muted-foreground">
+                            {employee.knowledge.toFixed(1)}/5
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <StarRating
+                          rating={
+                            employee.speed ? employee.speed * 2 : undefined
+                          }
+                          mini
+                        />
+                        {employee.speed && (
+                          <span className="text-xs text-center text-muted-foreground">
+                            {employee.speed.toFixed(1)}/5
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right text-sm ">
                         {new Date(employee.updatedAt).toLocaleDateString(

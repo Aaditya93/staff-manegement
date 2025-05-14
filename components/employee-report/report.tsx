@@ -36,10 +36,15 @@ interface ReportPageProps {
     backgroundImage?: string;
     emailVerified?: string;
     updatedAt?: string;
+    attitude?: number;
+    knowledge?: number;
+    speed?: number;
+    reviewcount?: number;
   };
 }
 
 const EmployeeReport = async ({ tickets, user }: ReportPageProps) => {
+  console.log("Tickets data:", user);
   // Format role for display
   const formatRole = (role: string) => {
     if (!role) return "";
@@ -192,7 +197,94 @@ const EmployeeReport = async ({ tickets, user }: ReportPageProps) => {
             </div>
           </div>
         </div>
+        {(user.attitude || user.knowledge || user.speed) && (
+          <div className="px-6 py-5 bg-gradient-to-r from-indigo-50 to-blue-50">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="mb-3 md:mb-0">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Performance Ratings
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Based on {user.reviewcount || 0} customer reviews
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
+                {user.attitude && (
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl font-bold text-indigo-600">
+                      {user.attitude.toFixed(1)}
+                    </div>
+                    <div className="flex my-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <span key={`att-${i}`}>
+                          {i < Math.floor(user.attitude!) ? (
+                            <span className="text-amber-400">★</span>
+                          ) : i < user.attitude! ? (
+                            <span className="text-amber-400">★</span>
+                          ) : (
+                            <span className="text-gray-300">★</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                      Attitude
+                    </span>
+                  </div>
+                )}
+                {user.knowledge && (
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl font-bold text-indigo-600">
+                      {user.knowledge.toFixed(1)}
+                    </div>
+                    <div className="flex my-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <span key={`know-${i}`}>
+                          {i < Math.floor(user.knowledge!) ? (
+                            <span className="text-amber-400">★</span>
+                          ) : i < user.knowledge! ? (
+                            <span className="text-amber-400">★</span>
+                          ) : (
+                            <span className="text-gray-300">★</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                      Knowledge
+                    </span>
+                  </div>
+                )}
+                {user.speed && (
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl font-bold text-indigo-600">
+                      {user.speed.toFixed(1)}
+                    </div>
+                    <div className="flex my-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <span key={`speed-${i}`}>
+                          {i < Math.floor(user.speed!) ? (
+                            <span className="text-amber-400">★</span>
+                          ) : i < user.speed! ? (
+                            <span className="text-amber-400">★</span>
+                          ) : (
+                            <span className="text-gray-300">★</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                      Response Speed
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <Separator />
+
         <MainLineChart data={LineChartData} />
 
         <DestinationBarChart data={destinationData} />

@@ -11,7 +11,7 @@ export const updateReview = async () => {
     const users = await User.find({
       role: { $in: ["ReservationStaff", "SalesStaff"] },
     });
-    console.log("Users found:", users);
+
     const oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
@@ -31,14 +31,14 @@ export const updateReview = async () => {
           // Get existing values
           const existingAttitude = currentUser.attitude || 0;
           const existingKnowledge = currentUser.knowledge || 0;
-          const existingServices = currentUser.services || 0;
+
           const existingSpeed = currentUser.speed || 0;
           const existingReviewCount = currentUser.reviewcount || 0;
 
           // Calculate totals for new reviews
           let attitudeTotal = 0;
           let knowledgeTotal = 0;
-          let servicesTotal = 0;
+
           let speedTotal = 0;
           let newReviewCount = 0;
 
@@ -47,7 +47,7 @@ export const updateReview = async () => {
             if (ticket.review) {
               attitudeTotal += ticket.review.attitude;
               knowledgeTotal += ticket.review.knowledge;
-              servicesTotal += ticket.review.services;
+
               speedTotal += ticket.review.speed;
               newReviewCount++;
             }
@@ -70,12 +70,7 @@ export const updateReview = async () => {
                 totalReviewCount
               ).toFixed(1)
             );
-            const servicesAvg = parseFloat(
-              (
-                (existingServices * existingReviewCount + servicesTotal) /
-                totalReviewCount
-              ).toFixed(1)
-            );
+
             const speedAvg = parseFloat(
               (
                 (existingSpeed * existingReviewCount + speedTotal) /
@@ -87,7 +82,6 @@ export const updateReview = async () => {
             const result = await User.findByIdAndUpdate(user.id, {
               attitude: attitudeAvg,
               knowledge: knowledgeAvg,
-              services: servicesAvg,
               speed: speedAvg,
               reviewcount: totalReviewCount,
             });
@@ -108,14 +102,14 @@ export const updateReview = async () => {
           // Get existing values
           const existingAttitude = currentUser.attitude || 0;
           const existingKnowledge = currentUser.knowledge || 0;
-          const existingServices = currentUser.services || 0;
+
           const existingSpeed = currentUser.speed || 0;
           const existingReviewCount = currentUser.reviewcount || 0;
 
           // Calculate totals for new reviews
           let attitudeTotal = 0;
           let knowledgeTotal = 0;
-          let servicesTotal = 0;
+
           let speedTotal = 0;
           let newReviewCount = 0;
 
@@ -124,7 +118,6 @@ export const updateReview = async () => {
             if (ticket.review) {
               attitudeTotal += ticket.review.attitude;
               knowledgeTotal += ticket.review.knowledge;
-              servicesTotal += ticket.review.services;
               speedTotal += ticket.review.speed;
               newReviewCount++;
             }
@@ -147,12 +140,7 @@ export const updateReview = async () => {
                 totalReviewCount
               ).toFixed(1)
             );
-            const servicesAvg = parseFloat(
-              (
-                (existingServices * existingReviewCount + servicesTotal) /
-                totalReviewCount
-              ).toFixed(1)
-            );
+
             const speedAvg = parseFloat(
               (
                 (existingSpeed * existingReviewCount + speedTotal) /
@@ -164,7 +152,6 @@ export const updateReview = async () => {
             const result = await User.findByIdAndUpdate(user.id, {
               attitude: attitudeAvg,
               knowledge: knowledgeAvg,
-              services: servicesAvg,
               speed: speedAvg,
               reviewcount: totalReviewCount,
             });

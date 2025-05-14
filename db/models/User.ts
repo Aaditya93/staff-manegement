@@ -39,9 +39,7 @@ const userSchema = new mongoose.Schema(
     knowledge: {
       type: Number,
     },
-    services: {
-      type: Number,
-    },
+
     speed: {
       type: Number,
     },

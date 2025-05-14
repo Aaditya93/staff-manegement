@@ -6,8 +6,6 @@ const TicketPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
   const ticket = await getTicketById(id);
 
-  console.log("ticket", ticket);
-
   return (
     <SidebarProvider>
       <AppSidebar />

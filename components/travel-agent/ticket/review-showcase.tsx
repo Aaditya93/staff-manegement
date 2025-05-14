@@ -32,16 +32,14 @@ interface ReviewShowcaseProps {
 
 const ReviewShowcase: React.FC<ReviewShowcaseProps> = ({ review }) => {
   // Define rating categories and calculate average
-  const ratingCategories = [
+  // Define rating categories and calculate average
+  const staffRatingCategories = [
     { name: "Attitude", value: review.attitude },
     { name: "Knowledge", value: review.knowledge },
-    { name: "Services", value: review.services },
     { name: "Speed", value: review.speed },
-    { name: "Hotel", value: review.hotel },
-    { name: "Guide", value: review.guide },
-    { name: "Transfer", value: review.transfer },
-    { name: "Meal", value: review.meal },
   ];
+
+  const ratingCategories = [...staffRatingCategories];
 
   const ratingValues = ratingCategories.map((cat) => cat.value);
   const averageRating =
@@ -75,68 +73,60 @@ const ReviewShowcase: React.FC<ReviewShowcaseProps> = ({ review }) => {
       </CardHeader>
 
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          {" "}
-          {/* Increased gap */}
-          {ratingCategories.map((category) => (
-            <div
-              key={category.name}
-              className="bg-muted/50 p-3 rounded-lg border"
-            >
-              {" "}
-              {/* Use muted background, larger radius, add border */}
-              <div className="flex justify-between items-center mb-1.5">
-                {" "}
-                {/* Added items-center, increased margin */}
-                <span className="text-sm font-medium text-foreground">
-                  {category.name}
-                </span>{" "}
-                {/* Use theme text color */}
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {category.value}/5
-                </span>{" "}
-                {/* Smaller text, theme color */}
-              </div>
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={cn(
-                      "h-4 w-4", // Slightly larger stars
-                      star <= category.value
-                        ? "text-amber-400 fill-amber-400"
-                        : "text-muted-foreground/30" // Use muted foreground for empty stars
-                    )}
-                  />
-                ))}
-              </div>
+        <div className="space-y-6">
+          {/* Staff Performance Section */}
+          <div>
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
+              Staff Performance
+            </h3>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {staffRatingCategories.map((category) => (
+                <div
+                  key={category.name}
+                  className="bg-muted/50 p-3 rounded-lg border"
+                >
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-sm font-medium text-foreground">
+                      {category.name}
+                    </span>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {category.value}/5
+                    </span>
+                  </div>
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={cn(
+                          "h-4 w-4",
+                          star <= category.value
+                            ? "text-amber-400 fill-amber-400"
+                            : "text-muted-foreground/30"
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Package Quality Section */}
         </div>
 
         {review.reviewText && (
           <>
-            <Separator className="my-4" /> {/* Increased margin */}
+            <Separator className="my-4" />
             <div className="space-y-2">
-              {" "}
-              {/* Added space-y for better spacing */}
               <div className="flex items-center gap-2">
-                {" "}
-                {/* Removed mb-2, handled by space-y */}
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />{" "}
-                {/* Use theme color */}
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium text-foreground">
                   Customer Comments
-                </span>{" "}
-                {/* Use theme color */}
+                </span>
               </div>
-              {/* Use Alert for comments section */}
               <Alert variant="default" className="bg-background p-3">
-                {" "}
-                {/* Use outline variant, theme background and padding */}
                 <AlertDescription className="text-sm text-muted-foreground">
-                  {" "}
-                  {/* Use theme color */}
                   {review.reviewText}
                 </AlertDescription>
               </Alert>

@@ -110,7 +110,6 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
   userId,
   onEmailFetched,
 }) => {
-  console.log("fetchEmailData called with:", { email, emailId, userId });
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [emailDetails, setEmailDetails] = useState<EmailResponse | null>(null);

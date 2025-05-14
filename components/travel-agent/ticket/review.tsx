@@ -28,12 +28,9 @@ interface ReviewTicketProps {
 interface ReviewData {
   attitude: number;
   knowledge: number;
-  services: number;
+
   speed: number;
-  hotel: number;
-  guide: number;
-  transfer: number;
-  meal: number;
+
   reviewText: string;
 }
 
@@ -47,12 +44,8 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
   const [reviewData, setReviewData] = useState<ReviewData>({
     attitude: 0,
     knowledge: 0,
-    services: 0,
     speed: 0,
-    hotel: 0,
-    guide: 0,
-    transfer: 0,
-    meal: 0,
+
     reviewText: "",
   });
 
@@ -112,14 +105,10 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
   };
 
   const ratingFields = [
-    { name: "attitude", label: "Attitude" },
-    { name: "knowledge", label: "Knowledge" },
-    { name: "services", label: "Services" },
-    { name: "speed", label: "Speed" },
-    { name: "hotel", label: "Hotel" },
-    { name: "guide", label: "Guide" },
-    { name: "transfer", label: "Transfer" },
-    { name: "meal", label: "Meal" },
+    // Staff performance review
+    { name: "attitude", label: "Attitude", category: "staff" },
+    { name: "knowledge", label: "Knowledge", category: "staff" },
+    { name: "speed", label: "Speed", category: "staff" },
   ];
 
   const StarRating = ({
@@ -181,31 +170,38 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-          {ratingFields.map((field) => (
-            <Card
-              key={field.name}
-              className="border shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-            >
-              <CardContent className="p-4">
-                <StarRating
-                  name={field.name as keyof Omit<ReviewData, "reviewText">}
-                  label={field.label}
-                  value={
-                    reviewData[
-                      field.name as keyof Omit<ReviewData, "reviewText">
-                    ]
-                  }
-                  onChange={handleRatingChange(
-                    field.name as keyof Omit<ReviewData, "reviewText">
-                  )}
-                />
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-6 py-4">
+          <div>
+            <h3 className="text-lg font-medium mb-3">Staff Performance</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {ratingFields
+                .filter((field) => field.category === "staff")
+                .map((field) => (
+                  <Card
+                    key={field.name}
+                    className="border shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    <CardContent className="p-4">
+                      <StarRating
+                        name={
+                          field.name as keyof Omit<ReviewData, "reviewText">
+                        }
+                        label={field.label}
+                        value={
+                          reviewData[
+                            field.name as keyof Omit<ReviewData, "reviewText">
+                          ]
+                        }
+                        onChange={handleRatingChange(
+                          field.name as keyof Omit<ReviewData, "reviewText">
+                        )}
+                      />
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+          </div>
         </div>
-
-        <Separator className="my-4" />
 
         <div className="space-y-2">
           <Label htmlFor="review-text" className="text-sm font-medium">
@@ -219,7 +215,6 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
             className="min-h-[120px] resize-none"
           />
         </div>
-
         <DialogFooter className="pt-4">
           <Button
             variant="ghost"

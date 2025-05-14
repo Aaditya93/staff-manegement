@@ -66,7 +66,6 @@ export interface ITicket extends Document {
 interface Review {
   attitude: number;
   knowledge: number;
-  services: number;
   speed: number;
   hotel: number;
   guide: number;
@@ -163,45 +162,16 @@ const ReviewSchema = new Schema(
       max: 5,
       required: true,
     },
-    services: {
-      type: Number,
-      min: 1,
-      max: 5,
-      required: true,
-    },
+
     speed: {
       type: Number,
       min: 1,
       max: 5,
       required: true,
     },
-    hotel: {
-      type: Number,
-      min: 1,
-      max: 5,
-      required: true,
-    },
-    guide: {
-      type: Number,
-      min: 1,
-      max: 5,
-      required: true,
-    },
-    transfer: {
-      type: Number,
-      min: 1,
-      max: 5,
-      required: true,
-    },
-    meal: {
-      type: Number,
-      min: 1,
-      max: 5,
-      required: true,
-    },
+
     reviewText: {
       type: String,
-      trim: true,
     },
     reviewDate: {
       type: Date,

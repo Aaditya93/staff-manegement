@@ -9,12 +9,8 @@ import dbConnect from "@/db/db";
 interface ReviewData {
   attitude: number;
   knowledge: number;
-  services: number;
   speed: number;
-  hotel: number;
-  guide: number;
-  transfer: number;
-  meal: number;
+
   reviewText: string;
   ticketId: string;
 }
@@ -39,6 +35,7 @@ export async function submitTicketReview(reviewData: ReviewData) {
         error: `Invalid ratings for: ${invalidRatings.join(", ")}. Ratings must be between 1-5.`,
       };
     }
+    console.log("Review data before submission:", reviewFields);
 
     // Find and update the ticket with the review
     const updatedTicket = await Ticket.findByIdAndUpdate(
@@ -57,7 +54,7 @@ export async function submitTicketReview(reviewData: ReviewData) {
       return { success: false, error: "Ticket not found." };
     }
 
-    revalidatePath(`/tickets/${ticketId}`);
+    revalidatePath(`/travel-agent/ticket/${ticketId}`);
 
     return {
       success: true,
