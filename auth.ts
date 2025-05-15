@@ -89,7 +89,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       if (token.image && session.user) {
         session.user.image = token.image as string;
-        session.user.role = "ReservationStaff";
+        session.user.role = token.role as string;
       }
       if (token.accounts) {
         session.user.accounts = token.accounts as {

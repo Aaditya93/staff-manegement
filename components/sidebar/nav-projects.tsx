@@ -1,28 +1,22 @@
-"use client"
-
-
+"use client";
 
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
-
   SidebarMenuButton,
   SidebarMenuItem,
-
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import { IconType } from "react-icons";
 export const NavProjects = ({
   projects,
 }: {
   projects: {
-    name: string
-    url: string
-    icon: IconType
-  }[]
-}) =>{
-
-
+    name: string;
+    url: string;
+    icon: IconType;
+  }[];
+}) => {
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Navigation</SidebarGroupLabel>
@@ -35,11 +29,9 @@ export const NavProjects = ({
                 <span>{item.name}</span>
               </a>
             </SidebarMenuButton>
-          
           </SidebarMenuItem>
         ))}
-    
       </SidebarMenu>
     </SidebarGroup>
-  )
-}
+  );
+};

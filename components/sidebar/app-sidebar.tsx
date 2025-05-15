@@ -31,58 +31,11 @@ sevendaysAgo.setDate(today.getDate() - 7);
 const seven = sevendaysAgo.toISOString().split("T")[0];
 
 const to = today.toISOString().split("T")[0];
-const Admindata = {
-  navMain: [
-    {
-      title: "Agent Platform",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "Admin Panel",
-          url: "/agent-platform/admin-panel",
-        },
-        {
-          title: "Visa Letter Prices",
-          url: "/agent-platform/visa-letter-price/10",
-        },
-        {
-          title: "Immgration Prices",
-          url: `/agent-platform/immigration-price/10`,
-        },
-        {
-          title: "A-Payment",
-          url: `/agent-platform/payment/6777bb039da64c84fb251323/from=${seven}&to=${to}`,
-        },
-        {
-          title: "I-Payment",
-          url: `/agent-platform/payment/immigration/Hanoi/from=${seven}&to=${to}`,
-        },
-        {
-          title: "Billing",
-          url: `/agent-platform/billing/677b88cc3c6259f5025f6645/from=${seven}&to=${to}`,
-        },
-        {
-          title: "Upload Excel",
-          url: "/agent-platform/upload-excel",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  Upload: [
+
+const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
+  const user = useSession();
+  const userRole = user.data?.user?.role;
+  const baseNavItems = [
     {
       name: "Mail",
       url: "/mail/0/inbox/all/10",
@@ -113,23 +66,35 @@ const Admindata = {
       url: `/admin-panel`,
       icon: MdOutlineAdminPanelSettings,
     },
+  ];
 
-    {
-      name: "Report",
-      url: `/admin-report/from=${seven}&to=${to}`,
-      icon: TfiPieChart,
-    },
-  ],
-};
+  // Create the navigation items array with conditional items
+  const navigationItems = [
+    ...baseNavItems,
 
-const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
-  const user = useSession();
-  const data = {
-    user: {
-      name: "shadcn",
-      email: "m@example.com",
-      avatar: "/avatars/shadcn.jpg",
-    },
+    // Add Admin Report for TravelAgent role
+    ...(userRole === "Admin"
+      ? [
+          {
+            name: "Admin Report",
+            url: `/admin-report/from=${seven}&to=${to}`,
+            icon: TfiPieChart,
+          },
+        ]
+      : []),
+    // Add Employee Report for everyone else
+    ...(userRole === "ReservationStaff" || userRole === "SalesStaff"
+      ? [
+          {
+            name: " Report",
+            url: `/employee-report/${user.data?.user.id}/from=${seven}&to=${to}`,
+            icon: TfiPieChart,
+          },
+        ]
+      : []),
+  ];
+
+  const Admindata = {
     navMain: [
       {
         title: "Agent Platform",
@@ -180,45 +145,9 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         icon: Send,
       },
     ],
-    Upload: [
-      {
-        name: "Mail",
-        url: "/mail/0/inbox/all/10",
-        icon: CiMail,
-      },
-      {
-        name: "Dashboard",
-        url: `/dashboard/from=${seven}&to=${to}`,
-        icon: CiViewTable,
-      },
-      {
-        name: "Ticket",
-        url: `/pending-tickets/from=${seven}&to=${to}`,
-        icon: BsListTask,
-      },
-      {
-        name: "Messages",
-        url: "/chat/none",
-        icon: CiChat1,
-      },
-      {
-        name: "Complaints",
-        url: `/report`,
-        icon: GoReport,
-      },
-      {
-        name: "Admin Panel",
-        url: `/admin-panel`,
-        icon: MdOutlineAdminPanelSettings,
-      },
-
-      {
-        name: "Report",
-        url: `/employee-report/${user.data?.user.id}/from=${seven}&to=${to}`,
-        icon: TfiPieChart,
-      },
-    ],
+    Upload: navigationItems,
   };
+
   return (
     <Sidebar variant="sidebar" {...props}>
       <SidebarHeader>
@@ -245,11 +174,9 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {user.data?.user.role === "Admin" ? (
+        <SidebarContent>
           <NavProjects projects={Admindata.Upload} />
-        ) : (
-          <NavProjects projects={data.Upload} />
-        )}
+        </SidebarContent>
 
         {/* <NavMain items={data.navMain} /> */}
       </SidebarContent>
