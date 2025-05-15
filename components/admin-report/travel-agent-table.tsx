@@ -103,7 +103,7 @@ const columns: ColumnDef<TravelAgentPerformance>[] = [
       const agentId = row.original.agentId;
       return (
         <div className="text-center w-full">
-          <Link href={`/employee-report/${agentId}/from=${seven}&to=${to}`}>
+          <Link href={`/agent-report/${agentId}/from=${seven}&to=${to}`}>
             View Profile
           </Link>
         </div>
