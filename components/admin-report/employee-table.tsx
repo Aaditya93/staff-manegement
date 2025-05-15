@@ -379,7 +379,7 @@ function processEmployeeData(
     const employee = employeeMap.get(employeeId)!;
     employee.totalTickets += 1;
 
-    if (ticket.status === "Completed") {
+    if (ticket.status === "completed") {
       employee.completedTickets += 1;
 
       // Use waitingTime directly if available or calculate it

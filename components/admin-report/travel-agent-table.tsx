@@ -259,7 +259,7 @@ function processTravelAgentData(tickets: ITicket[]): TravelAgentPerformance[] {
     agent.totalTickets += 1;
 
     // Count completed tickets as bookings
-    if (ticket.status === "Completed") {
+    if (ticket.status === "completed") {
       agent.totalBookings += 1;
     }
 
@@ -269,7 +269,7 @@ function processTravelAgentData(tickets: ITicket[]): TravelAgentPerformance[] {
     }
 
     // Add cost to total revenue for completed tickets
-    if (ticket.status === "Completed" && ticket.cost) {
+    if (ticket.status === "completed" && ticket.cost) {
       agent.totalRevenue += ticket.cost;
     }
   });
