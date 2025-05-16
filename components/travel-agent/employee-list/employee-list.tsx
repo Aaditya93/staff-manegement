@@ -28,12 +28,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Search, Star, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface Employee {
   _id: string;
@@ -75,7 +69,7 @@ const StarRating = ({
   mini?: boolean;
 }) => {
   if (rating === undefined)
-    return <span className={mini ? "text-xs" : ""}>Not rated</span>;
+    return <span className={mini ? "text-xs text-center" : ""}>Not rated</span>;
 
   // Convert to scale of 5 stars
   const normalizedRating = rating / 2;
@@ -84,7 +78,7 @@ const StarRating = ({
   const starSize = mini ? "h-3 w-3" : "h-4 w-4";
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center text-center">
       {[...Array(5)].map((_, i) => (
         <Star
           key={i}
@@ -97,9 +91,6 @@ const StarRating = ({
           }`}
         />
       ))}
-      {!mini && (
-        <span className="ml-2 text-sm">{normalizedRating.toFixed(1)}/5</span>
-      )}
     </div>
   );
 };
@@ -187,17 +178,13 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
-                  <TableHead className="w-[230px]">Employee</TableHead>
+                  <TableHead>Employee</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead className="w-[130px]">Position</TableHead>
-                  <TableHead className="w-[120px]">Destination</TableHead>
-                  <TableHead className="w-[100px]">Office</TableHead>
-                  <TableHead className="w-[80px]">Attitude</TableHead>
-                  <TableHead className="w-[80px]">Knowledge</TableHead>
-                  <TableHead className="w-[80px]">Speed</TableHead>
-                  <TableHead className="w-[130px] text-right">
-                    Last Updated
-                  </TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Destination</TableHead>
+                  <TableHead>Office</TableHead>
+                  <TableHead>Overall Rating</TableHead>
+                  <TableHead>Last Updated</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -257,6 +244,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                           )}
                         </div>
                       </TableCell>
+
                       <TableCell>
                         <div className="flex items-center gap-1">
                           {employee.office ? (
@@ -268,50 +256,17 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <StarRating
-                          rating={
-                            employee.attitude
-                              ? employee.attitude * 2
-                              : undefined
-                          }
-                          mini
-                        />
-                        {employee.attitude && (
-                          <span className="text-xs text-center text-muted-foreground">
-                            {employee.attitude.toFixed(1)}/5
-                          </span>
-                        )}
+                      <TableCell className="text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <StarRating rating={employee.rating} />
+                          {employee.rating && (
+                            <span className="text-xs text-center text-muted-foreground mt-1">
+                              {(employee.rating / 2).toFixed(1)}/5
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <StarRating
-                          rating={
-                            employee.knowledge
-                              ? employee.knowledge * 2
-                              : undefined
-                          }
-                          mini
-                        />
-                        {employee.knowledge && (
-                          <span className="text-xs text-center text-muted-foreground">
-                            {employee.knowledge.toFixed(1)}/5
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <StarRating
-                          rating={
-                            employee.speed ? employee.speed * 2 : undefined
-                          }
-                          mini
-                        />
-                        {employee.speed && (
-                          <span className="text-xs text-center text-muted-foreground">
-                            {employee.speed.toFixed(1)}/5
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right text-sm ">
+                      <TableCell className="text-center text-sm ">
                         {new Date(employee.updatedAt).toLocaleDateString(
                           undefined,
                           {

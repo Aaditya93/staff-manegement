@@ -2,14 +2,15 @@
 
 import * as React from "react";
 import { LifeBuoy, Send, SquareTerminal } from "lucide-react";
+import { CiBoxList, CiSearch } from "react-icons/ci";
 
 import { CiViewTable } from "react-icons/ci";
-import { CiBoxList } from "react-icons/ci";
+
 import Image from "next/image";
 import { TfiPieChart } from "react-icons/tfi";
-import { NavProjects } from "../sidebar/nav-projects";
+import { NavProjects } from "@/components/sidebar/nav-projects";
 import { CiChat1 } from "react-icons/ci";
-import NavUser from "../sidebar/nav-user";
+import NavUser from "@/components/sidebar/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +21,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useSession } from "next-auth/react";
+
+import { Dispatch, SetStateAction } from "react";
+import NavDashboard from "@/components/dashboard/nav-dashboard";
 const today = new Date();
 const thirtyDaysAgo = new Date(today);
 thirtyDaysAgo.setDate(today.getDate() - 30);
@@ -29,8 +33,16 @@ sevendaysAgo.setDate(today.getDate() - 7);
 const seven = sevendaysAgo.toISOString().split("T")[0];
 
 const to = today.toISOString().split("T")[0];
+interface AppSidebarProps {
+  searchSelections: string;
+  setSearchSelections: Dispatch<SetStateAction<string>>;
+}
+const AppSidebar = ({
+  searchSelections,
+  setSearchSelections,
 
-const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
+  ...props
+}: AppSidebarProps) => {
   const user = useSession();
 
   const data = {
@@ -113,7 +125,33 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         icon: TfiPieChart,
       },
     ],
+    NavDashboard: [
+      {
+        title: "Search",
+
+        icon: CiSearch,
+        isActive: true,
+        items: [
+          {
+            title: "Ticket ID",
+            key: "ticket",
+            items: [],
+          },
+          {
+            title: "Destination",
+            key: "destination",
+            items: [],
+          },
+          {
+            title: "Status",
+            key: "status",
+            items: [],
+          },
+        ],
+      },
+    ],
   };
+
   return (
     <Sidebar variant="sidebar" {...props}>
       <SidebarHeader>
@@ -140,7 +178,15 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.Upload} />
+        <SidebarContent>
+          <NavProjects projects={data.Upload} />
+          <NavDashboard
+            searchSelections={searchSelections}
+            setSearchSelections={setSearchSelections}
+            items={data.NavDashboard}
+          />
+        </SidebarContent>
+
         {/* <NavMain items={data.navMain} /> */}
       </SidebarContent>
       <SidebarFooter>

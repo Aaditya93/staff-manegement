@@ -47,7 +47,6 @@ const AdminReportPage = async ({
   const dateRange = extractDateRange(range);
   const { from, to } = dateRange;
   const tickets = await getAllTickets(from, to);
-  console.log("Tickets:", tickets);
 
   return (
     <SidebarProvider>

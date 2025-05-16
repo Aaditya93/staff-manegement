@@ -19,7 +19,7 @@ export function convertTicketsToDestinationChartData(tickets: ITicket[]) {
     // Count number of tickets (1 per ticket) instead of passenger count
     currentStats.totalTickets += 1;
     // Only add cost to total revenue if status is complete
-    if (ticket.status?.toLowerCase() === "complete") {
+    if (ticket.status?.toLowerCase() === "completed") {
       currentStats.totalRevenue += ticket.cost || 0;
     }
   });

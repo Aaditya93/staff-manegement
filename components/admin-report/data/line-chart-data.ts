@@ -40,7 +40,7 @@ export function convertTicketsToChartData(
     ticketsByDate[formattedDate] = (ticketsByDate[formattedDate] || 0) + 1;
 
     // Add revenue if ticket status is complete and has cost property
-    if (ticket.status === "complete" && ticket.cost) {
+    if (ticket.status === "completed" && ticket.cost) {
       revenueByDate[formattedDate] =
         (revenueByDate[formattedDate] || 0) +
         (typeof ticket.cost === "number" ? ticket.cost : 0);

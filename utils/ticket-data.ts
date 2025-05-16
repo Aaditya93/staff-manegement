@@ -14,6 +14,8 @@ export const mapTicketsToTableData = (tickets: any[]): TravelBooking[] => {
       ? new Date(ticket.departureDate).toISOString().split("T")[0]
       : "",
     reservationInCharge: ticket.reservationInCharge?.name || "",
+    reservationId: ticket.reservationInCharge?.id || "",
+    salesId: ticket.salesInCharge?.id || "",
     salesInCharge: ticket.salesInCharge?.name || "",
     market: ticket.market || "",
     status: ticket.status || "In Progress",

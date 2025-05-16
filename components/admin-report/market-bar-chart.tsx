@@ -21,12 +21,6 @@ interface DestinationChartProps {
   data?: { destination: string; totalTickets: number; revenue: number }[];
 }
 
-// Default data in case no data is provided
-const defaultChartData = [
-  { destination: "Singapore", totalTickets: 6, revenue: 0 },
-  { destination: "Vietnam", totalTickets: 7, revenue: 0 },
-];
-
 const chartConfig = {
   totalTickets: {
     label: "Tickets",
@@ -38,9 +32,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function DestinationBarChart({
-  data = defaultChartData,
-}: DestinationChartProps) {
+export function DestinationBarChart({ data }: DestinationChartProps) {
   return (
     <Card className="rounded-none">
       <CardHeader>

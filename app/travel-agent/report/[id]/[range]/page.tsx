@@ -51,8 +51,6 @@ const TravelAgentReportPage = async ({
     startDate: dateRange.from,
     endDate: dateRange.to,
   });
-  console.log("data", data.tickets);
-  console.log("user", data.user);
 
   return (
     <SidebarProvider>

@@ -109,7 +109,17 @@ const DataTable = <TData, TValue>({
     <div className="w-full">
       <div className="flex items-center py-4 gap-4">
         <Input
-          placeholder={`Search by ${searchSelections}...`}
+          placeholder={`Search ${
+            searchSelections === "companyName"
+              ? "by company "
+              : searchSelections === "ticket"
+                ? "by ticket ID"
+                : searchSelections === "destination"
+                  ? "by destination"
+                  : searchSelections === "status"
+                    ? "by status"
+                    : "..."
+          }`}
           value={
             (table
               .getColumn(`${searchSelections}`)
@@ -123,7 +133,7 @@ const DataTable = <TData, TValue>({
           className="max-w-sm"
         />
         <DateRangePicker />
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
               Search by <ChevronDown className="ml-2 h-4 w-4" />
@@ -173,7 +183,7 @@ const DataTable = <TData, TValue>({
               </DropdownMenuCheckboxItem>
             )}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-2">

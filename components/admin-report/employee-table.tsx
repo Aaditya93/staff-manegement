@@ -308,8 +308,6 @@ const EmployeePerformanceTables = ({
     "reservation"
   );
 
-  // ...existing code...
-
   return (
     <div className="w-full ">
       {/* Sales Team Performance */}

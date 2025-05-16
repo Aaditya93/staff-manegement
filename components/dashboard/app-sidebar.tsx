@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import { LifeBuoy, Send, SquareTerminal } from "lucide-react";
-
+import { CiMail, CiSearch } from "react-icons/ci";
+import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import { CiViewTable } from "react-icons/ci";
-import { CiBoxList } from "react-icons/ci";
+import { GoReport } from "react-icons/go";
+import { BsListTask } from "react-icons/bs";
 import Image from "next/image";
 import { TfiPieChart } from "react-icons/tfi";
 import { NavProjects } from "../sidebar/nav-projects";
@@ -20,6 +22,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useSession } from "next-auth/react";
+
+import { Dispatch, SetStateAction } from "react";
+import NavDashboard from "../dashboard/nav-dashboard";
 const today = new Date();
 const thirtyDaysAgo = new Date(today);
 thirtyDaysAgo.setDate(today.getDate() - 30);
@@ -29,16 +34,78 @@ sevendaysAgo.setDate(today.getDate() - 7);
 const seven = sevendaysAgo.toISOString().split("T")[0];
 
 const to = today.toISOString().split("T")[0];
+interface AppSidebarProps {
+  searchSelections: string;
+  setSearchSelections: Dispatch<SetStateAction<string>>;
+}
+const AppSidebar = ({
+  searchSelections,
+  setSearchSelections,
 
-const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
+  ...props
+}: AppSidebarProps) => {
   const user = useSession();
-
-  const data = {
-    user: {
-      name: "shadcn",
-      email: "m@example.com",
-      avatar: "/avatars/shadcn.jpg",
+  const userRole = user.data?.user?.role;
+  const baseNavItems = [
+    {
+      name: "Mail",
+      url: "/mail/0/inbox/all/10",
+      icon: CiMail,
     },
+    {
+      name: "Dashboard",
+      url: `/dashboard/from=${seven}&to=${to}`,
+      icon: CiViewTable,
+    },
+    {
+      name: "Ticket",
+      url: `/pending-tickets/from=${seven}&to=${to}`,
+      icon: BsListTask,
+    },
+    {
+      name: "Messages",
+      url: "/chat/none",
+      icon: CiChat1,
+    },
+    {
+      name: "Complaints",
+      url: `/report`,
+      icon: GoReport,
+    },
+    {
+      name: "Admin Panel",
+      url: `/admin-panel`,
+      icon: MdOutlineAdminPanelSettings,
+    },
+  ];
+
+  // Create the navigation items array with conditional items
+  const navigationItems = [
+    ...baseNavItems,
+
+    // Add Admin Report for TravelAgent role
+    ...(userRole === "Admin"
+      ? [
+          {
+            name: "Admin Report",
+            url: `/admin-report/from=${seven}&to=${to}`,
+            icon: TfiPieChart,
+          },
+        ]
+      : []),
+    // Add Employee Report for everyone else
+    ...(userRole === "ReservationStaff" || userRole === "SalesStaff"
+      ? [
+          {
+            name: " Report",
+            url: `/employee-report/${user.data?.user.id}/from=${seven}&to=${to}`,
+            icon: TfiPieChart,
+          },
+        ]
+      : []),
+  ];
+
+  const Admindata = {
     navMain: [
       {
         title: "Agent Platform",
@@ -89,31 +156,40 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         icon: Send,
       },
     ],
-    Upload: [
+    Upload: navigationItems,
+    NavDashboard: [
       {
-        name: "Dashboard",
-        url: `/travel-agent/dashboard/from=${seven}&to=${to}`,
-        icon: CiViewTable,
-      },
-      {
-        name: "Employees List",
-        url: `/travel-agent/employee-list`,
-        icon: CiBoxList,
-      },
+        title: "Search",
 
-      {
-        name: "Messages",
-        url: "/travel-agent/chat/none",
-        icon: CiChat1,
-      },
+        icon: CiSearch,
+        isActive: true,
+        items: [
+          {
+            title: "Company ",
+            key: "companyName",
+            items: [],
+          },
 
-      {
-        name: "Report",
-        url: `/travel-agent/report/${user.data?.user.id}/from=${seven}&to=${to}`,
-        icon: TfiPieChart,
+          {
+            title: "Ticket ID",
+            key: "ticket",
+            items: [],
+          },
+          {
+            title: "Destination",
+            key: "destination",
+            items: [],
+          },
+          {
+            title: "Status",
+            key: "status",
+            items: [],
+          },
+        ],
       },
     ],
   };
+
   return (
     <Sidebar variant="sidebar" {...props}>
       <SidebarHeader>
@@ -140,7 +216,15 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.Upload} />
+        <SidebarContent>
+          <NavProjects projects={Admindata.Upload} />
+          <NavDashboard
+            searchSelections={searchSelections}
+            setSearchSelections={setSearchSelections}
+            items={Admindata.NavDashboard}
+          />
+        </SidebarContent>
+
         {/* <NavMain items={data.navMain} /> */}
       </SidebarContent>
       <SidebarFooter>
