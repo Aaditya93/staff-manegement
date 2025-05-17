@@ -58,7 +58,7 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
     },
     {
       name: "Complaints",
-      url: `/report`,
+      url: `/report/from=${seven}&to=${to}`,
       icon: GoReport,
     },
     {

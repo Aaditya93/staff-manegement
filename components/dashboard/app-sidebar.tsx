@@ -69,7 +69,7 @@ const AppSidebar = ({
     },
     {
       name: "Complaints",
-      url: `/report`,
+      url: `/report/from=${seven}&to=${to}`,
       icon: GoReport,
     },
     {
