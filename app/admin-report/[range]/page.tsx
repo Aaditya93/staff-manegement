@@ -1,4 +1,5 @@
 import { getAllTickets } from "@/actions/admin-report/getAllTickets";
+import { getAllEmployees } from "@/actions/admin-report/getAllTickets";
 import AdminReport from "@/components/admin-report/admin-report";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -47,13 +48,13 @@ const AdminReportPage = async ({
   const dateRange = extractDateRange(range);
   const { from, to } = dateRange;
   const tickets = await getAllTickets(from, to);
-
+  const employees = await getAllEmployees();
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
-          <AdminReport tickets={tickets} />
+          <AdminReport tickets={tickets} employees={employees} />
         </div>
       </SidebarInset>
     </SidebarProvider>

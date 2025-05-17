@@ -9,13 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   CommandDialog,
@@ -26,8 +20,24 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Search, Star, Users } from "lucide-react";
+import { Search, Star, Users, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Employee {
   _id: string;
@@ -35,10 +45,10 @@ interface Employee {
   email: string;
   image: string | null;
   country: string;
-  destination?: string[] | string; // Array of strings or a single string
+  destination?: string[] | string;
   role: string;
-  position?: string; // New field
-  office?: string; // New field
+  position?: string;
+  office?: string;
   emailVerified: string;
   updatedAt: string;
   attitude?: number;
@@ -91,6 +101,11 @@ const StarRating = ({
           }`}
         />
       ))}
+      {!mini && (
+        <span className="text-center text-lg">
+          {normalizedRating.toFixed(1)}/5
+        </span>
+      )}
     </div>
   );
 };
@@ -98,6 +113,12 @@ const StarRating = ({
 const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [commandOpen, setCommandOpen] = useState(false);
+
+  // Filter states
+  const [destinationFilter, setDestinationFilter] = useState<string>("all");
+  const [positionFilter, setPositionFilter] = useState<string>("all");
+  const [officeFilter, setOfficeFilter] = useState<string>("all");
+  const [ratingFilter, setRatingFilter] = useState<string>("all");
 
   // Calculate the overall rating for each employee
   const employeesWithRating = useMemo(() => {
@@ -132,45 +153,252 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
     });
   }, [employees]);
 
+  // Extract unique filter options
+  const filterOptions = useMemo(() => {
+    const destinations = new Set<string>();
+    const positions = new Set<string>();
+    const offices = new Set<string>();
+
+    employeesWithRating.forEach((employee) => {
+      if (Array.isArray(employee.destination)) {
+        employee.destination.forEach((dest) => destinations.add(dest));
+      } else if (employee.destination) {
+        destinations.add(employee.destination as string);
+      }
+
+      if (employee.position) positions.add(employee.position);
+      if (employee.office) offices.add(employee.office);
+    });
+
+    return {
+      destinations: Array.from(destinations).sort(),
+      positions: Array.from(positions).sort(),
+      offices: Array.from(offices).sort(),
+    };
+  }, [employeesWithRating]);
+
+  // Apply all filters
   const filteredEmployees = useMemo(() => {
     return employeesWithRating.filter((employee) => {
-      const query = searchQuery.toLowerCase();
-      return (
-        employee.name.toLowerCase().includes(query) ||
-        employee.email.toLowerCase().includes(query) ||
-        employee.position?.toLowerCase().includes(query) ||
+      // Search query filter
+      const matchesSearch =
+        searchQuery.toLowerCase() === "" ||
+        employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        employee.position?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         false ||
         (typeof employee.destination === "string" &&
-          employee.destination.toLowerCase().includes(query)) ||
-        false ||
-        employee.office?.toLowerCase().includes(query) ||
-        false
-      );
+          employee.destination
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())) ||
+        (Array.isArray(employee.destination) &&
+          employee.destination.some((d) =>
+            d.toLowerCase().includes(searchQuery.toLowerCase())
+          )) ||
+        employee.office?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        false;
+
+      if (!matchesSearch) return false;
+
+      // Destination filter
+      const matchesDestination =
+        destinationFilter === "all" ||
+        (Array.isArray(employee.destination) &&
+          employee.destination.includes(destinationFilter)) ||
+        employee.destination === destinationFilter;
+
+      if (!matchesDestination) return false;
+
+      // Position filter
+      const matchesPosition =
+        positionFilter === "all" || employee.position === positionFilter;
+
+      if (!matchesPosition) return false;
+
+      // Office filter
+      const matchesOffice =
+        officeFilter === "all" || employee.office === officeFilter;
+
+      if (!matchesOffice) return false;
+
+      // Rating filter
+      if (ratingFilter !== "all") {
+        const ratingValue = parseInt(ratingFilter);
+        const employeeRating = employee.rating
+          ? Math.floor(employee.rating / 2)
+          : undefined;
+
+        if (ratingValue === 0) {
+          // "No rating" filter
+          if (employeeRating !== undefined) return false;
+        } else {
+          // Rating value filter (1-5)
+          if (employeeRating !== ratingValue) return false;
+        }
+      }
+
+      return true;
     });
-  }, [employeesWithRating, searchQuery]);
+  }, [
+    employeesWithRating,
+    searchQuery,
+    destinationFilter,
+    positionFilter,
+    officeFilter,
+    ratingFilter,
+  ]);
+
+  // Check if any filters are active
+  const hasActiveFilters =
+    destinationFilter !== "all" ||
+    positionFilter !== "all" ||
+    officeFilter !== "all" ||
+    ratingFilter !== "all";
+
+  // Reset all filters
+  const resetFilters = () => {
+    setDestinationFilter("all");
+    setPositionFilter("all");
+    setOfficeFilter("all");
+    setRatingFilter("all");
+  };
 
   return (
     <>
       <Card className="border-none shadow-sm w-full">
         <CardHeader className="pb-3">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-4">
             <div>
               <CardTitle className="text-2xl font-bold flex items-center gap-2">
                 <Users className="h-6 w-6 text-primary" />
                 Employees Directory
               </CardTitle>
-              <CardDescription className="text-sm mt-1">
-                {employees.length} employees in the system
-              </CardDescription>
             </div>
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => setCommandOpen(true)}
-            >
-              <Search className="h-4 w-4" />
-              <span>Search</span>
-            </Button>
+          </div>
+
+          {/* Filters section - aligned in one row */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 text-sm flex items-center gap-2"
+                onClick={() => setCommandOpen(true)}
+              >
+                <Search className="h-4 w-4" />
+                <span>Search</span>
+              </Button>
+
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="h-9 text-sm flex items-center gap-1"
+                >
+                  <X className="h-4 w-4" /> Clear filters
+                </Button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 flex-1 flex-wrap justify-end">
+              {/* Destination filter */}
+              <Select
+                value={destinationFilter}
+                onValueChange={setDestinationFilter}
+              >
+                <SelectTrigger className="h-9 text-sm min-w-[140px] max-w-[180px]">
+                  <SelectValue placeholder="Destination" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All destinations</SelectItem>
+                  {filterOptions.destinations.map((destination) => (
+                    <SelectItem key={destination} value={destination}>
+                      {destination}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Position filter */}
+              <Select value={positionFilter} onValueChange={setPositionFilter}>
+                <SelectTrigger className="h-9 text-sm min-w-[140px] max-w-[180px]">
+                  <SelectValue placeholder="Position" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All positions</SelectItem>
+                  {filterOptions.positions.map((position) => (
+                    <SelectItem key={position} value={position}>
+                      {position}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Office filter */}
+              <Select value={officeFilter} onValueChange={setOfficeFilter}>
+                <SelectTrigger className="h-9 text-sm min-w-[140px] max-w-[180px]">
+                  <SelectValue placeholder="Office" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All offices</SelectItem>
+                  {filterOptions.offices.map((office) => (
+                    <SelectItem key={office} value={office}>
+                      {office}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Rating filter */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-9 text-sm min-w-[120px]"
+                  >
+                    {ratingFilter === "all"
+                      ? "Rating"
+                      : ratingFilter === "0"
+                        ? "No rating"
+                        : `${ratingFilter} stars`}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Filter by rating</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={ratingFilter}
+                    onValueChange={setRatingFilter}
+                  >
+                    {[1, 2, 3, 4, 5].map((stars) => (
+                      <DropdownMenuRadioItem
+                        key={stars}
+                        value={stars.toString()}
+                      >
+                        <div className="flex items-center gap-1">
+                          {stars.toString()} stars
+                          <div className="flex items-center ml-1">
+                            {[...Array(stars)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className="h-3 w-3 text-yellow-400 fill-yellow-400"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </DropdownMenuRadioItem>
+                    ))}
+                    <DropdownMenuRadioItem value="all">
+                      All ratings
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="0">
+                      No rating
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -184,7 +412,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                   <TableHead>Destination</TableHead>
                   <TableHead>Office</TableHead>
                   <TableHead>Overall Rating</TableHead>
-                  <TableHead>Last Updated</TableHead>
+                  <TableHead>Reviews</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -211,7 +439,15 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                           {employee.name}
                         </div>
                       </TableCell>
-                      <TableCell>{employee.email}</TableCell>
+                      <TableCell>
+                        <a
+                          href={`mailto:${employee.email}`}
+                          className="text-primary hover:underline"
+                          title="Send email"
+                        >
+                          {employee.email}
+                        </a>
+                      </TableCell>
                       <TableCell>
                         {employee.position || (
                           <span className="text-sm">Not assigned</span>
@@ -258,23 +494,23 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                       </TableCell>
                       <TableCell className="text-center">
                         <div className="flex flex-col items-center justify-center">
-                          <StarRating rating={employee.rating} />
+                          <StarRating rating={employee.rating} mini />
                           {employee.rating && (
-                            <span className="text-xs text-center text-muted-foreground mt-1">
+                            <span className="text-xs text-muted-foreground mt-1">
                               {(employee.rating / 2).toFixed(1)}/5
                             </span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-center text-sm ">
-                        {new Date(employee.updatedAt).toLocaleDateString(
-                          undefined,
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )}
+                      <TableCell className="text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <span className="font-medium">
+                            {employee.reviewcount || 0}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {employee.reviewcount === 1 ? "Review" : "Reviews"}
+                          </span>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -287,7 +523,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
 
       <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
         <CommandInput
-          placeholder="Search employees by name, email, position or destination..."
+          placeholder="Search employees by name."
           value={searchQuery}
           onValueChange={setSearchQuery}
         />

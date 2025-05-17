@@ -2,6 +2,7 @@
 
 import dbConnect from "@/db/db";
 import Ticket from "@/db/models/ticket";
+import User from "@/db/models/User";
 import { serializeData } from "@/utils/serialize";
 
 export const getAllTickets = async (fromDate?: Date, toDate?: Date) => {
@@ -38,5 +39,20 @@ export const getAllTickets = async (fromDate?: Date, toDate?: Date) => {
   } catch (error) {
     console.error("Error fetching tickets:", error);
     throw new Error("Could not fetch tickets");
+  }
+};
+
+export const getAllEmployees = async () => {
+  try {
+    // Connect to the database
+    await dbConnect();
+    const employees = await User.find({
+      role: { $in: ["SalesStaff", "ReservationStaff"] },
+    }).lean();
+
+    return serializeData(employees); // Also serializing the data like in getAllTickets
+  } catch (error) {
+    console.error("Error fetching employees:", error);
+    throw new Error("Could not fetch employees");
   }
 };

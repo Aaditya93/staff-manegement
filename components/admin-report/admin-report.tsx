@@ -10,10 +10,12 @@ import DatePickerWithRange from "./date-range";
 import TravelAgentTable from "./travel-agent-table";
 // Define the props interface for the component
 interface ReportPageProps {
-  tickets: ITicket[]; // Replace 'any' with your actual ticket type if available
+  tickets: ITicket[];
+  employees: any[]; // Replace 'any' with your actual employee type if available
+  // Replace 'any' with your actual ticket type if available
 }
 
-const AdminReport = async ({ tickets }: ReportPageProps) => {
+const AdminReport = async ({ tickets, employees }: ReportPageProps) => {
   const LineChartData = convertTicketsToChartData(tickets, "receivedDateTime");
   const destinationData = convertTicketsToDestinationChartData(tickets);
 
@@ -33,7 +35,7 @@ const AdminReport = async ({ tickets }: ReportPageProps) => {
           <MainLineChart data={LineChartData} />
 
           <DestinationBarChart data={destinationData} />
-          <EmployeePerformanceTables tickets={tickets} />
+          <EmployeePerformanceTables tickets={tickets} employees={employees} />
           <TravelAgentTable tickets={tickets} />
 
           <div className=" flex-col grid grid-cols-2   pt-0">

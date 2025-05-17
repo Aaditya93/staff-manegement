@@ -1,6 +1,6 @@
 "use client";
 import { ITicket } from "@/db/models/ticket";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import {
@@ -30,16 +30,54 @@ import Link from "next/link";
 
 interface EmployeePerformanceTablesProps {
   tickets: ITicket[];
+  employees: any[]; // Replace 'any' with your actual employee type if available
 }
 
+// Update the EmployeePerformance interface to include new fields
 interface EmployeePerformance {
   employeeId: string;
   employeeName: string;
+  email: string; // Added email field
   totalTickets: number;
   completedTickets: number;
   avgWaitingTime: number; // in minutes
   totalRevenue: number;
+  overallRating: number; // Added overall rating field
 }
+
+const StarRating = ({
+  rating,
+  mini = false,
+}: {
+  rating?: number;
+  mini?: boolean;
+}) => {
+  if (rating === 0)
+    return <span className={mini ? "text-xs text-center" : ""}>Not rated</span>;
+
+  // Convert to scale of 5 stars
+  const normalizedRating = rating / 2;
+  const fullStars = Math.floor(normalizedRating);
+  const hasHalfStar = normalizedRating - fullStars >= 0.5;
+  const starSize = mini ? "h-3 w-3" : "h-4 w-4";
+
+  return (
+    <div className="flex items-center text-center">
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          className={`${starSize} ${
+            i < fullStars
+              ? "text-yellow-400 fill-yellow-400"
+              : i === fullStars && hasHalfStar
+                ? "text-yellow-400 fill-yellow-400 opacity-50"
+                : "text-gray-300"
+          }`}
+        />
+      ))}
+    </div>
+  );
+};
 const today = new Date();
 const thirtyDaysAgo = new Date(today);
 thirtyDaysAgo.setDate(today.getDate() - 30);
@@ -68,6 +106,49 @@ const columns: ColumnDef<EmployeePerformance>[] = [
     ),
   },
   {
+    accessorKey: "email",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Email
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("email")}</div>
+    ),
+  },
+  // Add this as a new column in your columns array:
+  {
+    accessorKey: "overallRating",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Rating
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const rating = row.original.overallRating;
+      return (
+        <TableCell className="text-center">
+          <div className="flex flex-col items-center justify-center">
+            <StarRating rating={rating} mini={true} />
+            {rating > 0 && (
+              <span className="text-xs text-center text-muted-foreground mt-1">
+                {rating.toFixed(1)}/5
+              </span>
+            )}
+          </div>
+        </TableCell>
+      );
+    },
+  },
+  {
     accessorKey: "totalTickets",
     header: ({ column }) => (
       <Button
@@ -82,6 +163,7 @@ const columns: ColumnDef<EmployeePerformance>[] = [
       <div className="text-center">{row.getValue("totalTickets")}</div>
     ),
   },
+
   {
     accessorKey: "completedTickets",
     header: ({ column }) => (
@@ -135,7 +217,7 @@ const columns: ColumnDef<EmployeePerformance>[] = [
       const waitingTime = row.original.avgWaitingTime;
       return (
         <div className="text-center">
-          <Badge variant="secondary">{formatTime(waitingTime)}</Badge>
+          {/* <Badge variant="secondary">{formatTime(waitingTime)}</Badge> */}
         </div>
       );
     },
@@ -292,6 +374,7 @@ function DataTable({ data }: { data: EmployeePerformance[] }) {
 
 const EmployeePerformanceTables = ({
   tickets,
+  employees,
 }: EmployeePerformanceTablesProps) => {
   // Filter tickets by employee type
   const salesTickets = tickets.filter(
@@ -302,10 +385,15 @@ const EmployeePerformanceTables = ({
   );
 
   // Process data for sales employees
-  const salesPerformance = processEmployeeData(salesTickets, "sales");
+  const salesPerformance = processEmployeeData(
+    salesTickets,
+    "sales",
+    employees
+  );
   const reservationPerformance = processEmployeeData(
     reservationTickets,
-    "reservation"
+    "reservation",
+    employees
   );
 
   return (
@@ -344,11 +432,12 @@ const EmployeePerformanceTables = ({
     </div>
   );
 };
+export default EmployeePerformanceTables;
 
-// Helper function to process employee data from tickets
 function processEmployeeData(
   tickets: ITicket[],
-  type: "sales" | "reservation"
+  type: "sales" | "reservation",
+  employees: any[] // Add employees parameter
 ): EmployeePerformance[] {
   const employeeMap = new Map<string, EmployeePerformance>();
 
@@ -363,14 +452,40 @@ function processEmployeeData(
     const employeeId = personInfo.id;
     const employeeName = personInfo.name;
 
+    // Find the matching employee in the employees array
+    const employeeData = employees.find((emp) => emp._id === employeeId);
+
+    // Default values if employee not found
+    const email = employeeData?.email || "N/A";
+
+    // Calculate overall rating if available
+    let overallRating = 0;
+    if (employeeData) {
+      const metrics = [
+        employeeData.attitude || 0,
+        employeeData.knowledge || 0,
+        employeeData.speed || 0,
+      ];
+
+      // Calculate average of available metrics (non-zero)
+      const validMetrics = metrics.filter((m) => m > 0);
+      overallRating =
+        validMetrics.length > 0
+          ? validMetrics.reduce((sum, val) => sum + val, 0) /
+            validMetrics.length
+          : 0;
+    }
+
     if (!employeeMap.has(employeeId)) {
       employeeMap.set(employeeId, {
         employeeId,
         employeeName,
+        email,
         totalTickets: 0,
         completedTickets: 0,
         avgWaitingTime: 0,
         totalRevenue: 0,
+        overallRating,
       });
     }
 
@@ -410,16 +525,3 @@ function processEmployeeData(
 
   return Array.from(employeeMap.values());
 }
-
-// Helper function to format time in minutes
-function formatTime(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const mins = Math.round(minutes % 60);
-
-  if (hours > 0) {
-    return `${hours}h ${mins}m`;
-  }
-  return `${mins}m`;
-}
-
-export default EmployeePerformanceTables;
