@@ -106,15 +106,21 @@ const DataTable = <TData, TValue>({
       <div className="flex items-center py-4 gap-4">
         <Input
           placeholder={`Search ${
-            searchSelections === "companyName"
-              ? "by company "
-              : searchSelections === "ticket"
-                ? "by ticket ID"
-                : searchSelections === "destination"
-                  ? "by destination"
-                  : searchSelections === "status"
-                    ? "by status"
-                    : "..."
+            searchSelections === "ticket"
+              ? "by ticket ID"
+              : searchSelections === "destination"
+                ? "by destination"
+                : searchSelections === "status"
+                  ? "by status"
+                  : searchSelections === "reservationInCharge"
+                    ? "by reservation staff"
+                    : searchSelections === "salesInCharge"
+                      ? "by sales staff"
+                      : searchSelections === "arrival"
+                        ? "by arrival date"
+                        : searchSelections === "departure"
+                          ? "by departure date"
+                          : "..."
           }`}
           value={
             (table

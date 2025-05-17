@@ -185,6 +185,30 @@ const AppSidebar = ({
             key: "status",
             items: [],
           },
+          {
+            title: "Reservation Staff",
+            key: "reservationInCharge",
+
+            items: [],
+          },
+          {
+            title: "Sales Staff",
+            key: "salesInCharge",
+
+            items: [],
+          },
+          {
+            title: "Arrival Date",
+            key: "arrival",
+
+            items: [],
+          },
+          {
+            title: "Departure Date",
+            key: "departure",
+
+            items: [],
+          },
         ],
       },
     ],

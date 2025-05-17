@@ -111,14 +111,22 @@ const DataTable = <TData, TValue>({
         <Input
           placeholder={`Search ${
             searchSelections === "companyName"
-              ? "by company "
+              ? "by company"
               : searchSelections === "ticket"
                 ? "by ticket ID"
                 : searchSelections === "destination"
                   ? "by destination"
                   : searchSelections === "status"
                     ? "by status"
-                    : "..."
+                    : searchSelections === "reservationInCharge"
+                      ? "by reservation staff"
+                      : searchSelections === "salesInCharge"
+                        ? "by sales staff"
+                        : searchSelections === "arrival"
+                          ? "by arrival date"
+                          : searchSelections === "departure"
+                            ? "by departure date"
+                            : "..."
           }`}
           value={
             (table
