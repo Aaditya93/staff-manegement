@@ -5,7 +5,7 @@ import Report from "@/db/models/report";
 import { serializeData } from "@/utils/serialize";
 import { revalidatePath } from "next/cache";
 
-export const getAllReports = async () => {
+export const getAllReports = async (fromDate?: Date, toDate?: Date) => {
   try {
     await dbConnect();
     const session = await auth();
@@ -22,7 +22,30 @@ export const getAllReports = async () => {
       travelAgentId?: string;
       salesId?: string;
       reservationId?: string;
+      createdAt?: {
+        $gte?: Date;
+        $lte?: Date;
+      };
     } = { resolvedAt: { $exists: false } };
+
+    // Add date filters if provided
+    if (fromDate instanceof Date || toDate instanceof Date) {
+      baseQuery.createdAt = {};
+
+      if (fromDate instanceof Date) {
+        // Set start of day for fromDate
+        const startDate = new Date(fromDate);
+        startDate.setHours(0, 0, 0, 0);
+        baseQuery.createdAt.$gte = startDate;
+      }
+
+      if (toDate instanceof Date) {
+        // Set end of day for toDate
+        const endDate = new Date(toDate);
+        endDate.setHours(23, 59, 59, 999);
+        baseQuery.createdAt.$lte = endDate;
+      }
+    }
 
     // Add role-specific filters directly to the base query
     if (userRole === "TravelAgent") {
@@ -32,11 +55,12 @@ export const getAllReports = async () => {
     } else if (userRole === "ReservationStaff") {
       baseQuery.reservationId = userId;
     }
+
     // Execute the query with the proper filter structure
     const reports = await Report.find(baseQuery)
       .lean()
       .populate([
-        { path: "travelAgentId", select: "name email" }, // Add select to limit fields
+        { path: "travelAgentId", select: "name email" },
         { path: "salesId", select: "name email" },
         { path: "reservationId", select: "name email" },
       ])

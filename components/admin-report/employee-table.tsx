@@ -42,9 +42,36 @@ interface EmployeePerformance {
   completedTickets: number;
   avgWaitingTime: number; // in minutes
   totalRevenue: number;
+  totalWaitingTime: number; // Add this to track total waiting time
+  ticketsWithWaitingTime: number; // Add this to count tickets with waiting time
   overallRating: number; // Added overall rating field
 }
+// Add this function before the EmployeePerformanceTables component
 
+function formatTime(minutes: number): string {
+  if (!minutes || isNaN(minutes)) return "0m";
+
+  // For very small values (less than 1 minute)
+  if (minutes < 1) {
+    const seconds = Math.round(minutes * 60);
+    return `${seconds}s`;
+  }
+
+  if (minutes < 60) {
+    // Just minutes
+    return `${Math.round(minutes)}m`;
+  } else {
+    // Hours and minutes
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = Math.round(minutes % 60);
+
+    if (remainingMinutes === 0) {
+      return `${hours}h`;
+    } else {
+      return `${hours}h ${remainingMinutes}m`;
+    }
+  }
+}
 const StarRating = ({
   rating,
   mini = false,
@@ -217,7 +244,7 @@ const columns: ColumnDef<EmployeePerformance>[] = [
       const waitingTime = row.original.avgWaitingTime;
       return (
         <div className="text-center">
-          {/* <Badge variant="secondary">{formatTime(waitingTime)}</Badge> */}
+          <Badge variant="secondary">{formatTime(waitingTime)}</Badge>
         </div>
       );
     },
@@ -485,6 +512,8 @@ function processEmployeeData(
         completedTickets: 0,
         avgWaitingTime: 0,
         totalRevenue: 0,
+        totalWaitingTime: 0, // Initialize total waiting time
+        ticketsWithWaitingTime: 0, // Initialize count of tickets with waiting time
         overallRating,
       });
     }
@@ -497,11 +526,10 @@ function processEmployeeData(
 
       // Use waitingTime directly if available or calculate it
       if (ticket.waitingTime) {
-        const newAvg =
-          (employee.avgWaitingTime * (employee.completedTickets - 1) +
-            ticket.waitingTime) /
-          employee.completedTickets;
-        employee.avgWaitingTime = newAvg;
+        employee.totalWaitingTime += ticket.waitingTime;
+        employee.ticketsWithWaitingTime += 1;
+        employee.avgWaitingTime =
+          employee.totalWaitingTime / employee.ticketsWithWaitingTime;
       }
       // Fall back to calculating from timestamps
       else if (ticket.receivedDateTime && ticket.sentDateTime) {
@@ -510,10 +538,10 @@ function processEmployeeData(
             new Date(ticket.receivedDateTime).getTime()) /
           (1000 * 60); // Convert to minutes
 
+        employee.totalWaitingTime += waitingTime;
+        employee.ticketsWithWaitingTime += 1;
         employee.avgWaitingTime =
-          (employee.avgWaitingTime * (employee.completedTickets - 1) +
-            waitingTime) /
-          employee.completedTickets;
+          employee.totalWaitingTime / employee.ticketsWithWaitingTime;
       }
 
       // Add cost to total revenue

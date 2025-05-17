@@ -31,6 +31,14 @@ import {
 import { format } from "date-fns";
 import Link from "next/link";
 import { resolveReport } from "@/actions/report/getReport";
+import DatePickerWithRange from "./date-range";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface StaffMember {
   _id: string;
@@ -60,6 +68,26 @@ interface ReportListProps {
 const ReportList = ({ reports }: ReportListProps) => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<string>("all");
+
+  // Get unique travel agents from reports
+  const travelAgents = React.useMemo(() => {
+    const uniqueAgents = new Map();
+    reports.forEach((report) => {
+      if (report.travelAgentId) {
+        uniqueAgents.set(report.travelAgentId._id, report.travelAgentId);
+      }
+    });
+    return Array.from(uniqueAgents.values());
+  }, [reports]);
+
+  // Filter reports by selected agent
+  const filteredReports = React.useMemo(() => {
+    if (selectedAgent === "all") return reports;
+    return reports.filter(
+      (report) => report.travelAgentId._id === selectedAgent
+    );
+  }, [reports, selectedAgent]);
 
   const handleViewTicket = (ticketId: string) => {
     // Navigate to ticket page
@@ -96,20 +124,42 @@ const ReportList = ({ reports }: ReportListProps) => {
       >
         <CardHeader className="p-4 sm:p-3 bg-primary rounded-t-lg">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
-            <CardTitle className="text-xl font-bold text-center sm:text-left text-primary-foreground">
-              Travel Agent Complaints
+            <CardTitle className="text-xl font-bold text-center sm:text-left text-primary-foreground flex flex-col sm:flex-row items-center gap-2">
+              <span>Travel Agent Complaints</span>
+              <Badge variant="secondary" className="text-primary ml-0 sm:ml-2">
+                {filteredReports.length} Total Complaints
+              </Badge>
             </CardTitle>
-            <Badge variant="secondary" className="text-primary">
-              {reports.length} Total Complaints
-            </Badge>
+
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+                <SelectTrigger className="w-[180px] bg-white text-primary">
+                  <SelectValue placeholder="Select Agent" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Agents</SelectItem>
+                  {travelAgents.map((agent) => (
+                    <SelectItem key={agent._id} value={agent._id}>
+                      {agent.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <DatePickerWithRange />
+            </div>
           </div>
         </CardHeader>
 
         <CardContent
-          className={`p-0 flex-grow overflow-auto ${reports.length === 0 ? "flex items-center justify-center min-h-[200px]" : ""}`}
+          className={`p-0 flex-grow overflow-auto ${filteredReports.length === 0 ? "flex items-center justify-center min-h-[200px]" : ""}`}
         >
           <div>
-            {reports.map((report) => (
+            {filteredReports.length === 0 && (
+              <div className="text-center p-6 text-muted-foreground">
+                No complaints found for the selected agent
+              </div>
+            )}
+            {filteredReports.map((report) => (
               <div
                 key={report._id.toString()}
                 className="p-4 hover:bg-primary-foreground transition-colors duration-200 relative border-b"
