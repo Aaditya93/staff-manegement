@@ -37,6 +37,7 @@ interface UserData {
   destination: string;
   department?: string;
   status?: string;
+  phoneNumber?: string; // Add phone number field
 
   // Add potential fields if they exist in the user data
   office?: string;
@@ -60,6 +61,7 @@ export function EditProfile({ userData }: EditProfileProps) {
   const [name, setName] = useState(userData.name || "");
   const [accountType, setAccountType] = useState(userData.role || ""); // Default or from userData
   const [selectedOffice, setSelectedOffice] = useState(userData.office || ""); // Initialize office state
+  const [phoneNumber, setPhoneNumber] = useState(userData.phoneNumber || ""); // Initialize phone number state
   const [selectedPosition, setSelectedPosition] = useState(
     userData.position || ""
   ); // Initialize position state
@@ -157,7 +159,8 @@ export function EditProfile({ userData }: EditProfileProps) {
         accountType,
         selectedOffice, // Pass office
         selectedPosition, // Pass position
-        selectedDepartment // Pass department
+        selectedDepartment, // Pass department
+        phoneNumber
       );
 
       if (result.success) {
@@ -217,17 +220,28 @@ export function EditProfile({ userData }: EditProfileProps) {
           <div className="px-6 pb-6 pt-4">
             {/* <h1 className="mb-6 text-xl font-semibold">Edit Profile</h1> */}
             <form className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor={`${id}-full-name`}>Full name</Label>
-
-                <Input
-                  id={`${id}-full-name`}
-                  placeholder="Full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  type="text"
-                  required
-                />
+              <div className=" grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`${id}-full-name`}>Full name</Label>
+                  <Input
+                    id={`${id}-full-name`}
+                    placeholder="Full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    type="text"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`${id}-phone-number`}>Phone Number</Label>
+                  <Input
+                    id={`${id}-phone-number`}
+                    placeholder="Phone number"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    type="tel"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">

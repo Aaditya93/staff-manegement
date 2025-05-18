@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import dbConnect from "../db";
+import { number } from "zod";
 const accountSchema = new mongoose.Schema(
   {
     accessToken: String,
@@ -55,6 +56,9 @@ const userSchema = new mongoose.Schema(
     reviewcount: {
       type: Number,
       default: 0,
+    },
+    phoneNumber: {
+      type: String,
     },
 
     position: {

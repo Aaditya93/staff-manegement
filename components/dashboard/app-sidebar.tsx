@@ -12,6 +12,7 @@ import { TfiPieChart } from "react-icons/tfi";
 import { NavProjects } from "../sidebar/nav-projects";
 import { CiChat1 } from "react-icons/ci";
 import NavUser from "../sidebar/nav-user";
+import { CiViewList } from "react-icons/ci";
 import {
   Sidebar,
   SidebarContent,
@@ -76,6 +77,11 @@ const AppSidebar = ({
       name: "Admin Panel",
       url: `/admin-panel`,
       icon: MdOutlineAdminPanelSettings,
+    },
+    {
+      name: "Employees List",
+      url: `/employee-list`,
+      icon: CiViewList,
     },
   ];
 

@@ -12,7 +12,8 @@ export async function updateProfile(
   accountType?: string,
   office?: string,
   position?: string,
-  department?: string
+  department?: string,
+  phoneNumber?: string
 ) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -30,6 +31,7 @@ export async function updateProfile(
         destination: countries, // Now storing array of destinations
         role: accountType, // Save the account type
         department: department,
+        phoneNumber: phoneNumber,
       },
       { new: true } // Return the updated document
     );

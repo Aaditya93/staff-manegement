@@ -24,7 +24,6 @@ interface EmailEntry {
   timestamp: Date; // Optional timestamp for email entries
 }
 
-// Add interfaces for personnel types
 interface PersonnelInfo {
   id?: string;
   name: string;
@@ -169,9 +168,22 @@ const ReviewSchema = new Schema(
       max: 5,
       required: true,
     },
-
-    reviewText: {
+    reviewTitle: {
       type: String,
+      required: false,
+    },
+
+    positiveText: {
+      type: String,
+      required: false,
+    },
+    negativeText: {
+      type: String,
+      required: false,
+    },
+    userRole: {
+      type: String,
+      required: false,
     },
     reviewDate: {
       type: Date,

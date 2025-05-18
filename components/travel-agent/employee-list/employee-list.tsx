@@ -64,6 +64,7 @@ interface Employee {
   speed?: number;
   reviewcount?: number;
   status?: string;
+  phoneNumber?: string;
   department?: string;
 }
 
@@ -129,6 +130,8 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [officeFilter, setOfficeFilter] = useState<string>("all");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
 
   // Calculate the overall rating for each employee
   const employeesWithRating = useMemo(() => {
@@ -164,10 +167,13 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
   }, [employees]);
 
   // Extract unique filter options
+  // Extract unique filter options
   const filterOptions = useMemo(() => {
     const destinations = new Set<string>();
     const positions = new Set<string>();
     const offices = new Set<string>();
+    const departments = new Set<string>();
+    const statuses = new Set<string>();
 
     employeesWithRating.forEach((employee) => {
       if (Array.isArray(employee.destination)) {
@@ -178,15 +184,20 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
 
       if (employee.position) positions.add(employee.position);
       if (employee.office) offices.add(employee.office);
+      if (employee.department) departments.add(employee.department);
+      if (employee.status) statuses.add(employee.status);
     });
 
     return {
       destinations: Array.from(destinations).sort(),
       positions: Array.from(positions).sort(),
       offices: Array.from(offices).sort(),
+      departments: Array.from(departments).sort(),
+      statuses: Array.from(statuses).sort(),
     };
   }, [employeesWithRating]);
 
+  // Apply all filters
   // Apply all filters
   const filteredEmployees = useMemo(() => {
     return employeesWithRating.filter((employee) => {
@@ -231,6 +242,18 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
 
       if (!matchesOffice) return false;
 
+      // Department filter
+      const matchesDepartment =
+        departmentFilter === "all" || employee.department === departmentFilter;
+
+      if (!matchesDepartment) return false;
+
+      // Status filter
+      const matchesStatus =
+        statusFilter === "all" || employee.status === statusFilter;
+
+      if (!matchesStatus) return false;
+
       // Rating filter
       if (ratingFilter !== "all") {
         const ratingValue = parseInt(ratingFilter);
@@ -256,14 +279,17 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
     positionFilter,
     officeFilter,
     ratingFilter,
+    statusFilter,
+    departmentFilter,
   ]);
-
   // Check if any filters are active
   const hasActiveFilters =
     destinationFilter !== "all" ||
     positionFilter !== "all" ||
     officeFilter !== "all" ||
-    ratingFilter !== "all";
+    ratingFilter !== "all" ||
+    statusFilter !== "all" ||
+    departmentFilter !== "all";
 
   // Reset all filters
   const resetFilters = () => {
@@ -271,6 +297,8 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
     setPositionFilter("all");
     setOfficeFilter("all");
     setRatingFilter("all");
+    setStatusFilter("all");
+    setDepartmentFilter("all");
   };
 
   return (
@@ -291,28 +319,63 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                size="sm"
-                className="h-9 text-sm flex items-center gap-2"
+                className="h-9 text-sm flex items-left  gap-2 min-w-[140px] max-w-[180px]"
                 onClick={() => setCommandOpen(true)}
               >
                 <Search className="h-4 w-4" />
                 <span>Search</span>
               </Button>
-
-              {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={resetFilters}
-                  className="h-9 text-sm flex items-center gap-1"
-                >
-                  <X className="h-4 w-4" /> Clear filters
-                </Button>
-              )}
             </div>
 
-            <div className="flex items-center gap-2 flex-1 flex-wrap justify-end">
+            <div className="flex items-center gap-2 flex-1 flex-wrap ">
               {/* Destination filter */}
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-9 text-sm min-w-[140px] max-w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all"> Status</SelectItem>
+                  <SelectItem value="Available">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-green-500"></div>
+                      Available
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="Busy">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-red-500"></div>
+                      Busy
+                    </div>
+                  </SelectItem>
+                  {filterOptions.statuses
+                    .filter(
+                      (status) => status !== "Available" && status !== "Busy"
+                    )
+                    .map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+
+              {/* Department filter */}
+              <Select
+                value={departmentFilter}
+                onValueChange={setDepartmentFilter}
+              >
+                <SelectTrigger className="h-9 text-sm min-w-[140px] max-w-[180px]">
+                  <SelectValue placeholder="Department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Departments</SelectItem>
+                  {filterOptions.departments.map((department) => (
+                    <SelectItem key={department} value={department}>
+                      {department}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select
                 value={destinationFilter}
                 onValueChange={setDestinationFilter}
@@ -321,7 +384,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                   <SelectValue placeholder="Destination" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All destinations</SelectItem>
+                  <SelectItem value="all">Destinations</SelectItem>
                   {filterOptions.destinations.map((destination) => (
                     <SelectItem key={destination} value={destination}>
                       {destination}
@@ -336,7 +399,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                   <SelectValue placeholder="Position" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All positions</SelectItem>
+                  <SelectItem value="all">Positions</SelectItem>
                   {filterOptions.positions.map((position) => (
                     <SelectItem key={position} value={position}>
                       {position}
@@ -351,7 +414,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                   <SelectValue placeholder="Office" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All offices</SelectItem>
+                  <SelectItem value="all">Offices</SelectItem>
                   {filterOptions.offices.map((office) => (
                     <SelectItem key={office} value={office}>
                       {office}
@@ -408,6 +471,18 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={resetFilters}
+                  className="h-9 w-9 text-sm flex items-center justify-center text-red-500"
+                  title="Clear filters"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -419,6 +494,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                   <TableHead>Sr.</TableHead>
                   <TableHead>Employee</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Phone Number</TableHead>
                   <TableHead>Position</TableHead>
                   <TableHead>Destination</TableHead>
                   <TableHead>Office</TableHead>
@@ -464,6 +540,11 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                         >
                           {employee.email}
                         </a>
+                      </TableCell>
+                      <TableCell>
+                        {employee.phoneNumber || (
+                          <span className="text-sm">Not assigned</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {employee.position || (
