@@ -38,6 +38,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getConversationById } from "@/actions/travel-agent/employee-list";
 
 interface Employee {
   _id: string;
@@ -406,6 +407,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead>Sr.</TableHead>
                   <TableHead>Employee</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Position</TableHead>
@@ -413,6 +415,7 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                   <TableHead>Office</TableHead>
                   <TableHead>Overall Rating</TableHead>
                   <TableHead>Reviews</TableHead>
+                  <TableHead>Chat</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -426,8 +429,11 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredEmployees.map((employee) => (
+                  filteredEmployees.map((employee, index) => (
                     <TableRow key={employee._id} className="hover:bg-muted/50">
+                      <TableCell className="text-center font-medium text-muted-foreground">
+                        {index + 1}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar>
@@ -511,6 +517,45 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                             {employee.reviewcount === 1 ? "Review" : "Reviews"}
                           </span>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-primary hover:bg-primary/10 transition-all flex items-center gap-1.5"
+                          onClick={async () => {
+                            try {
+                              // Show loading state
+                              const conversationId = await getConversationById(
+                                employee._id
+                              );
+                              // Redirect to conversation
+                              window.location.href = `/travel-agent/chat/${conversationId}?150`;
+                            } catch (error) {
+                              console.error(
+                                "Failed to get conversation:",
+                                error
+                              );
+                              // Handle error (could add toast notification here)
+                            }
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide lucide-message-circle"
+                          >
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                          </svg>
+                          Chat
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))

@@ -5,7 +5,7 @@ import AppSidebar from "@/components/travel-agent/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 const EmployeesListPage = async () => {
   const employees = await getAllEmployees();
-  console.log("employees", employees);
+
   return (
     <SidebarProvider>
       <AppSidebar />

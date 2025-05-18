@@ -16,7 +16,8 @@ import { ImagePlus, Plus, Trash, X } from "lucide-react";
 import Image from "next/image";
 import { useId, useState } from "react";
 import { toast } from "sonner";
-
+import { Switch } from "@/components/ui/switch";
+import { updateUserStatus } from "@/actions/edit-profile/edit-profile";
 import { updateProfile } from "@/actions/edit-profile/edit-profile";
 
 interface Account {
@@ -34,6 +35,8 @@ interface UserData {
   accounts: Account[];
   role: string;
   destination: string;
+  department?: string;
+  status?: string;
 
   // Add potential fields if they exist in the user data
   office?: string;
@@ -60,6 +63,9 @@ export function EditProfile({ userData }: EditProfileProps) {
   const [selectedPosition, setSelectedPosition] = useState(
     userData.position || ""
   ); // Initialize position state
+  const [selectedDepartment, setSelectedDepartment] = useState(
+    userData.department || ""
+  ); // Initialize department state
 
   // Get unique emails from the accounts array
   const uniqueEmails = [
@@ -68,6 +74,38 @@ export function EditProfile({ userData }: EditProfileProps) {
   const [emails, setEmails] = useState(uniqueEmails);
   const [newEmailInput, setNewEmailInput] = useState("");
   const [isAddingEmail, setIsAddingEmail] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(
+    userData.status === "Available"
+  );
+
+  // Add this function to handle status changes
+  const handleStatusChange = async (checked: boolean) => {
+    setIsAvailable(checked);
+    const newStatus = checked ? "Available" : "Busy";
+
+    try {
+      const result = await updateUserStatus(newStatus);
+
+      if (result.success) {
+        toast.success("Status updated", {
+          description: `You are now ${newStatus}`,
+        });
+      } else {
+        toast.error("Failed to update status", {
+          description: result.message,
+        });
+        // Revert UI state if server update failed
+        setIsAvailable(!checked);
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("An error occurred", {
+        description: "Could not update your status",
+      });
+      // Revert UI state if there was an error
+      setIsAvailable(!checked);
+    }
+  };
 
   const updateEmail = (index: number, value: string) => {
     const newEmails = [...emails];
@@ -118,7 +156,8 @@ export function EditProfile({ userData }: EditProfileProps) {
         name,
         accountType,
         selectedOffice, // Pass office
-        selectedPosition // Pass position
+        selectedPosition, // Pass position
+        selectedDepartment // Pass department
       );
 
       if (result.success) {
@@ -140,23 +179,47 @@ export function EditProfile({ userData }: EditProfileProps) {
 
   return (
     <div className="w-full max-w-3xl mx-auto ">
-      <div className="overflow-hidden rounded-lg border border-border bg-background shadow-sm">
-        <div className="overflow-y-auto">
+      <div className=" rounded-lg border border-border bg-background shadow-sm">
+        <div className="overflow-y-auto ">
           <ProfileBg
             defaultImage={
               userData.backgroundImage || "https://originui.com/profile-bg.jpg"
             }
           />
-          <Avatar
-            defaultImage={
-              userData.image || "https://originui.com/avatar-72-01.jpg"
-            }
-          />
+          <div className="grid grid-cols-2">
+            <Avatar
+              defaultImage={
+                userData.image || "https://originui.com/avatar-72-01.jpg"
+              }
+            />
+
+            <div className="flex items-center justify-end px-6 ">
+              <div className="flex items-center gap-2 text-md">
+                <div
+                  className={`h-2.5 w-2.5 rounded-full ${isAvailable ? "bg-green-500" : "bg-red-500"}`}
+                ></div>
+                <Label
+                  htmlFor="status-toggle"
+                  className="text-sm whitespace-nowrap"
+                >
+                  {isAvailable ? "Available" : "Busy"}
+                </Label>
+                <Switch
+                  id="status-toggle"
+                  checked={isAvailable}
+                  onCheckedChange={handleStatusChange}
+                  className="ml-1.5  "
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="px-6 pb-6 pt-4">
-            <h1 className="mb-6 text-xl font-semibold">Edit Profile</h1>
+            {/* <h1 className="mb-6 text-xl font-semibold">Edit Profile</h1> */}
             <form className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor={`${id}-full-name`}>Full name</Label>
+
                 <Input
                   id={`${id}-full-name`}
                   placeholder="Full name"
@@ -268,6 +331,25 @@ export function EditProfile({ userData }: EditProfileProps) {
                         Branch Office B
                       </SelectItem>
                       {/* Add more offices as needed */}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`${id}-department`}>Department</Label>
+                  <Select
+                    value={selectedDepartment}
+                    onValueChange={setSelectedDepartment}
+                  >
+                    <SelectTrigger id={`${id}-department`} className="w-full">
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Director">Director</SelectItem>
+                      <SelectItem value="Sales Manager">
+                        Sales Manager
+                      </SelectItem>
+                      <SelectItem value="Reservation">Reservation</SelectItem>
+                      <SelectItem value="Accounting">Accounting</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

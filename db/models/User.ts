@@ -33,6 +33,15 @@ const userSchema = new mongoose.Schema(
     office: {
       type: String,
     },
+    department: {
+      type: String,
+    },
+    bio: {
+      type: String,
+    },
+    status: {
+      type: String,
+    },
     attitude: {
       type: Number,
     },
