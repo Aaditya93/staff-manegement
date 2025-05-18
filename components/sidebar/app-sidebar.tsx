@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { LifeBuoy, Send, SquareTerminal } from "lucide-react";
-import { CiBoxList, CiMail } from "react-icons/ci";
+import { CiMail } from "react-icons/ci";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import { CiViewTable } from "react-icons/ci";
 import { GoReport } from "react-icons/go";
@@ -12,6 +12,7 @@ import { TfiPieChart } from "react-icons/tfi";
 import { NavProjects } from "./nav-projects";
 import { CiChat1 } from "react-icons/ci";
 import NavUser from "./nav-user";
+import { CiViewList } from "react-icons/ci";
 import {
   Sidebar,
   SidebarContent,
@@ -69,7 +70,7 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
     {
       name: "Employees List",
       url: `/employee-list`,
-      icon: CiBoxList,
+      icon: CiViewList,
     },
   ];
 
@@ -159,7 +160,7 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <a href="/home">
                 <div className="flex aspect-square size-8 items-center  justify-center rounded-lg bg-primary-foreground text-sidebar-primary-foreground">
                   <Image
                     src="/logo.png"

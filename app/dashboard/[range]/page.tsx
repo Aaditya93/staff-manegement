@@ -1,4 +1,4 @@
-import { getAllTicketsByEmail } from "@/actions/tickets/tickets";
+import { getAllTicketsByEmail, getStatus } from "@/actions/tickets/tickets";
 import Dashboard from "@/components/dashboard/dashboard";
 import { serializeData } from "@/utils/serialize";
 function extractDateRange(dateString: string) {
@@ -44,11 +44,12 @@ const DashboardPage = async ({
   const dateRange = extractDateRange(range);
 
   const tickets = await getAllTicketsByEmail(dateRange.from, dateRange.to);
+  const status = await getStatus();
 
   const serializedTickets = await serializeData(tickets);
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mt-4 border-b">
-      <Dashboard tickets={serializedTickets} />
+      <Dashboard tickets={serializedTickets} status={status} />
     </div>
   );
 };

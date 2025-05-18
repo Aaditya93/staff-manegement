@@ -3,6 +3,7 @@ import dbConnect from "@/db/db";
 import Ticket from "@/db/models/ticket";
 import { auth } from "@/auth";
 import { serializeData } from "@/utils/serialize";
+import User from "@/db/models/User";
 
 export const getAllTicketsByEmail = async (fromDate?: Date, toDate?: Date) => {
   try {
@@ -87,6 +88,21 @@ export const getTicketById = async (id: string) => {
     return serializedTicket;
   } catch (error) {
     console.error("Error fetching ticket by ID:", error);
+    throw error;
+  }
+};
+
+export const getStatus = async () => {
+  try {
+    await dbConnect();
+    const session = await auth();
+    const status = await User.findById(session?.user?.id)
+      .select("status")
+      .lean();
+
+    return status.status;
+  } catch (error) {
+    console.error("Error fetching ticket status:", error);
     throw error;
   }
 };

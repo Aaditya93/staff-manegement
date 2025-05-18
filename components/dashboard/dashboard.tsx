@@ -2,23 +2,50 @@
 import { useState } from "react";
 import { ColumnFiltersState } from "@tanstack/react-table";
 import AppSidebar from "./app-sidebar";
-
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DataTable from "./data-table";
 import { columns } from "./columns";
 import { mapTicketsToTableData } from "@/utils/ticket-data";
 import { ITicket } from "@/db/models/ticket";
-
+import { Switch } from "../ui/switch";
+import { Label } from "../ui/label";
+import { updateUserStatus } from "@/actions/edit-profile/edit-profile";
+import { toast } from "sonner";
 interface DashboardProps {
   tickets?: ITicket[];
+  status?: string;
 }
 
-const Dashboard = ({ tickets = [] }: DashboardProps) => {
+const Dashboard = ({ tickets = [], status }: DashboardProps) => {
   const [searchSelections, setSearchSelections] = useState<string>("ticket");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [isAvailable, setIsAvailable] = useState(status === "Available");
 
   // Use the mapped ticket data if available, otherwise fall back to sample data
   const tableData = tickets.length > 0 ? mapTicketsToTableData(tickets) : [];
+
+  const handleStatusChange = async (checked: boolean) => {
+    setIsAvailable(checked);
+    const newStatus = checked ? "Available" : "Busy";
+
+    try {
+      // You'll need to implement this function
+      const result = await updateUserStatus(newStatus);
+
+      if (result.success) {
+        toast.success("Status updated");
+      } else {
+        toast.error("Failed to update status");
+        // Revert UI state if server update failed
+        setIsAvailable(!checked);
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("An error occurred");
+      // Revert UI state if there was an error
+      setIsAvailable(!checked);
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -27,7 +54,26 @@ const Dashboard = ({ tickets = [] }: DashboardProps) => {
         setSearchSelections={setSearchSelections}
       />
       <SidebarInset>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex flex-1 flex-col  p-4">
+          <div className="flex items-center ">
+            <div className="flex items-center gap-2 text-md">
+              <div
+                className={`h-2.5 w-2.5 rounded-full ${isAvailable ? "bg-green-500" : "bg-red-500"}`}
+              ></div>
+              <Label
+                htmlFor="status-toggle"
+                className="text-sm whitespace-nowrap"
+              >
+                {isAvailable ? "Available" : "Busy"}
+              </Label>
+              <Switch
+                id="status-toggle"
+                checked={isAvailable}
+                onCheckedChange={handleStatusChange}
+                className="ml-1.5"
+              />
+            </div>
+          </div>
           <DataTable
             columnFilters={columnFilters}
             setColumnFilters={setColumnFilters}
