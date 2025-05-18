@@ -39,7 +39,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getConversationById } from "@/actions/travel-agent/employee-list";
+// Add these imports at the top with your other imports
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
+import { MapPin } from "lucide-react";
 interface Employee {
   _id: string;
   name: string;
@@ -56,6 +63,8 @@ interface Employee {
   knowledge?: number;
   speed?: number;
   reviewcount?: number;
+  status?: string;
+  department?: string;
 }
 
 interface EmployeeListClientProps {
@@ -413,9 +422,11 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                   <TableHead>Position</TableHead>
                   <TableHead>Destination</TableHead>
                   <TableHead>Office</TableHead>
+                  <TableHead>Department</TableHead>
                   <TableHead>Overall Rating</TableHead>
                   <TableHead>Reviews</TableHead>
                   <TableHead>Chat</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -461,24 +472,57 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                       </TableCell>
 
                       <TableCell>
-                        <div className="flex flex-col gap-1">
-                          {employee.destination ? (
-                            Array.isArray(employee.destination) ? (
-                              employee.destination.map(
-                                (dest: string, index: number) => (
-                                  <Badge
-                                    key={index}
-                                    className="text-xs text-center px-2 py-0.5 bg-primary/10 text-primary rounded-full inline-block"
-                                  >
-                                    {dest}
-                                  </Badge>
-                                )
-                              )
-                            ) : (
-                              <Badge className="text-xs text-center px-2 py-0.5 bg-primary/10 text-primary rounded-full inline-block">
-                                {employee.destination}
-                              </Badge>
-                            )
+                        {employee.destination ? (
+                          Array.isArray(employee.destination) ? (
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <div className="flex items-center gap-1.5 cursor-pointer">
+                                  <span className="text-sm font-medium">
+                                    {employee.destination.length > 0 && (
+                                      <span>{employee.destination[0]}</span>
+                                    )}
+                                  </span>
+                                  {employee.destination.length > 1 && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      +{employee.destination.length - 1}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-80 p-4">
+                                <div className="space-y-2">
+                                  <div className="flex flex-wrap gap-1.5 pt-1">
+                                    {employee.destination.map((dest, index) => (
+                                      <Badge
+                                        key={index}
+                                        className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full inline-block"
+                                      >
+                                        <MapPin className="h-3 w-3 mr-1 inline" />
+                                        {dest}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              </HoverCardContent>
+                            </HoverCard>
+                          ) : (
+                            <Badge className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full inline-block">
+                              {employee.destination}
+                            </Badge>
+                          )
+                        ) : (
+                          <span className="text-muted-foreground text-xs">
+                            Not assigned
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {employee.office ? (
+                            <>{employee.office}</>
                           ) : (
                             <span className="text-muted-foreground text-sm">
                               Not assigned
@@ -486,11 +530,10 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                           )}
                         </div>
                       </TableCell>
-
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          {employee.office ? (
-                            <>{employee.office}</>
+                          {employee.department ? (
+                            <>{employee.department}</>
                           ) : (
                             <span className="text-muted-foreground text-sm">
                               Not assigned
@@ -556,6 +599,33 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                           </svg>
                           Chat
                         </Button>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          {employee.status ? (
+                            <div className="flex items-center justify-center gap-1.5">
+                              <div
+                                className={`h-2.5 w-2.5 rounded-full ${
+                                  employee.status === "Available"
+                                    ? "bg-green-500"
+                                    : "bg-red-500"
+                                }`}
+                              ></div>
+                              <span className="text-sm font-medium">
+                                {employee.status === "Available"
+                                  ? "Available"
+                                  : "Busy"}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center gap-1.5">
+                              <div className="h-2.5 w-2.5 rounded-full bg-gray-300"></div>
+                              <span className="text-sm text-muted-foreground">
+                                Not set
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
