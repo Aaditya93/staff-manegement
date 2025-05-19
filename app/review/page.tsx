@@ -1,6 +1,6 @@
 "use client";
 
-import { updateReview } from "@/actions/review/update-review";
+import { deleteAllReviews } from "@/actions/review/update-review";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -15,7 +15,7 @@ export const ReviewPage = () => {
   const handleUpdateReview = async () => {
     try {
       setIsLoading(true);
-      const response = await updateReview();
+      const response = await deleteAllReviews();
       setResult(response);
     } catch (error) {
       console.error("Error updating reviews:", error);

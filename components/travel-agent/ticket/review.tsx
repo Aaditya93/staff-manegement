@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { submitTicketReview } from "@/actions/travel-agent/review";
+import { Input } from "@/components/ui/input";
 
 interface ReviewTicketProps {
   ticketId: string;
@@ -28,10 +29,10 @@ interface ReviewTicketProps {
 interface ReviewData {
   attitude: number;
   knowledge: number;
-
   speed: number;
-
-  reviewText: string;
+  reviewTitle: string;
+  positiveText: string;
+  negativeText: string;
 }
 
 const ReviewTicket: React.FC<ReviewTicketProps> = ({
@@ -45,41 +46,62 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
     attitude: 0,
     knowledge: 0,
     speed: 0,
-
-    reviewText: "",
+    reviewTitle: "",
+    positiveText: "",
+    negativeText: "",
   });
 
   const handleRatingChange =
-    (field: keyof Omit<ReviewData, "reviewText">) => (value: number) => {
+    (field: keyof Pick<ReviewData, "attitude" | "knowledge" | "speed">) =>
+    (value: number) => {
       setReviewData({
         ...reviewData,
         [field]: value,
       });
     };
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setReviewData({
-      ...reviewData,
-      reviewText: e.target.value,
-    });
-  };
+  const handleTextChange =
+    (
+      field: keyof Pick<
+        ReviewData,
+        "reviewTitle" | "positiveText" | "negativeText"
+      >
+    ) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setReviewData({
+        ...reviewData,
+        [field]: e.target.value,
+      });
+    };
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
 
-      const reviewPayload = {
-        ...reviewData,
-        ticketId,
-        reviewDate: new Date(),
-      };
+      // Check if all ratings are provided
+      if (!reviewData.attitude || !reviewData.knowledge || !reviewData.speed) {
+        toast.error("Please provide ratings for all categories");
+        setLoading(false);
+        return;
+      }
 
-      const hasRating = Object.entries(reviewData).some(
-        ([key, value]) => key !== "reviewText" && value > 0
-      );
+      // Check if review title is provided
+      if (!reviewData.reviewTitle) {
+        toast.error("Please provide a review title");
+        setLoading(false);
+        return;
+      }
 
-      if (!hasRating) {
-        toast.error("Please provide at least one rating before submitting");
+      // Check for positive feedback text
+      if (!reviewData.positiveText) {
+        toast.error("Please provide feedback on what went well");
+        setLoading(false);
+        return;
+      }
+
+      // Check for negative/improvement feedback text
+      if (!reviewData.negativeText) {
+        toast.error("Please provide feedback on areas for improvement");
         setLoading(false);
         return;
       }
@@ -117,19 +139,18 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
     value,
     onChange,
   }: {
-    name: keyof Omit<ReviewData, "reviewText">;
+    name: keyof Pick<ReviewData, "attitude" | "knowledge" | "speed">;
     label: string;
     value: number;
     onChange: (value: number) => void;
   }) => (
-    <div className="mb-4">
-      <div className="mb-2 flex items-center justify-between">
-        <Label htmlFor={name}>{label}</Label>
-        <span className="text-sm font-medium">
-          {value > 0 ? `${value}/5` : "Not rated"}
-        </span>
+    <div className="mb-4 text-center">
+      <div className="mb-2 flex items-center justify-center text-center">
+        <Label className="text-center font-medium" htmlFor={name}>
+          {label}
+        </Label>
       </div>
-      <div className="flex space-x-1">
+      <div className="flex justify-center space-x-1">
         {[1, 2, 3, 4, 5].map((rating) => (
           <button
             key={rating}
@@ -160,20 +181,40 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
+        className="sm:max-w-[1000px] md:max-w-[1000px] lg:max-w-[1000px] max-h-[90vh] overflow-y-auto p-6 w-[90vw]"
         position="center"
       >
         <DialogHeader>
           <DialogTitle className="text-xl">Submit Ticket Review</DialogTitle>
           <DialogDescription>
-            Please rate your experience from 1 (poor) to 5 (excellent).
+            Please rate your experience and provide detailed feedback.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Review title input */}
+          <div className="space-y-2">
+            <Label htmlFor="review-title" className="text-sm font-medium">
+              Review Title <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="review-title"
+              placeholder="Summarize your experience in a few words"
+              value={reviewData.reviewTitle}
+              onChange={handleTextChange("reviewTitle")}
+              required
+            />
+          </div>
+
+          {/* User role selection */}
+
+          {/* Staff Performance Ratings */}
+          {/* Staff Performance Ratings */}
           <div>
-            <h3 className="text-lg font-medium mb-3">Staff Performance</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h3 className="text-lg font-medium mb-3">
+              Staff Performance <span className="text-red-500">*</span>
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {ratingFields
                 .filter((field) => field.category === "staff")
                 .map((field) => (
@@ -184,16 +225,25 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
                     <CardContent className="p-4">
                       <StarRating
                         name={
-                          field.name as keyof Omit<ReviewData, "reviewText">
+                          field.name as keyof Pick<
+                            ReviewData,
+                            "attitude" | "knowledge" | "speed"
+                          >
                         }
-                        label={field.label}
+                        label={`${field.label} *`}
                         value={
                           reviewData[
-                            field.name as keyof Omit<ReviewData, "reviewText">
+                            field.name as keyof Pick<
+                              ReviewData,
+                              "attitude" | "knowledge" | "speed"
+                            >
                           ]
                         }
                         onChange={handleRatingChange(
-                          field.name as keyof Omit<ReviewData, "reviewText">
+                          field.name as keyof Pick<
+                            ReviewData,
+                            "attitude" | "knowledge" | "speed"
+                          >
                         )}
                       />
                     </CardContent>
@@ -201,20 +251,43 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
                 ))}
             </div>
           </div>
+
+          <Separator className="my-2" />
+
+          {/* Detailed feedback section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Detailed Feedback</h3>
+
+            <div className="space-y-2">
+              <Label htmlFor="positive-text" className="text-sm font-medium">
+                What Went Well <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="positive-text"
+                placeholder="Share what you liked about this experience..."
+                value={reviewData.positiveText}
+                onChange={handleTextChange("positiveText")}
+                className="min-h-[100px] resize-none"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="negative-text" className="text-sm font-medium">
+                Areas for Improvement <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="negative-text"
+                placeholder="Share what could have been better..."
+                value={reviewData.negativeText}
+                onChange={handleTextChange("negativeText")}
+                className="min-h-[100px] resize-none"
+                required
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="review-text" className="text-sm font-medium">
-            Additional Comments
-          </Label>
-          <Textarea
-            id="review-text"
-            placeholder="Please share your feedback about this experience..."
-            value={reviewData.reviewText}
-            onChange={handleTextChange}
-            className="min-h-[120px] resize-none"
-          />
-        </div>
         <DialogFooter className="pt-4">
           <Button
             variant="ghost"

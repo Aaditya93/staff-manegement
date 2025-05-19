@@ -168,3 +168,53 @@ export const updateReview = async () => {
     return { success: false, error: error };
   }
 };
+
+/**
+ * Deletes the review section from all tickets in the database that have reviews
+ * @returns Object containing success status, message, and count of deleted reviews
+ */
+export const deleteAllReviews = async () => {
+  try {
+    // Connect to database
+    await dbConnect();
+
+    // Find all tickets that have reviews
+    const ticketsWithReviews = await Ticket.find({ review: { $exists: true } });
+
+    if (ticketsWithReviews.length === 0) {
+      return {
+        success: true,
+        message: "No tickets with reviews found in the database",
+        count: 0,
+      };
+    }
+
+    // Delete reviews from all matching tickets using $unset
+    const result = await Ticket.updateMany(
+      { review: { $exists: true } },
+      { $unset: { review: "" } }
+    );
+
+    if (result.modifiedCount > 0) {
+      console.log(`Deleted reviews from ${result.modifiedCount} tickets`);
+      return {
+        success: true,
+        message: `Successfully deleted reviews from ${result.modifiedCount} tickets`,
+        count: result.modifiedCount,
+      };
+    } else {
+      return {
+        success: false,
+        message: "Failed to delete reviews",
+        count: 0,
+      };
+    }
+  } catch (error) {
+    console.error("Error deleting reviews:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+      count: 0,
+    };
+  }
+};

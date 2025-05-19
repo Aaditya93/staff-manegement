@@ -110,7 +110,6 @@ export async function fetchUserConversations() {
       { $sort: { updatedAt: -1 } },
     ]);
     const cleanConversations = serializeData(conversations);
-    console.log("Fetched conversations:", cleanConversations[0].participants);
 
     return { cleanConversations };
   } catch (error) {

@@ -1,18 +1,15 @@
 "use server";
-
 import { revalidatePath } from "next/cache";
-
 import Ticket from "@/db/models/ticket";
-
 import dbConnect from "@/db/db";
-
 interface ReviewData {
+  ticketId: string;
   attitude: number;
   knowledge: number;
   speed: number;
-
-  reviewText: string;
-  ticketId: string;
+  reviewTitle: string;
+  positiveText: string;
+  negativeText: string;
 }
 
 export async function submitTicketReview(reviewData: ReviewData) {
@@ -22,12 +19,12 @@ export async function submitTicketReview(reviewData: ReviewData) {
 
     const { ticketId, ...reviewFields } = reviewData;
 
-    // Validate review data before submission
-    const invalidRatings = Object.entries(reviewFields)
-      .filter(
-        ([key, value]) => key !== "reviewText" && (value < 1 || value > 5)
-      )
-      .map(([key]) => key);
+    // Validate numeric rating fields
+    const ratingFields = ["attitude", "knowledge", "speed"];
+    const invalidRatings = ratingFields.filter((key) => {
+      const rating = Number(reviewFields[key as keyof typeof reviewFields]);
+      return rating !== 0 && (rating < 1 || rating > 5);
+    });
 
     if (invalidRatings.length > 0) {
       return {
@@ -35,6 +32,7 @@ export async function submitTicketReview(reviewData: ReviewData) {
         error: `Invalid ratings for: ${invalidRatings.join(", ")}. Ratings must be between 1-5.`,
       };
     }
+
     console.log("Review data before submission:", reviewFields);
 
     // Find and update the ticket with the review
@@ -48,6 +46,7 @@ export async function submitTicketReview(reviewData: ReviewData) {
       },
       { new: true }
     );
+
     console.log("Updated ticket:", updatedTicket);
 
     if (!updatedTicket) {
