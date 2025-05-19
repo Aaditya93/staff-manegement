@@ -70,6 +70,8 @@ export async function fetchUserConversations() {
                 _id: 1,
                 name: 1,
                 image: 1,
+                email: 1,
+                office: 1,
               },
             },
           ],
@@ -108,7 +110,7 @@ export async function fetchUserConversations() {
       { $sort: { updatedAt: -1 } },
     ]);
     const cleanConversations = serializeData(conversations);
-    console.log("Fetched conversations:", cleanConversations);
+    console.log("Fetched conversations:", cleanConversations[0].participants);
 
     return { cleanConversations };
   } catch (error) {
@@ -116,7 +118,6 @@ export async function fetchUserConversations() {
     return { error: "Failed to fetch conversations" };
   }
 }
-
 /**
  * Send a new message
  */
@@ -171,7 +172,7 @@ export async function sendMessage(conversationId: string, content: string) {
     }
 
     const cleanMessage = serializeData(populatedMessage);
-    console.log("Message sent successfully:", cleanMessage);
+
     return { success: true, message: cleanMessage };
   } catch (error) {
     console.error("Error sending message:", error);

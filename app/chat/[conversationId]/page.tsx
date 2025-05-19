@@ -58,8 +58,6 @@ export default async function MessagingPage({
     conversationId,
     messageLimit
   );
-  console.log("Messages:", messages);
-
   if (error) {
     console.error("Error loading messages:", error);
   }

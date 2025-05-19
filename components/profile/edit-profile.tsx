@@ -336,15 +336,34 @@ export function EditProfile({ userData }: EditProfileProps) {
                       <SelectValue placeholder="Select office" />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* Add office options here */}
-                      <SelectItem value="Head Office">Head Office</SelectItem>
-                      <SelectItem value="Branch Office A">
-                        Branch Office A
+                      <SelectItem value="Hanoi office - Vietnam">
+                        Hanoi office - Vietnam
                       </SelectItem>
-                      <SelectItem value="Branch Office B">
-                        Branch Office B
+                      <SelectItem value="Da Nang office - Vietnam">
+                        Da Nang office - Vietnam
                       </SelectItem>
-                      {/* Add more offices as needed */}
+                      <SelectItem value="Mumbai office">
+                        Mumbai office
+                      </SelectItem>
+                      <SelectItem value="Kolkata office">
+                        Kolkata office
+                      </SelectItem>
+                      <SelectItem value="Malaysia Office">
+                        Malaysia Office
+                      </SelectItem>
+                      <SelectItem value="Singapore office">
+                        Singapore office
+                      </SelectItem>
+                      <SelectItem value="Thailand office">
+                        Thailand office
+                      </SelectItem>
+                      <SelectItem value="Sri Lanka office">
+                        Sri Lanka office
+                      </SelectItem>
+                      <SelectItem value="Bangladesh office">
+                        Bangladesh office
+                      </SelectItem>
+                      <SelectItem value="China office">China office</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

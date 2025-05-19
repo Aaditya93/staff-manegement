@@ -35,17 +35,4 @@ export default {
       },
     }),
   ],
-  cookies: {
-    // Updated cookie configuration to fix the PKCE error
-    pkceCodeVerifier: {
-      name: "next-auth.pkce.code_verifier",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 900, // 15 minutes in seconds
-      },
-    },
-  },
 } satisfies NextAuthConfig;

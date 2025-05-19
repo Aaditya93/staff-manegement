@@ -26,9 +26,8 @@ declare module "next-auth" {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
-    signIn: "/auth/travel-agent/signin",
-    signOut: "/home",
-    error: "/auth/travel-agent/error",
+    signIn: "/auth/signin",
+    error: "/auth/error",
   },
 
   events: {
@@ -64,7 +63,51 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     // This callback will modify the user before it's created in the database
     async signIn({ user, account }) {
+      console.log("SignIn callback triggered:", {
+        user: { id: user.id, email: user.email, name: user.name },
+        accountProvider: account?.provider,
+      });
+
       if (account && account.provider === "microsoft-entra-id") {
+        // For Microsoft 365 accounts, try to extract email from token
+        if (!user.email && account.id_token) {
+          try {
+            const parts = account.id_token.split(".");
+            if (parts.length === 3) {
+              const payload = JSON.parse(
+                Buffer.from(parts[1], "base64").toString()
+              );
+              const extractedEmail =
+                payload.email ||
+                payload.preferred_username ||
+                payload.upn ||
+                payload.unique_name;
+
+              if (extractedEmail) {
+                user.email = extractedEmail;
+                console.log(
+                  "Found email in token during signIn:",
+                  extractedEmail
+                );
+              }
+            }
+          } catch (error) {
+            console.error("Error parsing id_token during signIn:", error);
+          }
+        }
+
+        // If still no email but we have a name, create a fallback email
+        if (!user.email && user.name) {
+          user.email = `${user.name.replace(/\s+/g, "").toLowerCase()}@placeholder.com`;
+          console.log("Using fallback email during signIn:", user.email);
+        } else if (!user.email && user.id) {
+          user.email = `user-${user.id.substring(0, 8)}@placeholder.com`;
+          console.log(
+            "Using ID-based fallback email during signIn:",
+            user.email
+          );
+        }
+
         user.accounts = [
           {
             accessToken: account.access_token,
@@ -102,6 +145,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }[];
       }
 
+      // Ensure session always has an email
+      if (token.email && session.user && !session.user.email) {
+        session.user.email = token.email as string;
+      }
+
       return session;
     },
 
@@ -115,11 +163,51 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account && account.provider === "microsoft-entra-id") {
         if (user) {
           token.accounts = user.accounts;
-          token.email = user.email;
+
+          // Try to extract email from Microsoft 365 account information
+          if (!user.email && account.id_token) {
+            try {
+              // Decode the id_token to get user information
+              const parts = account.id_token.split(".");
+              if (parts.length === 3) {
+                const payload = JSON.parse(
+                  Buffer.from(parts[1], "base64").toString()
+                );
+
+                // Microsoft 365 accounts may have email in different places
+                const extractedEmail =
+                  payload.email ||
+                  payload.preferred_username ||
+                  payload.upn ||
+                  payload.unique_name;
+
+                if (extractedEmail) {
+                  token.email = extractedEmail;
+                  console.log("Found email in token:", extractedEmail);
+                }
+              }
+            } catch (error) {
+              console.error("Error parsing id_token:", error);
+            }
+          } else {
+            token.email = user.email;
+          }
+
+          // If we still don't have an email, create a fallback
+          if (!token.email && user.name) {
+            // Generate a placeholder email from the name
+            token.email = `${user.name.replace(/\s+/g, "").toLowerCase()}@placeholder.com`;
+            console.log("Using fallback email:", token.email);
+          } else if (!token.email && user.id) {
+            token.email = `user-${user.id.substring(0, 8)}@placeholder.com`;
+            console.log("Using ID-based fallback email:", token.email);
+          }
         }
       }
+
       if (token?.accounts && token.accounts.length > 0) {
         const nowInSeconds = Math.floor(Date.now() / 1000);
+        console.log("Current token email:", token.email);
 
         // Process each account in the token.accounts array
         for (let i = 0; i < token.accounts.length; i++) {
@@ -149,7 +237,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 };
 
                 // Update the database asynchronously
-                await updateUserTokens(token.email, i, {
+                await updateUserTokens(token.email as string, i, {
                   accessToken: refreshedTokens.accessToken,
                   refreshToken: refreshedTokens.refreshToken,
                   expiresAt: refreshedTokens.expiresAt,
@@ -165,10 +253,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       }
 
-      if (token?.email) {
-        return token;
-      }
-      return null;
+      // IMPORTANT: Always return the token, even if email is missing
+      return token;
     },
   },
 

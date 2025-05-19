@@ -104,10 +104,22 @@ export function ChatHeader({
             {getConversationName(conversation)[0] || "?"}
           </AvatarFallback>
         </Avatar>
-        <div className="flex flex-col justify-center">
+        <div className="flex flex-col justify-center space-y-0.5">
           <p className="font-medium text-sm">
             {getConversationName(conversation)}
           </p>
+          {isMainHeader && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span>{conversation?.participants[0]?.email || "No email"}</span>
+              {conversation?.participants[0]?.office && (
+                <>
+                  <span className="text-muted-foreground/50">•</span>
+                  <span>{conversation.participants[0].office}</span>
+                </>
+              )}
+            </div>
+          )}
+
           {(getStatus() === "online" || isMainHeader) && (
             <p className="text-xs text-muted-foreground">
               {getStatus() === "online" ? (
