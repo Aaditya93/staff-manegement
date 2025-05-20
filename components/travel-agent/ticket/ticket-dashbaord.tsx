@@ -68,7 +68,15 @@ export function TicketDashboard({ ticket }: { ticket: ITicket }) {
               ticket.status
             )} text-white px-3 py-1 text-sm font-medium`}
           >
-            {ticket.status.toUpperCase()}
+            {ticket.status
+              .split("_")
+              .join(" ")
+              .split(" ")
+              .map(
+                (word) =>
+                  word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+              )
+              .join(" ")}
           </Badge>
           <ReportComplaint
             ticketId={ticket._id}

@@ -32,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { SessionProvider } from "next-auth/react";
 import { ComposeButton } from "./compose-button";
+import { SidebarTrigger } from "../ui/sidebar";
 
 interface MailProps {
   currentFolder: string;
@@ -236,6 +237,8 @@ export function Mail({
                   Unread
                 </TabsTrigger>
               </TabsList>
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <SidebarTrigger className="-ml-1" />
             </div>
             <Separator />
             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">

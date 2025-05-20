@@ -2,7 +2,12 @@ import { Mail } from "@/components/mail/mail";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { fetchFolderEmails } from "@/actions/mail/fetch-emails";
 
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 interface MailPageProps {
   params: {
     inboxNumber: number;

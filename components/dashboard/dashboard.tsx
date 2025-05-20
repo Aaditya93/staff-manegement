@@ -2,7 +2,11 @@
 import { useState } from "react";
 import { ColumnFiltersState } from "@tanstack/react-table";
 import AppSidebar from "./app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import DataTable from "./data-table";
 import { columns } from "./columns";
 import { mapTicketsToTableData } from "@/utils/ticket-data";
@@ -11,6 +15,7 @@ import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { updateUserStatus } from "@/actions/edit-profile/edit-profile";
 import { toast } from "sonner";
+import { Separator } from "../ui/separator";
 interface DashboardProps {
   tickets?: ITicket[];
   status?: string;
@@ -57,6 +62,11 @@ const Dashboard = ({ tickets = [], status }: DashboardProps) => {
         <div className="flex flex-1 flex-col  p-4">
           <div className="flex items-center ">
             <div className="flex items-center gap-2 text-md">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 h-4 text-primary"
+              />
               <div
                 className={`h-2.5 w-2.5 rounded-full ${isAvailable ? "bg-green-500" : "bg-red-500"}`}
               ></div>
@@ -74,6 +84,7 @@ const Dashboard = ({ tickets = [], status }: DashboardProps) => {
               />
             </div>
           </div>
+
           <DataTable
             columnFilters={columnFilters}
             setColumnFilters={setColumnFilters}

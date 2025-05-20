@@ -3,11 +3,16 @@ import {
   getAllUnApprovedTickets,
 } from "@/actions/approve-ticket/getTickets";
 import AppSidebar from "@/components/sidebar/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { PendingTicketsTable } from "@/components/pending-ticket/pending-table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TbTicket } from "react-icons/tb";
 import DatePickerWithRange from "@/components/pending-ticket/date-range";
+import { Separator } from "@/components/ui/separator";
 interface Employee {
   _id: string;
   name: string;
@@ -103,7 +108,7 @@ export const PendingTicketsPage = async ({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="flex flex-col h-screen overflow-y-auto">
-        <main className="flex-1 p-4 md:p-6">
+        <main className="flex-1 p-4 md:p-6 pt-0">
           <Card className="w-full">
             <CardHeader className="border-b p-4 sm:p-3 bg-primary rounded-t-lg">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">

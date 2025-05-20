@@ -119,6 +119,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           },
         ];
       }
+      if (user.id && user.email) {
+        try {
+          await dbConnect();
+          await User.findByIdAndUpdate(
+            user.id,
+            { email: user.email },
+            { new: true }
+          );
+          console.log("Updated user email in database:", user.email);
+        } catch (error) {
+          console.error("Error updating user email in database:", error);
+        }
+      }
 
       return true;
     },

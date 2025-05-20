@@ -4,6 +4,7 @@ import { type Conversation } from "./chat-types";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react"; // Add this import
+import { SidebarTrigger } from "../ui/sidebar";
 
 interface ChatHeaderProps {
   conversation?: Conversation | null;
@@ -104,10 +105,11 @@ export function ChatHeader({
             {getConversationName(conversation)[0] || "?"}
           </AvatarFallback>
         </Avatar>
-        <div className="flex flex-col justify-center space-y-0.5">
-          <p className="font-medium text-sm">
+        <div className="flex flex-col justify-center space-y-0.5 flex-1">
+          <p className="font-medium text-sm mr-8">
             {getConversationName(conversation)}
           </p>
+
           {isMainHeader && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <span>{conversation?.participants[0]?.email || "No email"}</span>

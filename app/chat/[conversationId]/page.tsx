@@ -42,6 +42,7 @@ export default async function MessagingPage({
     return (
       <SidebarProvider>
         <AppSidebar />
+
         <SidebarInset className="flex flex-col h-screen overflow-hidden">
           <ChatDashboard
             initialConversationId=""

@@ -6,6 +6,9 @@ import {
   MessageSquare,
   ThumbsUp,
   ThumbsDown,
+  Calendar,
+  BarChart3,
+  Award,
 } from "lucide-react";
 
 import {
@@ -14,8 +17,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -40,147 +44,206 @@ interface ReviewShowcaseProps {
 }
 
 const ReviewShowcase: React.FC<ReviewShowcaseProps> = ({ review }) => {
-  // Define rating categories and calculate average
+  // Define categories
   const staffRatingCategories = [
-    { name: "Attitude", value: review.attitude },
-    { name: "Knowledge", value: review.knowledge },
-    { name: "Speed", value: review.speed },
+    {
+      name: "Attitude",
+      value: review.attitude,
+      icon: <ThumbsUp className="h-4 w-4" />,
+    },
+    {
+      name: "Knowledge",
+      value: review.knowledge,
+      icon: <Award className="h-4 w-4" />,
+    },
+    {
+      name: "Speed",
+      value: review.speed,
+      icon: <Calendar className="h-4 w-4" />,
+    },
   ];
 
-  const ratingCategories = [...staffRatingCategories];
+  const serviceRatingCategories = [
+    {
+      name: "Services",
+      value: review.services,
+      icon: <BarChart3 className="h-4 w-4" />,
+    },
+    {
+      name: "Hotel",
+      value: review.hotel,
+      icon: <BarChart3 className="h-4 w-4" />,
+    },
+    {
+      name: "Guide",
+      value: review.guide,
+      icon: <BarChart3 className="h-4 w-4" />,
+    },
+    {
+      name: "Transfer",
+      value: review.transfer,
+      icon: <BarChart3 className="h-4 w-4" />,
+    },
+    {
+      name: "Meal",
+      value: review.meal,
+      icon: <BarChart3 className="h-4 w-4" />,
+    },
+  ].filter((cat) => cat.value !== undefined);
 
-  const ratingValues = ratingCategories.map((cat) => cat.value);
+  // Calculate average rating
+  const validRatings = [...staffRatingCategories, ...serviceRatingCategories]
+    .map((cat) => cat.value)
+    .filter((value): value is number => value !== undefined);
+
   const averageRating =
-    ratingValues.length > 0
-      ? ratingValues.reduce((sum, rating) => sum + rating, 0) /
-        ratingValues.length
+    validRatings.length > 0
+      ? validRatings.reduce((sum, rating) => sum + rating, 0) /
+        validRatings.length
       : 0;
 
+  // Format date
   const formattedDate =
     typeof review.reviewDate === "string"
       ? format(new Date(review.reviewDate), "MMM d, yyyy")
       : format(review.reviewDate, "MMM d, yyyy");
 
+  // Helper function for rating colors
+  const getRatingColor = (rating: number) => {
+    if (rating >= 4.5) return "text-green-600";
+    if (rating >= 3.5) return "text-blue-600";
+    if (rating >= 2.5) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const renderRatingCard = (category: any) => (
+    <div key={category.name} className="bg-muted/30 p-3 rounded-lg border">
+      <div className="flex justify-between items-center mb-1">
+        <span className="font-medium flex items-center gap-1">
+          {category.icon} {category.name}
+        </span>
+        <span className={cn("font-bold", getRatingColor(category.value))}>
+          {category.value}/5
+        </span>
+      </div>
+      <div className="flex">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={cn(
+              "h-4 w-4",
+              star <= category.value
+                ? "text-amber-400 fill-amber-400"
+                : "text-gray-200"
+            )}
+          />
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <Card className="shadow-sm border-t-2">
-      <CardHeader className="bg-primary text-primary-foreground rounded-t-lg mb-4">
+    <Card className="shadow-md border">
+      {/* Header with title and average rating */}
+      <CardHeader className="bg-primary text-white rounded-t-lg">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              {review.reviewTitle || "Ticket Review"}
+              {review.reviewTitle || "Customer Feedback"}
             </CardTitle>
-            <CardDescription className="text-primary-foreground">
+            <CardDescription className="text-white/80">
               Submitted on {formattedDate}
             </CardDescription>
           </div>
+
           <Badge
             variant="secondary"
-            className="px-3 py-1 text-base font-semibold"
+            className={cn("px-2 py-1 font-bold", getRatingColor(averageRating))}
           >
-            {averageRating.toFixed(1)} / 5
+            {averageRating.toFixed(1)}/5
           </Badge>
         </div>
       </CardHeader>
 
-      <CardContent>
-        <div className="space-y-6">
-          {/* Staff Performance Section */}
+      <CardContent className="p-5">
+        <div className="space-y-5">
+          {/* Staff Ratings */}
           <div>
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
+            <h3 className="font-semibold mb-3 border-b pb-1">
               Staff Performance
             </h3>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              {staffRatingCategories.map((category) => (
-                <div
-                  key={category.name}
-                  className="bg-muted/50 p-3 rounded-lg border hover:border-primary transition-colors duration-200"
-                >
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-sm font-medium text-foreground">
-                      {category.name}
-                    </span>
-                    <span className="text-xs font-semibold text-muted-foreground">
-                      {category.value}/5
-                    </span>
-                  </div>
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={cn(
-                          "h-4 w-4 transition-colors duration-200",
-                          star <= category.value
-                            ? "text-amber-400 fill-amber-400"
-                            : "text-muted-foreground/30"
-                        )}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {staffRatingCategories.map(renderRatingCard)}
             </div>
           </div>
 
-          {/* Feedback Section */}
-          <div className="space-y-4">
-            {(review.positiveText ||
-              review.negativeText ||
-              review.reviewText) && (
-              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
+          {/* Service Ratings */}
+          {serviceRatingCategories.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-3 border-b pb-1">
+                Service Ratings
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {serviceRatingCategories.map(renderRatingCard)}
+              </div>
+            </div>
+          )}
+
+          {/* Feedback Text */}
+          {(review.positiveText ||
+            review.negativeText ||
+            review.reviewText) && (
+            <div>
+              <h3 className="font-semibold mb-3 border-b pb-1">
                 Customer Feedback
               </h3>
-            )}
 
-            {review.positiveText && (
-              <Alert
-                variant="default"
-                className="bg-green-50 border-green-200 p-3"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <ThumbsUp className="h-4 w-4 text-green-600" />
-                  <AlertTitle className="text-sm font-medium text-green-700">
-                    What Went Well
-                  </AlertTitle>
-                </div>
-                <AlertDescription className="text-sm text-green-600 pl-6">
-                  {review.positiveText}
-                </AlertDescription>
-              </Alert>
-            )}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {review.positiveText && (
+                  <Alert className="bg-green-50 border-green-200">
+                    <ThumbsUp className="h-4 w-4 text-green-600" />
+                    <AlertTitle className="font-medium text-green-700">
+                      What Went Well
+                    </AlertTitle>
+                    <AlertDescription className="text-sm text-green-600">
+                      {review.positiveText}
+                    </AlertDescription>
+                  </Alert>
+                )}
 
-            {review.negativeText && (
-              <Alert variant="default" className="bg-red-50 border-red-200 p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <ThumbsDown className="h-4 w-4 text-red-600" />
-                  <AlertTitle className="text-sm font-medium text-red-700">
-                    Areas for Improvement
-                  </AlertTitle>
-                </div>
-                <AlertDescription className="text-sm text-red-600 pl-6">
-                  {review.negativeText}
-                </AlertDescription>
-              </Alert>
-            )}
+                {review.negativeText && (
+                  <Alert className="bg-red-50 border-red-200">
+                    <ThumbsDown className="h-4 w-4 text-red-600" />
+                    <AlertTitle className="font-medium text-red-700">
+                      Areas for Improvement
+                    </AlertTitle>
+                    <AlertDescription className="text-sm text-red-600">
+                      {review.negativeText}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
 
-            {review.reviewText && (
-              <Alert variant="default" className="bg-background p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <AlertTitle className="text-sm font-medium text-foreground">
+              {review.reviewText && (
+                <Alert className="bg-blue-50 border-blue-200 mt-4">
+                  <MessageSquare className="h-4 w-4 text-blue-600" />
+                  <AlertTitle className="font-medium text-blue-700">
                     Additional Comments
                   </AlertTitle>
-                </div>
-                <AlertDescription className="text-sm text-muted-foreground pl-6">
-                  {review.reviewText}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
+                  <AlertDescription className="text-sm text-blue-600">
+                    {review.reviewText}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
+
+      <CardFooter className="bg-gray-50 text-xs text-gray-500 px-5 py-2">
+        Review ID: {review._id.substring(0, 8)}...
+      </CardFooter>
     </Card>
   );
 };

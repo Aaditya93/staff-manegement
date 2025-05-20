@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import Ticket from "@/db/models/ticket";
 import dbConnect from "@/db/db";
+import { auth } from "@/auth";
 interface ReviewData {
   ticketId: string;
   attitude: number;
@@ -16,6 +17,7 @@ export async function submitTicketReview(reviewData: ReviewData) {
   try {
     // Connect to database
     await dbConnect();
+    const session = await auth();
 
     const { ticketId, ...reviewFields } = reviewData;
 
@@ -41,6 +43,7 @@ export async function submitTicketReview(reviewData: ReviewData) {
       {
         review: {
           ...reviewFields,
+          role: session?.user.role,
           reviewDate: new Date(),
         },
       },

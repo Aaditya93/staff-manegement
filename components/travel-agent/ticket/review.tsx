@@ -181,7 +181,7 @@ const ReviewTicket: React.FC<ReviewTicketProps> = ({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-[1000px] md:max-w-[1000px] lg:max-w-[1000px] max-h-[90vh] overflow-y-auto p-6 w-[90vw]"
+        className="sm:max-w-[900px] md:max-w-[900px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto p-6 w-[90vw]"
         position="center"
       >
         <DialogHeader>
