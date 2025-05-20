@@ -12,6 +12,7 @@ import { TfiPieChart } from "react-icons/tfi";
 import { NavProjects } from "./nav-projects";
 import { CiChat1 } from "react-icons/ci";
 import NavUser from "./nav-user";
+import { CiStar } from "react-icons/ci";
 import { CiViewList } from "react-icons/ci";
 import {
   Sidebar,
@@ -91,6 +92,11 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
     // Add Employee Report for everyone else
     ...(userRole === "ReservationStaff" || userRole === "SalesStaff"
       ? [
+          {
+            name: "Reviews",
+            url: `/review/${user.data?.user.id}`,
+            icon: CiStar,
+          },
           {
             name: " Report",
             url: `/employee-report/${user.data?.user.id}/from=${seven}&to=${to}`,

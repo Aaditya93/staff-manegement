@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { LifeBuoy, Send, SquareTerminal } from "lucide-react";
-import { CiMail, CiSearch } from "react-icons/ci";
+import { CiMail, CiSearch, CiStar } from "react-icons/ci";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import { CiViewTable } from "react-icons/ci";
 import { GoReport } from "react-icons/go";
@@ -102,6 +102,11 @@ const AppSidebar = ({
     // Add Employee Report for everyone else
     ...(userRole === "ReservationStaff" || userRole === "SalesStaff"
       ? [
+          {
+            name: "Reviews",
+            url: `/review/${user.data?.user.id}`,
+            icon: CiStar,
+          },
           {
             name: " Report",
             url: `/employee-report/${user.data?.user.id}/from=${seven}&to=${to}`,

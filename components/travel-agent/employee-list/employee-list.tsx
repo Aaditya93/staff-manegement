@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/hover-card";
 
 import { MapPin } from "lucide-react";
+import Link from "next/link";
 interface Employee {
   _id: string;
   name: string;
@@ -529,7 +530,12 @@ const EmployeeListClient = ({ employees }: EmployeeListClientProps) => {
                               {getInitials(employee.name)}
                             </AvatarFallback>
                           </Avatar>
-                          {employee.name}
+                          <Link
+                            href={`/travel-agent/review/${employee._id}`}
+                            className="hover:text-primary hover:underline transition-colors"
+                          >
+                            {employee.name}
+                          </Link>
                         </div>
                       </TableCell>
                       <TableCell>

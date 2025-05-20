@@ -124,7 +124,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           await dbConnect();
           await User.findByIdAndUpdate(
             user.id,
-            { email: user.email },
+            {
+              email: user.email,
+              // Update email in accounts array if it exists
+              $set: {
+                "accounts.$[].email": user.email,
+                "accounts.$[].emailUpdatedAt": new Date(),
+              },
+            },
             { new: true }
           );
           console.log("Updated user email in database:", user.email);

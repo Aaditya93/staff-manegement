@@ -269,15 +269,23 @@ const columns: ColumnDef<EmployeePerformance>[] = [
     ),
   },
   {
-    id: "view",
-    header: "View Details",
+    id: "profile",
+    header: "Profile",
     cell: ({ row }) => {
       const employeeId = row.original.employeeId;
       return (
         <Link href={`/employee-report/${employeeId}/from=${seven}&to=${to}`}>
-          View Profile
+          View
         </Link>
       );
+    },
+  },
+  {
+    id: "reviews",
+    header: " Reviews",
+    cell: ({ row }) => {
+      const employeeId = row.original.employeeId;
+      return <Link href={`/review/${employeeId}`}>View </Link>;
     },
   },
 ];
