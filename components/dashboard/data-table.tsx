@@ -53,8 +53,6 @@ const DataTable = <TData, TValue>({
   setSearchSelections,
 }: DataTableProps<TData, TValue>) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const session = useSession();
-  const role = session.data?.user.role;
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({

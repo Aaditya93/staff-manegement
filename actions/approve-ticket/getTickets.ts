@@ -108,6 +108,7 @@ export async function approveTicket(
           salesInCharge: cleanSales,
           approvedBy: approver,
           estimateTimeToSendPrice: estimatedTimeInSeconds,
+          status: "pending",
         },
       },
       { new: true } // This option returns the document after update

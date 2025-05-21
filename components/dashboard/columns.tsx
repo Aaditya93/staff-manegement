@@ -2,7 +2,7 @@
 import { ArrowUpDown } from "lucide-react";
 import { Eye, Edit } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-
+import { StatusCell } from "./status-cell";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -166,41 +166,9 @@ export const columns: ColumnDef<TravelBooking>[] = [
     header: () => <div className="text-center w-full">Status</div>,
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
+      const ticketId = row.original.ticket;
 
-      // Capitalize first letter and remove underscores if they exist
-      const formattedStatus = status
-        ? status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")
-        : "";
-
-      // Custom color mapping for each status
-      const getStatusColor = (status: string) => {
-        switch (status) {
-          case "pending":
-            return "bg-yellow-100 text-yellow-800"; // Yellow for pending
-          case "quote_sent":
-            return "bg-blue-100 text-blue-800"; // Blue for quote sent
-          case "negotiating":
-            return "bg-purple-100 text-purple-800"; // Purple for negotiating
-          case "in_progress":
-            return "bg-indigo-100 text-indigo-800"; // Indigo for in progress
-          case "completed":
-            return "bg-green-100 text-green-800"; // Green for completed
-          case "cancelled":
-            return "bg-red-100 text-red-800"; // Red for cancelled
-          default:
-            return "bg-gray-100 text-gray-800"; // Gray for unknown status
-        }
-      };
-
-      return (
-        <div className="flex justify-center w-full">
-          <div
-            className={`rounded-full px-2 py-1 text-xs font-medium text-center ${getStatusColor(status)}`}
-          >
-            {formattedStatus}
-          </div>
-        </div>
-      );
+      return <StatusCell defaultStatus={status} ticketId={ticketId} />;
     },
   },
   {

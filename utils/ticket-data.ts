@@ -18,7 +18,7 @@ export const mapTicketsToTableData = (tickets: any[]): TravelBooking[] => {
     salesId: ticket.salesInCharge?.id || "",
     salesInCharge: ticket.salesInCharge?.name || "",
     market: ticket.market || "",
-    status: ticket.status || "In Progress",
+    status: ticket.status,
     estimateTimeToSendPrice: ticket.estimateTimeToSendPrice || 0,
     waitingTime: ticket.waitingTime || 0,
     speed: ticket.speed || "",

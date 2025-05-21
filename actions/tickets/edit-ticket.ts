@@ -101,3 +101,62 @@ export async function updateTicket(
     return { success: false, error: error.message };
   }
 }
+
+// Define the validation schema for the form data
+const UpdateStatusSchema = z.object({
+  ticketId: z.string({
+    required_error: "Ticket ID is required",
+  }),
+  status: z.enum(
+    [
+      "pending",
+      "quote_sent",
+      "negotiating",
+      "in_progress",
+      "completed",
+      "cancelled",
+    ],
+    {
+      required_error: "Status is required",
+    }
+  ),
+});
+
+export async function updateTicketStatus(formData: {
+  ticketId: string;
+  status: string;
+}) {
+  console.log("Updating ticket status with data:", formData);
+  try {
+    // Validate the form data
+    const validatedData = UpdateStatusSchema.parse(formData);
+    const { ticketId, status } = validatedData;
+
+    // Connect to the database
+    await dbConnect();
+
+    // Update the ticket status
+    const updatedTicket = await Ticket.findByIdAndUpdate(
+      ticketId,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedTicket) {
+      throw new Error(`Ticket with ID ${ticketId} not found`);
+    }
+
+    // Revalidate the dashboard page to reflect the changes
+    revalidatePath("/dashboard");
+
+    return { success: true, message: "Status updated successfully" };
+  } catch (error) {
+    console.error("Error updating ticket status:", error);
+
+    if (error instanceof z.ZodError) {
+      return { success: false, message: error.errors[0].message };
+    }
+
+    return { success: false, message: "Failed to update ticket status" };
+  }
+}

@@ -72,6 +72,7 @@ export async function fetchUserConversations() {
                 image: 1,
                 email: 1,
                 office: 1,
+                phoneNumber: 1,
               },
             },
           ],

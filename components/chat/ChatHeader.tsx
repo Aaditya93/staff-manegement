@@ -4,7 +4,6 @@ import { type Conversation } from "./chat-types";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react"; // Add this import
-import { SidebarTrigger } from "../ui/sidebar";
 
 interface ChatHeaderProps {
   conversation?: Conversation | null;
@@ -117,6 +116,12 @@ export function ChatHeader({
                 <>
                   <span className="text-muted-foreground/50">•</span>
                   <span>{conversation.participants[0].office}</span>
+                </>
+              )}
+              {conversation?.participants[0]?.phoneNumber && (
+                <>
+                  <span className="text-muted-foreground/50">•</span>
+                  <span>{conversation.participants[0].phoneNumber}</span>
                 </>
               )}
             </div>
