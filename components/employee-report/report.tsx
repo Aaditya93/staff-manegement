@@ -6,7 +6,7 @@ import { Badge } from "../ui/badge";
 import { MapPin, Building, Mail, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { Separator } from "../ui/separator";
-// ...existing code...
+import { SlPhone } from "react-icons/sl";
 import Image from "next/image"; // Ensure Next.js Image is imported
 import { convertTicketsToChartData } from "../admin-report/data/line-chart-data";
 import { convertTicketsToDestinationChartData } from "../admin-report/data/destination-chart-data";
@@ -39,6 +39,7 @@ interface ReportPageProps {
     attitude?: number;
     knowledge?: number;
     speed?: number;
+    phoneNumber?: string;
     reviewcount?: number;
   };
 }
@@ -150,13 +151,13 @@ const EmployeeReport = async ({ tickets, user }: ReportPageProps) => {
                     </div>
                   )}
 
-                  {user.emailVerified && (
+                  {true && (
                     <div className="flex items-center gap-2.5 text-primary-foreground ">
-                      <Calendar className="h-4 w-4 text-primary-foreground shrink-0" />
+                      <SlPhone className="h-4 w-4 text-primary-foreground shrink-0" />
                       <span>
-                        Verified:{" "}
+                        {" "}
                         <span className=" font-medium">
-                          {format(new Date(user.emailVerified), "MMM dd, yyyy")}
+                          {user.phoneNumber || "N/A"}
                         </span>
                       </span>
                     </div>

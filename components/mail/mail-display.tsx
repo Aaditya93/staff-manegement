@@ -81,7 +81,9 @@ export function MailDisplay({
           <MailContent mail={mail} currentFolder={currentFolder} />
 
           {mail.attachments && mail.attachments.length > 0 && (
-            <MailAttachments mail={mail} inboxNumber={inboxNumber} />
+            <div className="h-24 overflow-y-auto">
+              <MailAttachments mail={mail} inboxNumber={inboxNumber} />
+            </div>
           )}
 
           <MailReplyForm mail={mail} inboxNumber={inboxNumber} />

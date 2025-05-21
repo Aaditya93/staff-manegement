@@ -13,6 +13,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { SlPhone } from "react-icons/sl";
 
 // UserProfile interface for the main user details
 interface UserProfile {
@@ -29,6 +30,7 @@ interface UserProfile {
   attitude?: number;
   knowledge?: number;
   speed?: number;
+  phoneNumber?: string;
   reviewcount?: number;
 }
 
@@ -189,13 +191,13 @@ export default function ReviewDashboard({
                   )}
 
                   {/* Email Verification Date */}
-                  {user.emailVerified && (
+                  {true && (
                     <div className="flex items-center gap-2.5 text-primary-foreground ">
-                      <Calendar className="h-4 w-4 text-primary-foreground shrink-0" />
+                      <SlPhone className="h-4 w-4 text-primary-foreground shrink-0" />
                       <span>
-                        Verified:{" "}
+                        {" "}
                         <span className=" font-medium">
-                          {format(new Date(user.emailVerified), "MMM dd, yyyy")}
+                          {user.phoneNumber || "N/A"}
                         </span>
                       </span>
                     </div>
