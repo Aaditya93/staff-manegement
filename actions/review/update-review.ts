@@ -13,7 +13,7 @@ export const updateReview = async () => {
     });
 
     const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    oneDayAgo.setDate(oneDayAgo.getDate() - 5);
 
     for (const user of users) {
       if (user.role === "ReservationStaff") {
@@ -211,6 +211,73 @@ export const deleteAllReviews = async () => {
     }
   } catch (error) {
     console.error("Error deleting reviews:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+      count: 0,
+    };
+  }
+};
+
+export const resetUserReviews = async () => {
+  try {
+    // Connect to database
+    await dbConnect();
+
+    // Find users that have at least one of the review metrics
+    const usersWithReviews = await User.find({
+      $or: [
+        { attitude: { $exists: true } },
+        { knowledge: { $exists: true } },
+        { speed: { $exists: true } },
+        { reviewcount: { $exists: true } },
+      ],
+    });
+
+    if (usersWithReviews.length === 0) {
+      return {
+        success: true,
+        message: "No users with review metrics found",
+        count: 0,
+      };
+    }
+
+    // Unset all review-related fields using $unset operator
+    const result = await User.updateMany(
+      {
+        $or: [
+          { attitude: { $exists: true } },
+          { knowledge: { $exists: true } },
+          { speed: { $exists: true } },
+          { reviewcount: { $exists: true } },
+        ],
+      },
+      {
+        $unset: {
+          attitude: "",
+          knowledge: "",
+          speed: "",
+          reviewcount: "",
+        },
+      }
+    );
+
+    if (result.modifiedCount > 0) {
+      console.log(`Reset review metrics for ${result.modifiedCount} users`);
+      return {
+        success: true,
+        message: `Successfully reset review metrics for ${result.modifiedCount} users`,
+        count: result.modifiedCount,
+      };
+    } else {
+      return {
+        success: false,
+        message: "Failed to reset user review metrics",
+        count: 0,
+      };
+    }
+  } catch (error) {
+    console.error("Error resetting user review metrics:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",
