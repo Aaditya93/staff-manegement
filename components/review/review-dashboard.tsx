@@ -1,19 +1,20 @@
 import { format } from "date-fns";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-
+import Link from "next/link";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Mail, Building, Calendar, MapPin, Star } from "lucide-react";
 import {
   Card,
   CardHeader,
-  CardTitle,
   CardDescription,
   CardContent,
   CardFooter,
+  CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SlPhone } from "react-icons/sl";
+import { Button } from "../ui/button";
 
 // UserProfile interface for the main user details
 interface UserProfile {
@@ -253,6 +254,43 @@ export default function ReviewDashboard({
                 <p className="text-sm text-gray-600">
                   Based on {reviewCount} customer reviews
                 </p>
+
+                {/* Combined Average Rating */}
+                {averageAttitude && averageKnowledge && averageSpeed && (
+                  <div className="mt-2 pl-0 flex items-center">
+                    <div className="flex items-center bg-indigo-100 px-3 py-1 rounded-full">
+                      <span className="text-indigo-700 font-bold mr-1.5">
+                        {(
+                          (averageAttitude + averageKnowledge + averageSpeed) /
+                          3
+                        ).toFixed(1)}
+                      </span>
+                      <div className="flex">
+                        {Array.from({ length: 5 }).map((_, i) => {
+                          const avgRating =
+                            (averageAttitude +
+                              averageKnowledge +
+                              averageSpeed) /
+                            3;
+                          return (
+                            <span key={`avg-${i}`}>
+                              {i < Math.floor(avgRating) ? (
+                                <span className="text-amber-400">★</span>
+                              ) : i < avgRating ? (
+                                <span className="text-amber-400">★</span>
+                              ) : (
+                                <span className="text-gray-300">★</span>
+                              )}
+                            </span>
+                          );
+                        })}
+                      </div>
+                      <span className="ml-2 text-xs font-medium text-indigo-700">
+                        Overall Rating
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
                 {averageAttitude && (
@@ -278,6 +316,7 @@ export default function ReviewDashboard({
                     </span>
                   </div>
                 )}
+
                 {averageKnowledge && (
                   <div className="flex flex-col items-center">
                     <div className="text-2xl font-bold text-indigo-600">
@@ -328,7 +367,6 @@ export default function ReviewDashboard({
             </div>
           </div>
         )}
-
         {/* List of Review Tickets */}
         {reviews?.tickets && reviews.tickets.length > 0 && (
           <div className="p-6 bg-muted/50">
@@ -347,9 +385,11 @@ export default function ReviewDashboard({
                   <CardHeader className="pb-2 pt-2">
                     <div className="flex justify-between">
                       <div>
-                        <CardTitle className="capitalize text-base ">
-                          {ticket.companyName}
-                        </CardTitle>
+                        {ticket.review.reviewTitle && (
+                          <CardTitle className="text-md font-medium">
+                            {ticket.review.reviewTitle}
+                          </CardTitle>
+                        )}
                         <CardDescription className="flex items-center gap-2 text-xs">
                           <span className="font-medium text-primary">
                             {ticket.destination}
@@ -383,12 +423,6 @@ export default function ReviewDashboard({
                   <Separator />
 
                   <CardContent className="py-3 space-y-3">
-                    {ticket.review.reviewTitle && (
-                      <p className="font-medium text-sm">
-                        {ticket.review.reviewTitle}
-                      </p>
-                    )}
-
                     {/* Rating display with stars below headings */}
                     <div className="grid grid-cols-3 gap-4 text-xs">
                       <div className="text-center">
@@ -489,7 +523,7 @@ export default function ReviewDashboard({
                     )}
                   </CardContent>
 
-                  <CardFooter className="text-xs text-muted-foreground pt-0">
+                  <CardFooter className="text-xs text-muted-foreground pt-0 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <Avatar className="h-5 w-5">
                         <AvatarFallback className="text-[10px]">
@@ -499,21 +533,37 @@ export default function ReviewDashboard({
                       <span>Reviewed by {ticket.travelAgent.name}</span>
                     </div>
 
-                    {ticket.review.reviewDate && (
-                      <span className="ml-auto">
-                        {format(
-                          new Date(ticket.review.reviewDate),
-                          "MMM dd, yyyy"
-                        )}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {ticket.review.reviewDate && (
+                        <span className="text-xs">
+                          {format(
+                            new Date(ticket.review.reviewDate),
+                            "MMM dd, yyyy"
+                          )}
+                        </span>
+                      )}
+
+                      {/* Added button to go to ticket */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-2 text-xs h-7"
+                        asChild
+                      >
+                        <Link
+                          href={`/ticket/${ticket._id}`}
+                          className="text-primary"
+                        >
+                          View Ticket
+                        </Link>
+                      </Button>
+                    </div>
                   </CardFooter>
                 </Card>
               ))}
             </div>
           </div>
         )}
-
         {/* Button to view all reviews */}
       </Card>
     </div>
