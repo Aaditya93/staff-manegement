@@ -18,14 +18,13 @@ import {
 import { Check, ChevronDown } from "lucide-react";
 import { useId, useState, useEffect } from "react";
 import { useTicketContext } from "./context";
-// Define Employee interface
-interface Employee {
+
+// Define TravelAgent interface
+interface TravelAgent {
   _id: string;
   name: string;
   email: string;
-  role: string;
-  country?: string;
-  // Add other fields as needed
+  // Add other travel agent fields as needed
 }
 
 interface PersonnelInfo {
@@ -33,51 +32,51 @@ interface PersonnelInfo {
   emailId?: string;
 }
 
-interface SelectReservationStaffProps {
-  staffList: Employee[];
+interface SelectTravelAgentProps {
+  travelAgentList: TravelAgent[];
   default?: PersonnelInfo;
 }
 
-export function SelectReservationStaff({
-  staffList,
+export function SelectTravelAgent({
+  travelAgentList,
   default: defaultValue,
-}: SelectReservationStaffProps) {
+}: SelectTravelAgentProps) {
   const id = useId();
   const [open, setOpen] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
 
-  const { setSelectedReservationStaff } = useTicketContext();
+  const { setSelectedTravelAgent } = useTicketContext();
 
   // Find default value by matching email
   useEffect(() => {
     if (defaultValue?.emailId) {
-      const matchedStaff = staffList.find(
-        (staff) => staff.email === defaultValue.emailId
+      const matchedAgent = travelAgentList.find(
+        (agent) => agent.email === defaultValue.emailId
       );
-      if (matchedStaff) {
-        setValue(matchedStaff._id.toString());
-        // Pass complete staff info instead of just ID
-        setSelectedReservationStaff({
-          id: matchedStaff._id.toString(),
-          name: matchedStaff.name,
-          email: matchedStaff.email,
+      if (matchedAgent) {
+        setValue(matchedAgent._id.toString());
+        // Pass complete agent info instead of just ID
+        setSelectedTravelAgent({
+          id: matchedAgent._id.toString(),
+          name: matchedAgent.name,
+          email: matchedAgent.email,
         });
       }
     }
-  }, [defaultValue, staffList, setSelectedReservationStaff]);
+  }, [defaultValue, travelAgentList, setSelectedTravelAgent]);
 
-  const handleSelect = (staffId: string) => {
-    setValue(staffId);
-    const selectedStaff = staffList.find(
-      (staff) => staff._id.toString() === staffId
+  const handleSelect = (agentId: string) => {
+    setValue(agentId);
+    const selectedAgent = travelAgentList.find(
+      (agent) => agent._id.toString() === agentId
     );
 
-    if (selectedStaff) {
-      // Pass complete staff info instead of just ID
-      setSelectedReservationStaff({
-        id: staffId,
-        name: selectedStaff.name,
-        email: selectedStaff.email,
+    if (selectedAgent) {
+      // Pass complete agent info instead of just ID
+      setSelectedTravelAgent({
+        id: agentId,
+        name: selectedAgent.name,
+        email: selectedAgent.email,
       });
     }
     setOpen(false);
@@ -96,8 +95,8 @@ export function SelectReservationStaff({
           >
             <span className={cn("truncate", !value && "text-muted-foreground")}>
               {value
-                ? staffList.find((staff) => staff._id === value)?.name
-                : defaultValue?.name || "Select Reservation Staff"}
+                ? travelAgentList.find((agent) => agent._id === value)?.name
+                : defaultValue?.name || "Select Travel Agent"}
             </span>
             <ChevronDown
               size={16}
@@ -114,21 +113,21 @@ export function SelectReservationStaff({
           <Command>
             <CommandInput placeholder="Search by name or email..." />
             <CommandList>
-              <CommandEmpty>No reservation staff found.</CommandEmpty>
+              <CommandEmpty>No travel agents found.</CommandEmpty>
               <CommandGroup>
-                {staffList.map((staff) => (
+                {travelAgentList.map((agent) => (
                   <CommandItem
-                    key={staff._id}
-                    value={`${staff.name} ${staff.email}`}
-                    onSelect={() => handleSelect(staff._id.toString())}
+                    key={agent._id}
+                    value={`${agent.name} ${agent.email}`}
+                    onSelect={() => handleSelect(agent._id.toString())}
                   >
                     <div className="flex flex-col items-start">
-                      <div>{staff.name}</div>
+                      <div>{agent.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {staff.email}
+                        {agent.email}
                       </div>
                     </div>
-                    {value === staff._id.toString() && (
+                    {value === agent._id.toString() && (
                       <Check size={16} strokeWidth={2} className="ml-auto" />
                     )}
                   </CommandItem>

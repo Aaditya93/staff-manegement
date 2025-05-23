@@ -14,12 +14,18 @@ interface ApproveControlProps {
 
 export function ApproveControl({ ticketId }: ApproveControlProps) {
   const [isPending, startTransition] = useTransition();
-  const { selectedSalesStaff, estimatedTime } = useTicketContext();
+  const { selectedTravelAgent, selectedSalesStaff, estimatedTime } =
+    useTicketContext();
+
   const router = useRouter();
 
   const handleApprove = () => {
     if (!selectedSalesStaff) {
       toast("Please select a sales staff");
+      return;
+    }
+    if (!selectedTravelAgent) {
+      toast("Please select a travel agent");
       return;
     }
 
@@ -32,10 +38,17 @@ export function ApproveControl({ ticketId }: ApproveControlProps) {
           name: selectedSalesStaff.name,
           emailId: selectedSalesStaff.email,
         };
+        const travelAgentData = {
+          id: selectedTravelAgent.id,
+          name: selectedTravelAgent.name,
+          emailId: selectedTravelAgent.email,
+        };
 
         const result = await approveTicket(
           ticketId,
+          travelAgentData,
           salesInChargeData,
+
           estimatedTime
         );
 

@@ -57,7 +57,14 @@ export function TicketDashboard({ ticket }: { ticket: ITicket }) {
     <div className="container mx-auto p-6 space-y-8 max-w-7xl">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Ticket Details</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Ticket Details
+            </h1>
+            <Badge variant="secondary" className="text-sm">
+              ID: {ticket._id}{" "}
+            </Badge>
+          </div>
           <p className="text-muted-foreground mt-1">
             Manage and view ticket information
           </p>

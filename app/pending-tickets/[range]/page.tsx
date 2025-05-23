@@ -103,6 +103,9 @@ export const PendingTicketsPage = async ({
   const salesStaff = serializedEmployee.filter(
     (emp) => emp.role === "SalesStaff"
   ) as Employee[];
+  const travelAgent = serializedEmployee.filter(
+    (emp) => emp.role === "TravelAgent"
+  ) as Employee[];
 
   return (
     <SidebarProvider>
@@ -125,6 +128,7 @@ export const PendingTicketsPage = async ({
                 <PendingTicketsTable
                   tickets={serializedTickets}
                   salesStaff={salesStaff}
+                  travelAgent={travelAgent}
                 />
               ) : (
                 <p className="text-muted-foreground">

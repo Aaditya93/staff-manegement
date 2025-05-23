@@ -8,6 +8,7 @@ import { SelectEstimatedTime } from "@/components/pending-ticket/select-estimate
 import { ApproveControl } from "@/components/pending-ticket/approve";
 import { DeleteControl } from "@/components/pending-ticket/delete";
 import { ColumnFiltersState } from "@tanstack/react-table";
+import { SelectTravelAgent } from "./select-travel-agent";
 
 // PersonnelInfo interface to match the database schema
 interface PersonnelInfo {
@@ -79,11 +80,14 @@ function formatDateTime(date: Date | string | undefined) {
 interface PendingTicketsTableProps {
   tickets: Ticket[];
   salesStaff: Employee[];
+  travelAgent: Employee[];
 }
 
 export function PendingTicketsTable({
   tickets,
+
   salesStaff,
+  travelAgent,
 }: PendingTicketsTableProps) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [searchSelections, setSearchSelections] = useState("companyName");
@@ -118,6 +122,18 @@ export function PendingTicketsTable({
       header: "Received Time",
       cell: ({ row }: { row: any }) =>
         formatDateTime(row.original.receivedDateTime),
+    },
+    {
+      id: "travelAgent",
+      header: "Travel Agent",
+      cell: ({ row }: { row: any }) => {
+        return (
+          <SelectTravelAgent
+            travelAgentList={travelAgent} // You'll need to pass this from props
+            default={row.original.travelAgent}
+          />
+        );
+      },
     },
     {
       id: "salesInCharge",

@@ -11,9 +11,11 @@ interface StaffInfo {
 
 interface TicketContextType {
   selectedSalesStaff: StaffInfo | null;
+  selectedTravelAgent: StaffInfo | null; // Add travel agent
   estimatedTime: string; // Add estimatedTime
 
   setSelectedSalesStaff: (staff: StaffInfo | null) => void;
+  setSelectedTravelAgent: (agent: StaffInfo | null) => void; // Add setter
   setEstimatedTime: (time: string) => void; // Add setter
 }
 
@@ -31,13 +33,16 @@ export function TicketProvider({
   const [selectedSalesStaff, setSelectedSalesStaff] =
     useState<StaffInfo | null>(null);
   const [estimatedTime, setEstimatedTime] = useState<string>("1H"); // Default to 1H
+  const [selectedTravelAgent, setSelectedTravelAgent] =
+    useState<StaffInfo | null>(null); // Add state
 
   return (
     <TicketContext.Provider
       value={{
         selectedSalesStaff,
         estimatedTime,
-
+        selectedTravelAgent,
+        setSelectedTravelAgent, // Add setter
         setSelectedSalesStaff,
         setEstimatedTime,
       }}

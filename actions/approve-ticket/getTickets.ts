@@ -67,7 +67,11 @@ export const getAllUnApprovedTickets = async (
 
 export async function approveTicket(
   ticketId: string,
-
+  travelAgent: {
+    id: string;
+    name: string;
+    emailId: string;
+  },
   salesInCharge: {
     id: string;
     name: string;
@@ -98,6 +102,11 @@ export async function approveTicket(
       name: session?.user.name || "",
       emailId: session?.user.email || "",
     };
+    const cleanTravelAgent = {
+      id: travelAgent.id,
+      name: travelAgent.name,
+      emailId: travelAgent.emailId,
+    };
 
     // Use updateOne instead of findByIdAndUpdate for simplicity
     const updatedTicket = await Ticket.findOneAndUpdate(
@@ -106,6 +115,7 @@ export async function approveTicket(
         $set: {
           isApproved: true,
           salesInCharge: cleanSales,
+          travelAgent: cleanTravelAgent,
           approvedBy: approver,
           estimateTimeToSendPrice: estimatedTimeInSeconds,
           status: "pending",
@@ -142,7 +152,16 @@ export async function approveTicket(
 export const getAllEmployees = async () => {
   try {
     await dbConnect();
-    const result = await User.find({}).lean();
+    const result = await User.find({
+      role: { $in: ["SalesStaff", "TravelAgent"] },
+    })
+      .lean()
+      .select({
+        _id: 1,
+        name: 1,
+        email: 1,
+        role: 1,
+      });
     const seralizedResult = await serializeData(result);
     return seralizedResult;
   } catch (error) {
