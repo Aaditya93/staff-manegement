@@ -34,8 +34,8 @@ interface PersonnelInfo {
 export interface ITicket extends Document {
   companyName: string;
   _id: string;
-  receivedDateTime: string;
-  sentDateTime?: string;
+  receivedDateTime: Date;
+  sentDateTime?: Date;
   pax: number;
   destination: string;
   arrivalDate?: Date;
@@ -54,8 +54,8 @@ export interface ITicket extends Document {
   speed: string;
   inbox: number;
   sent: number;
-  lastMailTimeReceived: number;
-  lastMailTimeSent: number;
+  lastMailTimeReceived: Date;
+  lastMailTimeSent: Date;
   balance?: number;
   email: EmailEntry[];
   review: Review;
@@ -196,8 +196,8 @@ const ReviewSchema = new Schema(
 // Define the schema for the Ticket model
 const TicketSchema = new Schema<ITicket>(
   {
-    receivedDateTime: String,
-    sentDateTime: String,
+    receivedDateTime: Date,
+    sentDateTime: Date,
     pax: {
       type: Number,
       default: 0,
@@ -250,12 +250,10 @@ const TicketSchema = new Schema<ITicket>(
       min: 0,
     },
     lastMailTimeReceived: {
-      type: Number,
-      default: 0,
+      type: Date,
     },
     lastMailTimeSent: {
-      type: Number,
-      default: 0,
+      type: Date,
     },
     balance: Number,
     isApproved: {
