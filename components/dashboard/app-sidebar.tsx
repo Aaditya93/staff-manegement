@@ -5,7 +5,7 @@ import { LifeBuoy, Send, SquareTerminal } from "lucide-react";
 import { CiMail, CiSearch, CiStar } from "react-icons/ci";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import { CiViewTable } from "react-icons/ci";
-import { GoReport } from "react-icons/go";
+import { GoPeople, GoReport } from "react-icons/go";
 import { BsListTask } from "react-icons/bs";
 import Image from "next/image";
 import { TfiPieChart } from "react-icons/tfi";
@@ -82,6 +82,11 @@ const AppSidebar = ({
       name: "Employees List",
       url: `/employee-list`,
       icon: CiViewList,
+    },
+    {
+      name: "Travel Agent List",
+      url: `/agent-list/10`,
+      icon: GoPeople,
     },
   ];
 

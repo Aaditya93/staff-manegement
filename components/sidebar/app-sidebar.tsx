@@ -14,6 +14,7 @@ import { CiChat1 } from "react-icons/ci";
 import NavUser from "./nav-user";
 import { CiStar } from "react-icons/ci";
 import { CiViewList } from "react-icons/ci";
+import { GoPeople } from "react-icons/go";
 import {
   Sidebar,
   SidebarContent,
@@ -72,6 +73,11 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
       name: "Employees List",
       url: `/employee-list`,
       icon: CiViewList,
+    },
+    {
+      name: "Travel Agent List",
+      url: `/agent-list/10`,
+      icon: GoPeople,
     },
   ];
 

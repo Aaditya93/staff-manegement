@@ -152,16 +152,12 @@ export async function approveTicket(
 export const getAllEmployees = async () => {
   try {
     await dbConnect();
-    const result = await User.find({
-      role: { $in: ["SalesStaff", "TravelAgent"] },
-    })
-      .lean()
-      .select({
-        _id: 1,
-        name: 1,
-        email: 1,
-        role: 1,
-      });
+    const result = await User.find({}).lean().select({
+      _id: 1,
+      name: 1,
+      email: 1,
+      role: 1,
+    });
     const seralizedResult = await serializeData(result);
     return seralizedResult;
   } catch (error) {

@@ -272,7 +272,6 @@ export const PasswordResetEmail = async (email: string, token: string) => {
 </html>`,
   });
 };
-
 export const sendReviewNotificationEmail = async (
   recipientEmail: string,
   recipientName: string,
@@ -296,8 +295,7 @@ export const sendReviewNotificationEmail = async (
     from: "Victoria Tours <noreply@victoriatour.vn>",
     to: recipientEmail,
     subject: "New Review Received - Victoria Tours",
-    html: `
-    <!DOCTYPE html>
+    html: `<!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
@@ -560,7 +558,6 @@ export const sendReviewNotificationEmail = async (
         </div>
       </div>
     </body>
-    </html>
-    `,
+    </html>`,
   });
 };

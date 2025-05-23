@@ -1,5 +1,4 @@
 import { getTicketsForTravelAgent } from "@/actions/travel-agent/travel-agent-report";
-import { DestinationBarChart } from "@/components/admin-report/market-bar-chart";
 import AppSidebar from "@/components/travel-agent/app-sidebar";
 import TravelAgentReport from "@/components/travel-agent/travel-agent-report/report";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";

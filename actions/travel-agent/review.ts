@@ -187,12 +187,16 @@ async function updateUserRatings(
     );
 
     // Update user with new weighted averages
-    const result = await User.findByIdAndUpdate(userId, {
-      attitude: attitudeAvg,
-      knowledge: knowledgeAvg,
-      speed: speedAvg,
-      reviewcount: totalReviewCount,
-    });
+    const result = await User.findByIdAndUpdate(
+      userId,
+      {
+        attitude: attitudeAvg,
+        knowledge: knowledgeAvg,
+        speed: speedAvg,
+        reviewcount: totalReviewCount,
+      },
+      { new: true }
+    ); // Add this option to return the updated document
     console.log("Updated user ratings:", result);
 
     console.log(`Updated ratings for user ${userId}`);
