@@ -84,7 +84,7 @@ export function TicketDashboard({ ticket }: { ticket: ITicket }) {
             sales={ticket.salesInCharge.id}
             reservation={ticket.reservationInCharge.id}
           />
-          {!ticket.review && <ReviewTicket ticketId={ticket._id} />}
+          {<ReviewTicket ticketId={ticket._id} />}
         </div>
       </div>
 

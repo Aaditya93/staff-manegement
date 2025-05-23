@@ -1,5 +1,4 @@
 import { getReviewedTickets } from "@/actions/review/get-review";
-import { auth } from "@/auth";
 import ReviewDashboard from "@/components/review/review-dashboard";
 
 import AppSidebar from "@/components/sidebar/app-sidebar";
