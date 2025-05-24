@@ -8,6 +8,7 @@ import {
 import Image from "next/image";
 import { RegisterForm } from "@/components/auth/register-form";
 import RedirectLogin from "@/components/auth/redirect-login";
+import Link from "next/link";
 
 const SignUpPage = () => {
   return (
@@ -17,10 +18,25 @@ const SignUpPage = () => {
           src="/travel-agent.jpg"
           alt="register"
           fill
-          className="object-cover"
+          className="object-cover brightness-[0.7]"
           priority
         />
-        <div className="absolute inset-0 " />
+        <div className="absolute inset-0 bg-black/30">
+          <div className="absolute top-0 left-0 w-full p-6 flex items-center z-10">
+            <Link href="/home" className="flex items-center">
+              <Image
+                src="/logo.png"
+                width={50}
+                height={50}
+                alt="Victoria Tours"
+                className="mr-3 bg-white/90 rounded-lg p-1"
+              />
+              <h1 className="text-2xl font-bold text-white drop-shadow-md">
+                Victoria Tours
+              </h1>
+            </Link>
+          </div>
+        </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-primary-foreground z-10 p-4"></div>
       </div>
       <div>

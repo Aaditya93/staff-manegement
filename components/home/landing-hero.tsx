@@ -1,5 +1,5 @@
-import { MoveRight, Calendar, MapPin } from "lucide-react";
-// import { Button } from "@/components/ui/button";
+import { MapPin } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 
@@ -9,10 +9,7 @@ function Hero() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 gap-12 items-center lg:grid-cols-2">
           <div className="flex gap-6 flex-col">
-            <Badge
-              variant="outline"
-              className="w-fit bg-primary/10 text-primary border-primary/20 "
-            >
+            <Badge variant="secondary" className="w-fit  ">
               Trusted DMC Partner
             </Badge>
 
@@ -28,18 +25,6 @@ function Hero() {
                 unforgettable journeys.
               </p>
             </div>
-            {/* 
-            <div className="flex flex-col sm:flex-row gap-4 mt-2">
-              <Button size="lg" className="gap-2" variant="outline">
-                Schedule Consultation <Calendar className="w-4 h-4" />
-              </Button>
-              <Button
-                size="lg"
-                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Explore Packages <MoveRight className="w-4 h-4" />
-              </Button>
-            </div> */}
 
             <div className="flex items-center gap-2 text-muted-foreground">
               <MapPin className="w-4 h-4" />

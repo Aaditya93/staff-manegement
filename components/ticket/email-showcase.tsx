@@ -13,17 +13,40 @@ import { format, parseISO } from "date-fns";
 import { Mail, Loader2, AlertCircle, Calendar, Clock } from "lucide-react";
 import { getEmail } from "@/actions/tickets/get-email";
 
-// Updated interface to match Microsoft Graph API response
 interface GraphEmailData {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
   id: string;
-  subject: string;
-  webLink: string;
-  bodyPreview: string;
   createdDateTime: string;
   lastModifiedDateTime: string;
-  sentDateTime: string;
+  changeKey?: string;
+  categories: string[];
   receivedDateTime: string;
-  importance: string;
+  sentDateTime: string;
+  hasAttachments: boolean;
+  internetMessageId: string;
+  subject: string;
+  bodyPreview: string;
+  importance: "normal" | "high" | "low";
+  parentFolderId: string;
+  conversationId: string;
+  conversationIndex: string;
+  isDeliveryReceiptRequested: boolean | null;
+  isReadReceiptRequested: boolean;
+  isRead: boolean;
+  isDraft: boolean;
+  webLink: string;
+  inferenceClassification: string;
+  body: {
+    contentType: "html" | "text";
+    content: string;
+  };
+  sender: {
+    emailAddress: {
+      name: string;
+      address: string;
+    };
+  };
   from: {
     emailAddress: {
       name: string;
@@ -42,9 +65,21 @@ interface GraphEmailData {
       address: string;
     };
   }>;
-  hasAttachments: boolean;
-  isDraft: boolean;
-  isRead: boolean;
+  bccRecipients: Array<{
+    emailAddress: {
+      name: string;
+      address: string;
+    };
+  }>;
+  replyTo: Array<{
+    emailAddress: {
+      name: string;
+      address: string;
+    };
+  }>;
+  flag: {
+    flagStatus: "notFlagged" | "flagged" | "complete";
+  };
 }
 
 interface EmailResponse {
@@ -123,8 +158,6 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
   }, [emailId, userId]);
 
   const fetchEmailData = async () => {
-    console.log("fetchEmailData called with:", { emailId, userId });
-
     setErrorMessage(null);
 
     if (!emailId || !userId) {
@@ -198,6 +231,7 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
     try {
       return format(parseISO(dateString), "MMM dd, yyyy HH:mm");
     } catch (e) {
+      console.error("Failed to parse date:", dateString, e);
       return "Invalid date";
     }
   };
@@ -242,10 +276,10 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
               <div className="flex flex-col gap-3">
                 <div>
                   <p className="text-sm font-medium">
-                    {emailDetails.email.subject}
+                    {emailDetails?.email?.subject}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {emailDetails.email.bodyPreview}
+                    {emailDetails?.email?.bodyPreview}
                   </p>
                 </div>
 
@@ -253,13 +287,13 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
 
                 {/* Email body content */}
                 <div className="overflow-y-auto max-h-64 flex-1 p-4 text-sm border rounded-md">
-                  {emailDetails.email.body?.contentType === "html" ? (
+                  {emailDetails?.email?.body?.contentType === "html" ? (
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: emailDetails.email.body.content
+                        __html: emailDetails?.email?.body.content
                           ? sanitizeEmailContent(
                               // Use the updated function
-                              emailDetails.email.body.content
+                              emailDetails?.email?.body.content
                             )
                           : "",
                       }}
@@ -273,7 +307,7 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
                     />
                   ) : (
                     <div className="whitespace-pre-wrap w-full">
-                      {emailDetails.email.body?.content ||
+                      {emailDetails?.email?.body?.content ||
                         "No content available"}
                     </div>
                   )}
@@ -281,11 +315,11 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
 
                 <Separator />
 
-                {emailDetails.emailSummary && (
+                {emailDetails?.emailSummary && (
                   <>
                     <div>
                       <p className="text-sm text-muted-foreground">Summary</p>
-                      <p className="text-sm">{emailDetails.emailSummary}</p>
+                      <p className="text-sm">{emailDetails?.emailSummary}</p>
                     </div>
                     <Separator />
                   </>
@@ -297,19 +331,19 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
                   <span className="text-sm text-muted-foreground">Status:</span>
                   <Badge
                     variant={
-                      emailDetails.email.isRead ? "secondary" : "default"
+                      emailDetails?.email?.isRead ? "secondary" : "default"
                     }
                   >
-                    {emailDetails.email.isRead ? "Read" : "Unread"}
+                    {emailDetails?.email?.isRead ? "Read" : "Unread"}
                   </Badge>
                 </div>
 
                 <div className="flex flex-col gap-1">
                   <span className="text-sm text-muted-foreground">From:</span>
                   <div className="text-sm">
-                    <div>{emailDetails.email.from.emailAddress.name}</div>
+                    <div>{emailDetails?.email?.from?.emailAddress?.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {emailDetails.email.from.emailAddress.address}
+                      {emailDetails?.email?.from?.emailAddress?.address}
                     </div>
                   </div>
                 </div>
@@ -317,14 +351,16 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
                 <div className="flex flex-col gap-1">
                   <span className="text-sm text-muted-foreground">To:</span>
                   <div className="text-sm">
-                    {emailDetails.email.toRecipients.map((recipient, index) => (
-                      <div key={index} className="mb-1">
-                        <div>{recipient.emailAddress.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {recipient.emailAddress.address}
+                    {emailDetails?.email?.toRecipients?.map(
+                      (recipient, index) => (
+                        <div key={index} className="mb-1">
+                          <div>{recipient.emailAddress.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {recipient.emailAddress.address}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 </div>
 
@@ -333,7 +369,8 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span>
-                      Created: {formatDate(emailDetails.email.createdDateTime)}
+                      Created:{" "}
+                      {formatDate(emailDetails?.email?.createdDateTime)}
                     </span>
                   </div>
                 ) : emailDetails.email.from.emailAddress.address ===
@@ -341,7 +378,7 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span>
-                      Sent: {formatDate(emailDetails.email.sentDateTime)}
+                      Sent: {formatDate(emailDetails?.email?.sentDateTime)}
                     </span>
                   </div>
                 ) : (
@@ -349,7 +386,7 @@ const EmailShowcase: React.FC<EmailShowcaseProps> = ({
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span>
                       Received:{" "}
-                      {formatDate(emailDetails.email.receivedDateTime)}
+                      {formatDate(emailDetails?.email?.receivedDateTime)}
                     </span>
                   </div>
                 )}

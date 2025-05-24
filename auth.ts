@@ -63,11 +63,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     // This callback will modify the user before it's created in the database
     async signIn({ user, account }) {
-      console.log("SignIn callback triggered:", {
-        user: { id: user.id, email: user.email, name: user.name },
-        accountProvider: account?.provider,
-      });
-
       if (account && account.provider === "microsoft-entra-id") {
         // For Microsoft 365 accounts, try to extract email from token
         if (!user.email && account.id_token) {

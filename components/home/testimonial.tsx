@@ -26,7 +26,7 @@ export function Testimonials({
   testimonials,
   className,
   title = "Read what people are saying",
-  description = "Dummy feedback from virtual customers using our component library.",
+
   maxDisplayed = 6,
 }: TestimonialsProps) {
   const [showAll, setShowAll] = useState(false);
@@ -40,14 +40,6 @@ export function Testimonials({
       <div className="flex flex-col items-center justify-center pt-5">
         <div className="flex flex-col gap-5 mb-8">
           <h2 className="text-center text-4xl font-medium">{title}</h2>
-          <p className="text-center text-muted-foreground">
-            {description.split("<br />").map((line, i) => (
-              <span key={i}>
-                {line}
-                {i !== description.split("<br />").length - 1 && <br />}
-              </span>
-            ))}
-          </p>
         </div>
       </div>
 

@@ -85,7 +85,9 @@ const NavUser = () => {
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
-            <ModeToggle />
+            <DropdownMenuItem asChild>
+              <ModeToggle />
+            </DropdownMenuItem>
             {session.data?.user.role !== "TravelAgent" && (
               <DropdownMenuItem asChild>
                 <Link href="/edit-profile">
@@ -95,7 +97,7 @@ const NavUser = () => {
               </DropdownMenuItem>
             )}
             <DropdownMenuItem className=" text-red-600 " onClick={SignOut}>
-              <LogOut />
+              <LogOut className="mr-2" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
