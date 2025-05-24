@@ -178,13 +178,7 @@ export function Mail({
                 variant: currentFolder === "inbox" ? "default" : "ghost",
                 href: `/mail/${inboxNumber}/inbox/read/20`,
               },
-              // {
-              //   title: "Drafts",
-              //   label: "",
-              //   icon: File,
-              //   variant: currentFolder === "drafts" ? "default" : "ghost",
-              //   href: `/mail/${inboxNumber}/drafts/read/20`,
-              // },
+
               {
                 title: "Sent",
                 label: "",
@@ -265,16 +259,20 @@ export function Mail({
             </div>
             <TabsContent value="all" className="m-0 overflow-hidden">
               <MailList
-                items={mails}
+                items={filteredMails}
+                folder={currentFolder}
+                status={currentStatus}
+                range={range}
+                inboxNumber={inboxNumber}
                 emptyState={
                   searchQuery ? (
-                    <div className="flex  items-center justify-center p-8">
+                    <div className="flex items-center justify-center p-8">
                       <div className="flex flex-col items-center text-center">
-                        <Search className="h-8 w-8  mb-4" />
+                        <Search className="h-8 w-8 mb-4" />
                         <h3 className="text-lg font-medium">
                           No results found
                         </h3>
-                        <p className="text-sm  mb-4">
+                        <p className="text-sm mb-4">
                           No emails match your search for &ldquo;{searchQuery}
                           &rdquo;
                         </p>

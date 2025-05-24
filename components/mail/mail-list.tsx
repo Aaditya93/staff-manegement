@@ -1,8 +1,8 @@
-import { ComponentProps, useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 
 import { cn } from "@/lib/utils";
-import { Badge } from "../ui/badge";
+
 import { ScrollArea } from "../ui/scroll-area";
 import { useMail } from "./use-mails";
 import { EmailMessage } from "./mail-display";
@@ -30,18 +30,20 @@ export function MailList({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
   // Calculate pagination values
   const totalPages = Math.ceil(items.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentItems = items.slice(startIndex, endIndex);
 
-  // Pagination handlers
+  // Set up scroll event listener
 
   if (items.length === 0) {
     return (
       emptyState || (
-        <div className="flex  items-center justify-center">
+        <div className="flex items-center justify-center">
           <p className="text-sm text-muted-foreground">No emails found</p>
         </div>
       )
@@ -49,7 +51,6 @@ export function MailList({
   }
 
   const stripHtmlTags = (html: string): string => {
-    // ...existing stripHtmlTags function...
     if (!html) return "";
     const withoutScripts = html.replace(
       /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
@@ -76,7 +77,7 @@ export function MailList({
 
   return (
     <div className="flex flex-col h-full">
-      <ScrollArea className="h-[calc(100vh-10rem)]">
+      <ScrollArea className="h-[calc(100vh-10rem)]" viewportRef={scrollAreaRef}>
         <div className="flex flex-col gap-2 p-4 pt-0">
           {currentItems.map((item) => (
             <button
@@ -94,8 +95,7 @@ export function MailList({
 
                 // If the email is unread, mark it as read
                 if (!item.isRead) {
-                  const inboxNumber = 0;
-                  await markAsRead(item.id, inboxNumber);
+                  await markAsRead(item.id, inboxNumber || 0);
                 }
               }}
             >
@@ -103,7 +103,7 @@ export function MailList({
                 <div className="flex items-center">
                   <div className="flex items-center gap-2">
                     <div className="font-semibold">
-                      {item.from?.emailAddress.name || user?.name}
+                      {item.from?.emailAddress.name || "User"}
                     </div>
                     {!item.isRead && (
                       <span className="flex h-2 w-2 rounded-full bg-blue-600" />
@@ -132,32 +132,9 @@ export function MailList({
             </button>
           ))}
         </div>
-        {totalPages > 1 && (
-          <div className="sticky bottom-2 w-full  p-4 bg-background">
-            <PaginationComponent
-              currentValue={range || "0"}
-              folder={folder}
-              status={status}
-              inboxNumber={inboxNumber}
-              hasMore={currentPage < totalPages}
-            />
-          </div>
-        )}
+        {/* Pagination component shown after all emails */}
+        <PaginationComponent />
       </ScrollArea>
     </div>
   );
-}
-
-function getBadgeVariantFromLabel(
-  label: string
-): ComponentProps<typeof Badge>["variant"] {
-  if (["work"].includes(label.toLowerCase())) {
-    return "default";
-  }
-
-  if (["personal"].includes(label.toLowerCase())) {
-    return "outline";
-  }
-
-  return "secondary";
 }

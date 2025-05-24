@@ -1,37 +1,38 @@
+"use client";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useRouter, usePathname } from "next/navigation";
 
 const PaginationComponent = ({
-  currentValue,
-  itemsPerPage = 10,
-  maxPage = 3,
-  hasMore = true,
-  status,
-  folder,
-  inboxNumber,
+  hasMore = true, // This can be passed as a prop since it can't be determined from URL
+  itemsPerPage = 20, // Default items per page
 }: {
-  currentValue: string | number;
-  itemsPerPage?: number;
-  maxPage?: number;
   hasMore?: boolean;
-  status?: string;
-  folder?: string;
-  inboxNumber?: number;
+  itemsPerPage?: number;
 }) => {
-  // Parse currentValue to ensure it's a number (it comes as a string from URL)
-  const parsedCurrentValue =
-    typeof currentValue === "string"
-      ? parseInt(currentValue, 10) || 0
-      : currentValue || 0;
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // Calculate the current page - ensure it's at least 1
-  const currentPage = Math.max(1, Math.ceil(parsedCurrentValue / itemsPerPage));
+  // Extract values from the URL path
+  // Expected format: /mail/[inboxNumber]/[folder]/[status]/[range]
+  const pathParts = pathname.split("/").filter(Boolean);
+
+  // Extract values from path parts
+  const inboxNumber =
+    pathParts.length > 1 ? parseInt(pathParts[1], 10) || 0 : 0;
+  const folder = pathParts.length > 2 ? pathParts[2] : "inbox";
+  const status = pathParts.length > 3 ? pathParts[3] : "all";
+  const range = pathParts.length > 4 ? parseInt(pathParts[4], 10) || 0 : 0;
+
+  // Calculate the current page based on range value
+  const currentPage = Math.floor(range / itemsPerPage) + 1;
 
   // Determine if we should show navigation buttons
   const showPrevious = currentPage > 1;
@@ -40,12 +41,11 @@ const PaginationComponent = ({
   // Generate page numbers to display
   const getPageNumbers = () => {
     const pages = [];
-    // We'll show a window around the current page
     const startPage = Math.max(1, currentPage - 1);
-    const endPage = currentPage + 1;
+    const endPage = Math.min(currentPage + 1, currentPage + (hasMore ? 1 : 0));
 
     for (let i = startPage; i <= endPage; i++) {
-      if (i > 0 && (hasMore || i <= currentPage)) {
+      if (i > 0) {
         pages.push(i);
       }
     }
@@ -60,22 +60,39 @@ const PaginationComponent = ({
     return `/mail/${inboxNumber}/${folder}/${status}/${rangeValue}`;
   };
 
+  // Handle navigation programmatically
+  const handleNavigation = (page: number) => {
+    const url = getPageUrl(page);
+    router.push(url);
+  };
+
   return (
     <Pagination className="justify-end w-full">
       <PaginationContent>
-        {showPrevious && (
-          <PaginationItem>
-            <PaginationPrevious
-              href={getPageUrl(currentPage - 1)}
-              aria-disabled={!showPrevious}
-            />
-          </PaginationItem>
-        )}
+        <PaginationItem>
+          <PaginationPrevious
+            href={showPrevious ? getPageUrl(currentPage - 1) : "#"}
+            onClick={(e) => {
+              if (!showPrevious) {
+                e.preventDefault();
+                return;
+              }
+              e.preventDefault();
+              handleNavigation(currentPage - 1);
+            }}
+            aria-disabled={!showPrevious}
+            className={!showPrevious ? "pointer-events-none opacity-50" : ""}
+          />
+        </PaginationItem>
 
         {getPageNumbers().map((pageNumber) => (
           <PaginationItem key={pageNumber}>
             <PaginationLink
               href={getPageUrl(pageNumber)}
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation(pageNumber);
+              }}
               isActive={currentPage === pageNumber}
             >
               {pageNumber}
@@ -85,9 +102,25 @@ const PaginationComponent = ({
 
         {hasMore && (
           <PaginationItem>
-            <PaginationNext href={getPageUrl(currentPage + 1)} />
+            <PaginationEllipsis />
           </PaginationItem>
         )}
+
+        <PaginationItem>
+          <PaginationNext
+            href={showNext ? getPageUrl(currentPage + 1) : "#"}
+            onClick={(e) => {
+              if (!showNext) {
+                e.preventDefault();
+                return;
+              }
+              e.preventDefault();
+              handleNavigation(currentPage + 1);
+            }}
+            aria-disabled={!showNext}
+            className={!showNext ? "pointer-events-none opacity-50" : ""}
+          />
+        </PaginationItem>
       </PaginationContent>
     </Pagination>
   );

@@ -6,6 +6,7 @@ import { MailReplyForm } from "./mail-reply-form";
 import { ForwardDialog } from "./mail-forward-dialog";
 
 export interface EmailMessage {
+  "@odata.etag"?: string;
   id: string;
   subject: string;
   receivedDateTime: string;
@@ -28,33 +29,35 @@ export interface EmailMessage {
       address: string;
     };
   };
-  toRecipients?: Array<{
+  toRecipients: Array<{
     emailAddress: {
       name: string;
       address: string;
     };
   }>;
-  ccRecipients?: Array<{
+  ccRecipients: Array<{
     emailAddress: {
       name: string;
       address: string;
     };
   }>;
-  bccRecipients?: Array<{
+  bccRecipients: Array<{
     emailAddress: {
       name: string;
       address: string;
     };
   }>;
-  attachments?: Array<{
-    id: string;
-    name: string;
-    contentType: string;
-    size: number;
-    isInline: boolean;
+  attachments: Array<{
+    id?: string;
+    name?: string;
+    contentType?: string;
+    size?: number;
+    isInline?: boolean;
   }>;
+  // For backward compatibility with existing code
+  date?: string;
+  content?: string;
 }
-
 interface MailDisplayProps {
   mail: EmailMessage | null;
   inboxNumber: number;

@@ -569,10 +569,8 @@ export function ComposeMailDialog({
                     </>
                   )}
                 </Button>
-
+                <EmojiPickerPopover onEmojiSelect={handleEmojiSelect} />
                 <div className="flex items-center">
-                  <EmojiPickerPopover onEmojiSelect={handleEmojiSelect} />
-
                   <Label
                     htmlFor="file-upload-compose"
                     className="hover:bg-secondary-foreground/10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full"
@@ -599,20 +597,16 @@ export function ComposeMailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogContent
+        position="bottom-right"
         className={`${
           isMinimized ? "max-h-14" : "max-h-[80vh]"
         } p-0 rounded-lg border shadow-lg gap-0 overflow-hidden transition-all duration-200 !fixed !bottom-6 !right-6 !top-auto !translate-x-0 !translate-y-0`}
         style={{
-          position: "fixed",
-          bottom: "24px",
-          right: "24px",
-          top: "auto",
-          left: "auto",
           transform: "none",
           height: isMinimized ? "auto" : "500px",
           width: "500px",
           maxWidth: "95vw",
-          zIndex: 9999,
+
           margin: 0,
         }}
       >

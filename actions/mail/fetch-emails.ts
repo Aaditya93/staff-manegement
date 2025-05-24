@@ -36,16 +36,30 @@ export async function fetchFolderEmails(
   error?: string;
 }> {
   try {
-    // Set default options with page-based pagination
+    // Set default options
     const {
       page = 1,
       pageSize = 10,
       filterUnread = false,
       includeCount = true,
+      range,
     } = options;
 
-    // Calculate skip value based on page number (1-based)
-    const skip = (page - 1) * pageSize;
+    // Calculate skip and top values based on either range or page/pageSize
+    let skip = (page - 1) * pageSize;
+    let top = pageSize;
+
+    // If range is provided, use it to calculate pagination
+    if (range) {
+      const rangeValue = parseInt(range);
+      if (!isNaN(rangeValue)) {
+        // For any range value, get the previous batch size
+        // e.g., range 20 → skip 0, range 40 → skip 20, range 60 → skip 40
+        const batchSize = 20; // Fixed batch size
+        skip = Math.max(0, rangeValue - batchSize);
+        top = batchSize;
+      }
+    }
 
     // Get a valid access token
     const accessToken = await getValidAccessToken(inboxNumber);
@@ -69,14 +83,16 @@ export async function fetchFolderEmails(
     // Build the Graph API query
     let graphUrl = `https://graph.microsoft.com/v1.0/me/mailFolders/${graphFolderName}/messages`;
 
-    // Add query parameters
+    // Add query parameters with the calculated skip and top values
     const queryParams = [
-      `$top=${pageSize}`,
+      `$top=${top}`,
       `$skip=${skip}`,
       "$select=id,subject,body,receivedDateTime,sentDateTime,from,sender,isRead,hasAttachments,toRecipients,ccRecipients,bccRecipients",
       "$expand=attachments($select=id,name,contentType,size,isInline)",
       "$orderby=receivedDateTime desc",
     ];
+
+    // Rest of your existing code remains the same...
 
     // Add filter for unread messages if requested
     if (filterUnread) {

@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { EmailMessage } from "./mail-display";
 import { Separator } from "../ui/separator";
 import { sanitizeEmailContent } from "@/utils/sanitize-email";
+import { useRef, useEffect } from "react";
 
 interface MailContentProps {
   mail: EmailMessage;
@@ -10,6 +11,49 @@ interface MailContentProps {
 }
 
 export function MailContent({ mail, currentFolder }: MailContentProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Handle iframe content loading
+  useEffect(() => {
+    if (mail.body.contentType === "html" && iframeRef.current) {
+      const iframe = iframeRef.current;
+      const iframeDoc =
+        iframe.contentDocument || iframe.contentWindow?.document;
+
+      if (iframeDoc) {
+        // Write sanitized content to iframe
+        iframeDoc.open();
+        iframeDoc.write(
+          mail.body.content ? sanitizeEmailContent(mail.body.content) : ""
+        );
+        iframeDoc.close();
+
+        // Adjust iframe height to content height after content loads
+        const resizeIframe = () => {
+          if (iframe && iframeDoc && iframeDoc.body) {
+            iframe.style.height = `${iframeDoc.body.scrollHeight}px`;
+          }
+        };
+
+        // Set initial height and add listener for content changes
+        iframe.onload = resizeIframe;
+        setTimeout(resizeIframe, 100);
+
+        // MutationObserver to handle dynamic content changes
+        const observer = new MutationObserver(resizeIframe);
+        if (iframeDoc.body) {
+          observer.observe(iframeDoc.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+          });
+        }
+
+        return () => observer.disconnect();
+      }
+    }
+  }, [mail.body]);
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       <div className="flex items-start p-4">
@@ -57,14 +101,15 @@ export function MailContent({ mail, currentFolder }: MailContentProps) {
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="overflow-y-auto flex-1 p-4 text-sm">
           {mail.body.contentType === "html" ? (
-            <div
-              dangerouslySetInnerHTML={{
-                __html: mail.body.content
-                  ? sanitizeEmailContent(mail.body.content)
-                  : "",
-              }}
-              className="prose max-w-full w-full prose-img:max-w-full prose-img:h-auto email-body-container"
-            />
+            <div className="email-iframe-container mx-auto max-w-full">
+              <iframe
+                ref={iframeRef}
+                title="Email content"
+                className="w-full border-none"
+                scrolling="no"
+                sandbox="allow-same-origin allow-popups"
+              />
+            </div>
           ) : (
             <div className="whitespace-pre-wrap w-full">
               {mail.body.content}

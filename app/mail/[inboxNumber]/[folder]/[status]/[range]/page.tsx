@@ -2,12 +2,8 @@ import { Mail } from "@/components/mail/mail";
 import AppSidebar from "@/components/sidebar/app-sidebar";
 import { fetchFolderEmails } from "@/actions/mail/fetch-emails";
 
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
 interface MailPageProps {
   params: {
     inboxNumber: number;
@@ -21,10 +17,12 @@ const DashboardPage = async ({ params }: MailPageProps) => {
   const { inboxNumber, folder, status, range } = await params;
 
   const filterUnread = status === "unread";
+
   const mail = await fetchFolderEmails(folder, inboxNumber, {
     filterUnread,
     range,
   });
+
   return (
     <SidebarProvider>
       <AppSidebar />
