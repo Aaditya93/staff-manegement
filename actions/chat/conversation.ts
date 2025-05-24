@@ -209,7 +209,11 @@ export async function fetchConversationMessages(
     const messages = await Message.find({ conversationId: convoId })
       .sort({ createdAt: -1 }) // Latest messages first
       .limit(limit)
-
+      .populate({
+        path: "senderId",
+        model: "User",
+        select: "name email image",
+      })
       .lean();
 
     // Find the latest message in the conversation (if any)
@@ -239,7 +243,10 @@ export async function fetchConversationMessages(
     const cleanMessages = messages.map((msg) => ({
       _id: msg._id.toString(),
       content: msg.content,
-
+      senderId: msg.senderId._id.toString(),
+      senderName: msg.senderId.name,
+      senderImage: msg.senderId.image,
+      senderEmail: msg.senderId.email,
       conversationId: msg.conversationId.toString(),
       type: msg.type,
       createdAt: msg.createdAt.toISOString(),

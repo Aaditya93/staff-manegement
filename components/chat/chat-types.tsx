@@ -19,11 +19,7 @@ export type Conversation = {
 
 export type Message = {
   _id: string;
-  senderId: {
-    _id: string;
-    name: string;
-    image?: string;
-  };
+
   type: string;
   content: string[];
   createdAt: string;

@@ -59,9 +59,6 @@ export default async function MessagingPage({
     conversationId,
     messageLimit
   );
-  if (error) {
-    console.error("Error loading messages:", error);
-  }
 
   return (
     <SidebarProvider>
