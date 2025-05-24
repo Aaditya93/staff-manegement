@@ -191,28 +191,55 @@ export async function fetchConversationMessages(
       return { error: "Unauthorized" };
     }
 
-    // Convert string ID to MongoDB ObjectId
+    const currentUserId = session.user.id;
+    const userId = new mongoose.Types.ObjectId(currentUserId);
     const convoId = new mongoose.Types.ObjectId(conversationId);
 
+    // First check if the user belongs to the conversation
+    const conversation = await Conversation.findOne({
+      _id: convoId,
+      "members.memberId": userId,
+    });
+
+    if (!conversation) {
+      return { error: "Conversation not found or access denied" };
+    }
+
+    // Fetch messages for this conversation
     const messages = await Message.find({ conversationId: convoId })
       .sort({ createdAt: -1 }) // Latest messages first
       .limit(limit)
-      .populate({
-        path: "senderId",
-        select: "name email image", // Only get necessary user info
-      })
+
       .lean();
+
+    // Find the latest message in the conversation (if any)
+    if (messages.length > 0) {
+      // Get the most recent message ID
+      const latestMessageId = messages[0]._id;
+
+      // Mark conversation as read by updating lastSeenMessage for current user
+      await Conversation.updateOne(
+        {
+          _id: convoId,
+          "members.memberId": userId,
+        },
+        {
+          $set: {
+            "members.$.lastSeenMessage": latestMessageId,
+          },
+        }
+      );
+
+      console.log(
+        `Marked conversation ${conversationId} as read for user ${currentUserId}`
+      );
+    }
 
     // Create a clean, serializable structure to avoid circular references
     const cleanMessages = messages.map((msg) => ({
       _id: msg._id.toString(),
       content: msg.content,
-      senderId: {
-        _id: msg.senderId._id.toString(),
-        name: msg.senderId.name,
-        email: msg.senderId.email,
-        image: msg.senderId.image,
-      },
+
       conversationId: msg.conversationId.toString(),
       type: msg.type,
       createdAt: msg.createdAt.toISOString(),
@@ -222,13 +249,13 @@ export async function fetchConversationMessages(
     // Return in chronological order (oldest to newest)
     return {
       messages: cleanMessages.reverse(),
+      isRead: true, // Indicate that messages are now marked as read
     };
   } catch (error) {
     console.error("Error fetching conversation messages:", error);
     return { error: "Failed to fetch messages" };
   }
 }
-
 export async function fetchConversationById(conversationId: string) {
   try {
     await dbConnect();
@@ -238,11 +265,13 @@ export async function fetchConversationById(conversationId: string) {
     }
 
     const currentUserId = session.user.id;
+    const convId = new mongoose.Types.ObjectId(conversationId);
+    const userId = new mongoose.Types.ObjectId(currentUserId);
 
     // Find the conversation and populate member data
     const conversation = await Conversation.findOne({
-      _id: new mongoose.Types.ObjectId(conversationId),
-      "members.memberId": new mongoose.Types.ObjectId(currentUserId),
+      _id: convId,
+      "members.memberId": userId,
     })
       .populate({
         path: "members.memberId",
@@ -257,6 +286,57 @@ export async function fetchConversationById(conversationId: string) {
 
     if (!conversation) {
       return { error: "Conversation not found" };
+    }
+
+    // Mark messages as read by updating lastSeenMessage for the current user
+    if (conversation.lastMessageId) {
+      await Conversation.updateOne(
+        {
+          _id: convId,
+          "members.memberId": userId,
+        },
+        {
+          $set: {
+            "members.$.lastSeenMessage": conversation.lastMessageId._id,
+          },
+        }
+      );
+
+      console.log(
+        `Marked conversation ${conversationId} as read for user ${currentUserId}`
+      );
+    }
+
+    // Calculate actual unread count for this user
+    const memberData = conversation.members.find(
+      (member: any) => member.memberId._id.toString() === currentUserId
+    );
+
+    const lastSeenMessageId = memberData?.lastSeenMessage;
+
+    // Count unread messages (messages created after the last seen message)
+    let unreadCount = 0;
+    if (
+      conversation.lastMessageId &&
+      (!lastSeenMessageId ||
+        lastSeenMessageId.toString() !==
+          conversation.lastMessageId._id.toString())
+    ) {
+      // If we need the actual count of unread messages, we can query for messages
+      // that are newer than the lastSeenMessageId
+      if (lastSeenMessageId) {
+        unreadCount = await Message.countDocuments({
+          conversationId: convId,
+          _id: { $gt: lastSeenMessageId },
+          senderId: { $ne: userId }, // Only count messages not sent by current user
+        });
+      } else {
+        // If no messages have been seen yet, count all messages not sent by the user
+        unreadCount = await Message.countDocuments({
+          conversationId: convId,
+          senderId: { $ne: userId },
+        });
+      }
     }
 
     // Get the last message (if exists)
@@ -288,7 +368,8 @@ export async function fetchConversationById(conversationId: string) {
         lastMessage,
         participants,
         updatedAt: conversation.updatedAt.toISOString(),
-        unreadCount: 0, // You can implement unread count logic here
+        unreadCount, // Now using the calculated unread count
+        isRead: unreadCount === 0, // Add a convenience flag
       },
     };
   } catch (error) {
