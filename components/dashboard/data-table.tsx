@@ -33,7 +33,6 @@ import {
 import { Dispatch, SetStateAction } from "react";
 import { DataTablePagination } from "./data-table-pagination";
 import DateRangePicker from "./date-range";
-import { useSession } from "next-auth/react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -50,7 +49,6 @@ const DataTable = <TData, TValue>({
   searchSelections,
   columns,
   data,
-  setSearchSelections,
 }: DataTableProps<TData, TValue>) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
 

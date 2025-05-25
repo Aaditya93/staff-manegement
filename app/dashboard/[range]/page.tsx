@@ -35,6 +35,7 @@ function extractDateRange(dateString: string) {
     };
   }
 }
+
 const DashboardPage = async ({
   params,
 }: {
@@ -42,6 +43,8 @@ const DashboardPage = async ({
 }) => {
   const { range } = await params;
   const dateRange = extractDateRange(range);
+
+  // Comment out this line in production
 
   const tickets = await getAllTicketsByEmail(dateRange.from, dateRange.to);
   const status = await getStatus();
